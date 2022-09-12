@@ -8,7 +8,6 @@ class PasswordDialog(wx.Dialog):
                  style=wx.DEFAULT_DIALOG_STYLE):
         wx.Dialog.__init__(self)
         self.parent = parent
-        # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
         self.Create(parent, -1, "操作员登录对话框", pos, size, style)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -43,7 +42,6 @@ class PasswordDialog(wx.Dialog):
         btn_ok.Bind(wx.EVT_BUTTON, self.OnOk)
         btn_cancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.tryTimes=4
-        _, self.parent.pswList = GetAllPasswords(None,WHICHDB)
 
     def OnOk(self, event):
         psw = self.pswTXT.GetValue()
@@ -60,7 +58,6 @@ class PasswordDialog(wx.Dialog):
                 dlg.ShowModal()
                 dlg.Destroy()
                 return
-        # self.log.WriteText("操作员：'%s' 完成库存参数设置操作\r\n"%(self.parent.operator_name))
         event.Skip()
 
     def OnCancel(self, event):

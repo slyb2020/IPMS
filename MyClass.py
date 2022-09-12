@@ -6,8 +6,8 @@ import wx.lib.agw.foldpanelbar as fpb
 from SystemIntroductionPanel import SystemIntroductionPanel
 from six import BytesIO
 import wx.lib.agw.aquabutton as AB
-from OrderManagementPanel import OrderManagementPanel,CreateNewOrderDialog
-
+from OrderManagementPanel import OrderManagementPanel, CreateNewOrderDialog
+import time
 
 def GetCollapsedIconData():
     return \
@@ -92,6 +92,7 @@ class MainPanel(wx.Panel):
                  size=(1024, 768), style=wx.TAB_TRAVERSAL):
         wx.Panel.__init__(self, parent, id, pos, size, style)
         self.parent = parent
+        self.Freeze()
         il = wx.ImageList(16, 16)
         self.idx1 = il.Add(images._rt_smiley.GetBitmap())
         self.idx2 = il.Add(images.GridBG.GetBitmap())
@@ -112,7 +113,6 @@ class MainPanel(wx.Panel):
         # will occupy the space not used by the Layout Algorithm
         self.CreateBottomWindow()
         self.log = MyLogCtrl(self.bottomWindow, -1, "")
-        self.Freeze()
         self.work_zone_Panel = WorkZonePanel(self, self.parent, self.log)
         self.Thaw()
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -121,13 +121,6 @@ class MainPanel(wx.Panel):
                   id2=ID_WINDOW_BOTTOM)  # BOTTOM和LEFT顺序不能换，要想更改哪个先分，只需更改上面窗口定义的顺序
         self._pnl.Bind(fpb.EVT_CAPTIONBAR, self.OnPressCaption)
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnNoteBookPageChanged)
-        self.mainTimer = wx.Timer(self)
-        self.mainTimer.Start(1000)
-        self.Bind(wx.EVT_TIMER, self.OnMainTimer)
-
-    def OnMainTimer(self, event):
-        if self.work_zone_Panel.orderManagementPanel.IsShown():
-            self.work_zone_Panel.orderManagementPanel.ReCreate()
 
     def CreateBottomWindow(self):
         self.bottomWindow = wx.adv.SashLayoutWindow(self, ID_WINDOW_BOTTOM, style=wx.NO_BORDER | wx.adv.SW_3D)
@@ -163,7 +156,7 @@ class MainPanel(wx.Panel):
         Images.Add(GetExpandedIconBitmap())
         Images.Add(GetCollapsedIconBitmap())
 
-        if self.parent.operatorCharacter in ["设计员", "下单员", "经理"]:
+        if self.parent.operatorCharacter in ["技术员", "技术主管", "技术部长", "下单员", "经理"]:
             item = self._pnl.AddFoldPanel("订单操作面板", collapsed=False,
                                           foldIcons=Images)
             item.SetLabel("订单操作面板")
@@ -181,7 +174,7 @@ class MainPanel(wx.Panel):
                 vbox.Add(self.newOrderBTN, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
                 # vbox.Add(self.editOrderBTN, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
                 vbox.Add(static, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            if self.parent.operatorCharacter in ["下单员", "设计员", "经理"]:
+            if self.parent.operatorCharacter in ["下单员", "技术员", "技术主管", "技术部长", "经理"]:
                 value = "草稿订单"
                 if self.parent.operatorCharacter == "下单员":
                     value = "草稿订单"
@@ -193,7 +186,7 @@ class MainPanel(wx.Panel):
             panel.SetSizer(vbox)
             # self.ReCreateOrderInfoPanel()
             self._pnl.AddFoldPanelWindow(item, panel, fpb.FPB_ALIGN_WIDTH, 5, 0)
-            if self.parent.operatorCharacter in ["下单员", '设计员', '经理']:
+            if self.parent.operatorCharacter in ["下单员", "技术员", "技术主管", "技术部长", '经理']:
                 item.Expand()
             else:
                 item.Collapse()
@@ -772,15 +765,17 @@ class WorkZonePanel(wx.Panel):
         self.systemIntroductionPanel = SystemIntroductionPanel(self.notebook)
         self.notebook.AddPage(self.systemIntroductionPanel, "系统介绍")
 
-        if self.master.operatorCharacter in ["设计员","技术员","下单员","经理","财务人员","采购员"]:
-            if self.master.operatorCharacter == "设计员":
-                self.orderManagementPanel = OrderManagementPanel(self.notebook, self.master, self.log,character=self.master.operatorCharacter,type="草稿")
+        if self.master.operatorCharacter in ["技术员", "技术主管", "技术部长", "下单员", "经理", "财务人员", "采购员"]:
+            if self.master.operatorCharacter in ["技术员", "技术主管", "技术部长"]:
+                self.orderManagementPanel = OrderManagementPanel(self.notebook, self.master, self.log,
+                                                                 character=self.master.operatorCharacter, type="草稿")
             else:
-                self.orderManagementPanel = OrderManagementPanel(self.notebook, self.master, self.log,character=self.master.operatorCharacter)
+                self.orderManagementPanel = OrderManagementPanel(self.notebook, self.master, self.log,
+                                                                 character=self.master.operatorCharacter)
             self.notebook.AddPage(self.orderManagementPanel, "订单管理")
-        if self.master.operatorCharacter in ["采购员","经理"]:
-            self.meterialPriceManagementPanel = MeterialPriceManagementPanel(self.notebook, self.log)
-            self.notebook.AddPage(self.meterialPriceManagementPanel, "原材料价格管理")
+        # if self.master.operatorCharacter in ["采购员", "经理"]:
+        #     self.meterialPriceManagementPanel = MeterialPriceManagementPanel(self.notebook, self.log)
+        #     self.notebook.AddPage(self.meterialPriceManagementPanel, "原材料价格管理")
 
         # if self.master.operatorCharacter in ["技术员","经理"]:
         #     self.boardManagementPanel = BoardManagementPanel(self.notebook, self, self.log)

@@ -22,6 +22,8 @@ from DBOperation import GetEnterpriseInfo, GetStaffInfoWithPassword
 from MyClass import *
 from PasswordDialog import PasswordDialog
 from SetupPropertyDialog import SetupPropertyDialog
+from DBOperation import GetAllPasswords
+import time
 
 VERSION_STRING = "20220313A7"
 
@@ -86,18 +88,21 @@ class FlatMenuFrame(wx.Frame):
         self.timer_count = 0
         self.mouse_position = wx.Point()
         self.pswList = []
+        self.infoList = []
         self.operatorID = ''
         self.operatorName = ''
         self.folderState = ''
+        _, self.pswList,self.infoList = GetAllPasswords(None,WHICHDB)
 
         self.operator_role = 0
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         # Create a main panel and place some controls on it
-        from MyClass import MainPanel
-        if self.check_in_flag:
-            self.mainPANEL = MainPanel(self, wx.ID_ANY)
-        else:
-            self.mainPANEL = BackgroundPanel(self)
+        self.mainPANEL = BackgroundPanel(self)
+        # from MyClass import MainPanel
+        # if self.check_in_flag:
+        #     self.mainPANEL = MainPanel(self, wx.ID_ANY)
+        # else:
+        #     self.mainPANEL = BackgroundPanel(self)
         from MyStatusBar import MyStatusBar
         self.statusbar = MyStatusBar(self)
         self.SetStatusBar(self.statusbar)
@@ -216,9 +221,8 @@ class FlatMenuFrame(wx.Frame):
         dlg.Destroy()
 
     def OnCheckOut(self, event):
+        # self.mainPANEL.work_zone_Panel.orderManagementPanel.orderUpdateCheckThread.Stop()
         self.check_in_flag = False
-        self.mainPANEL.mainTimer.Destroy()
-        self.mainPANEL.work_zone_Panel.orderManagementPanel.checkDataTimer.Destroy()
         self.operatorName = ""
         self.statusbar.SetStatusText("当前状态：%s 未登录  " % self.operatorName, 2)
         self.UpdateMainUI()
@@ -231,7 +235,7 @@ class FlatMenuFrame(wx.Frame):
             password = dlg.pswTXT.GetValue()
         dlg.Destroy()
         if password != '' and password in self.pswList:
-            _, staffInfo = GetStaffInfoWithPassword(None, WHICHDB, password)
+            staffInfo = self.infoList[self.pswList.index(password)]
             if staffInfo[5] == "在职":
                 self.operatorCharacter = staffInfo[2]
                 self.operatorName = staffInfo[3]
@@ -245,6 +249,11 @@ class FlatMenuFrame(wx.Frame):
                                        wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()
+        else:
+            dlg = wx.MessageDialog(self, '密码不正确不能登录系统！', "提示窗口",
+                                   wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
 
     def UpdateMenuState(self):
         self._mb.FindMenuItem(MENU_CHECK_IN).Enable(not self.check_in_flag)
@@ -255,8 +264,6 @@ class FlatMenuFrame(wx.Frame):
         self.Layout()
 
     def OnQuit(self, event):
-        self.mainPANEL.mainTimer.Destroy()
-        self.mainPANEL.work_zone_Panel.orderManagementPanel.checkDataTimer.Destroy()
         self.Destroy()
 
     def OnAbout(self, event):
@@ -278,6 +285,7 @@ class MySplashScreen(SplashScreen):
         SplashScreen.__init__(self, bmp,
                               wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
                               2000, None, -1)
+        wx.Yield()
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.fc = wx.CallLater(1000, self.ShowMain)
 
@@ -294,13 +302,9 @@ class MySplashScreen(SplashScreen):
     def ShowMain(self):
         self.frame = FlatMenuFrame(None)
         self.frame.Show()
+        wx.CallAfter(self.frame.OnCheckIn, None)
         if self.fc.IsRunning():
             self.Raise()
-        # wx.CallAfter(frame.ShowTip)
-        wx.CallAfter(self.ShowTip)
-
-    def ShowTip(self):
-        self.frame.OnCheckIn(None)
 
 
 class MyApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):

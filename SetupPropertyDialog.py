@@ -10,8 +10,6 @@ from DBOperation import UpdatePropertyInDB, GetPropertyVerticalCuttingParameter,
 from ID_DEFINE import *
 
 _ = wx.GetTranslation
-dirName = os.path.dirname(os.path.abspath(__file__))
-bitmapDir = os.path.join(dirName, 'bitmaps')
 
 ############################################################################
 #

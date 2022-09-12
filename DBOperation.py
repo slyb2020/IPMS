@@ -36,14 +36,16 @@ def GetAllPasswords(log, whichDB):
             log.WriteText("无法连接%s!" % dbName[whichDB], colour=wx.RED)
         return -1, []
     cursor = db.cursor()
-    sql = """SELECT `密码` from `info_staff` """
+    sql = """SELECT `密码`,`处`,`科`,`工位名`,`姓名`,`员工编号`,`工作状态` from `info_staff` """
     cursor.execute(sql)
     temp = cursor.fetchall()  # 获得压条信息
-    data = []
+    PSW = []
+    info = []
     for psw in temp:
-        data.append(psw[0])
+        PSW.append(psw[0])
+        info.append(psw[1:])
     db.close()
-    return 0, data
+    return 0, PSW,info
 
 
 def GetStaffInfoWithPassword(log, whichDB, psw):
@@ -77,6 +79,23 @@ def GetStaffInfoWithID(log, whichDB, ID):
     sql = """SELECT `处`,`科`,`工位名`,`姓名`,`员工编号`,`工作状态` from `info_staff` WHERE `员工编号`='%s'"""%(ID)
     cursor.execute(sql)
     temp = cursor.fetchone()  # 获得压条信息
+    db.close()
+    return 0, temp
+
+def GetStaffInfo(log, whichDB):
+    try:
+        # db = MySQLdb.connect(host="127.0.0.1", user="root", passwd='', db="智能生产管理系统_调试",charset='utf8')
+        db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                             passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+    except:
+        wx.MessageBox("2无法连接%s!" % dbName[whichDB], "错误信息")
+        if log:
+            log.WriteText("2无法连接%s!" % dbName[whichDB], colour=wx.RED)
+        return -1, []
+    cursor = db.cursor()
+    sql = """SELECT `处`,`科`,`工位名`,`姓名`,`员工编号`,`工作状态` from `info_staff` """
+    cursor.execute(sql)
+    temp = cursor.fetchall()  # 获得压条信息
     db.close()
     return 0, temp
 
@@ -1580,6 +1599,25 @@ def GetDraftOrderDetailByID(log,whichDB, id):
     return 0, data_dict[0]
 
 
+def GetDraftOrderDetail(log,whichDB):
+    try:
+        db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                             passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+    except:
+        wx.MessageBox("无法连接%s!" % dbName[whichDB], "错误信息")
+        if log:
+            log.WriteText("无法连接%s!" % dbName[whichDB], colour=wx.RED)
+        return -1, []
+    cursor = db.cursor()
+    sql="select * from `订单信息` "
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    column = [index[0] for index in cursor.description]
+    data_dict = [dict(zip(column,row)) for row in result]
+    db.close()
+    return 0, data_dict
+
+
 def GetOrderPanelRecord(log, whichDB, orderDetailID,suborderNum=None):
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
@@ -2065,10 +2103,10 @@ def UpdateDrafCheckInfoByID(log,whichDB,id,dicList):
             `Index` INT(11) NOT NULL AUTO_INCREMENT,
             `类别` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
             `产品名称` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `产品型号` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
+            `产品型号` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
             `产品表面材料` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `产品长度` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `产品宽度` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
+            `产品长度` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+            `产品宽度` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
             `产品厚度` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
             `单位` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
             `数量` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
@@ -2095,7 +2133,7 @@ def UpdateDrafCheckInfoByID(log,whichDB,id,dicList):
             cursor.execute(sql)
             db.commit()  # 必须有，没有的话插入语句不会执行
         except:
-            print("error new2")
+            print("更新草稿订单表单时，数据库存储出错！")
             db.rollback()
     db.close()
 
