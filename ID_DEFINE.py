@@ -40,15 +40,16 @@ orderDetailLabelList = ['Index', '订单号', '子订单', '甲板', '区域', '
 orderDetailColSizeList = [30, 40, 50, 35, 35, 50, 70, 80, 60, 60, 40, 40, 40, 40, 50, 50, 70, 70]
 orderWorkingStateList = ['接单', '排产', '下料', '加工', '打包', '发货']
 
-# WallCheckEnableSectionList = ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '产品描述']
-WallCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '产品描述']
+# WallCheckEnableSectionList = ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '潮湿', '加强']
+WallCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '潮湿', '加强']
+CeilingCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量']
 # WallCheckEnableSectionDic = {
-#     "技术员": ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '产品描述'],
-#     "采购员": ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '单价', '总价', '产品描述'],
+#     "技术员": ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '潮湿', '加强'],
+#     "采购员": ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '单价', '总价', '潮湿', '加强'],
 # }
 WallCheckEnableSectionDic = {
-    "技术员": ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '产品描述'],
-    "采购员": ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '单价', '总价', '产品描述'],
+    "技术员": ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '潮湿', '加强'],
+    "采购员": ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '单价', '总价', '潮湿', '加强'],
 }
 
 MeterialCharacterList = ['材料名', '规格', '供应商', '价格', '单位', '备注']
@@ -60,10 +61,10 @@ BIDMETHOD = ['离岸价', '到岸价']
 CheckTitleDict = {
     "WALL": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
              'Product \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
-             'Product \r\nDescription'],
+             'Product \r\nWet','Product \r\nStrengthen'],
     "CEILING": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
              'Product \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
-             'Product \r\nDescription']
+             ]
     }
 # CheckTitleDict = {
 #     "WALL": ['Product \r\nNo.', 'Product \r\nType', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
@@ -76,7 +77,7 @@ CheckTitleDict = {
 OtherCheckTitleDict = {
     "WALL": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
              'Procuct \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
-             'Unit \r\nPrice', 'Total \r\nPrice', 'Product \r\nDescription'],
+             'Unit \r\nPrice', 'Total \r\nPrice', 'Product \r\nWet'],
     "CEILING": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
              'Procuct \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
              'Unit \r\nPrice', 'Total \r\nPrice', 'Product \r\nDescription']

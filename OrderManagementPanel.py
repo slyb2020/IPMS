@@ -12,7 +12,7 @@ from MakePdfReport import *
 
 from DBOperation import GetAllOrderAllInfo, GetAllOrderList, GetOrderDetailRecord, InsertNewOrder, GetStaffInfoWithID, \
     GetDraftOrderDetailByID, UpdateDraftOrderInfoByID, GetTechDrawingDataByID, GetTechCheckStateByID, \
-    UpdateTechCheckStateByID, GetDraftComponentInfoByID, UpdateDrafCheckInfoByID, UpdateDraftOrderStateInDB, \
+    UpdateTechCheckStateByID, GetDraftComponentInfoByID, UpdateDraftCheckInfoByID, UpdateDraftOrderStateInDB, \
     UpdatePurchchaseCheckStateByID, UpdateFinancingCheckStateByID, UpdateManagerCheckStateByID, UpdateOrderSquareByID, \
     GetProductMeterialUnitPriceInDB, GetMeterialUnitPriceByIdInDB, GetProductLaborUnitPriceInDB, \
     GetAllProductMeterialUnitPriceInDB, GetAllMeterialUnitPriceByIdInDB, GetExchagneRateInDB, \
@@ -1215,6 +1215,11 @@ class WallPanelTechCheckGrid(gridlib.Grid):
         for dic in data:
             temp = []
             for section in WallCheckEnableSectionList:
+                if section == '潮湿' or section == '加强':
+                    if dic[section] == '0':
+                        dic[section]=False
+                    else:
+                        dic[section] = True
                 temp.append(dic[section])
             self.data.append(temp)
 
@@ -1253,11 +1258,17 @@ class WallPanelTechCheckGrid(gridlib.Grid):
 
     def OnCellChange(self, evt):
         thickDic = {"F": '25', 'A': '50', 'G': '25', 'D': '50'}
+        ceilingThickDic = {"TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'50',"TNF-C70":'50',
+                           "TNF-C71":'50',"TNF-C72":'50',"TNF-C73":'50'}
         col = evt.GetCol()
         row = evt.GetRow()
-        if col == 0:
+        if col == 0 and self.type=="WALL":
             lastChar = self.GetCellValue(row, col)[-1]
             self.SetCellValue(row, 4, thickDic[lastChar])
+            self.SetCellValue(row,5,"m2")
+        elif col == 0 and self.type=="CEILING":
+            self.SetCellValue(row,4,ceilingThickDic[self.GetCellValue(row, col)])
+            self.SetCellValue(row,5,"m2")
         evt.Skip()
 
     def OnLeftDClick(self, evt):
@@ -1507,13 +1518,13 @@ class TechCheckDialog(wx.Dialog):
         data = []
         for i in range(rowNum - 1):
             temp = ["CEILING"]
-            square += float(self.ceilingPanelCheckGrid.table.GetValue(i, 7))
+            square += float(self.ceilingPanelCheckGrid.table.GetValue(i, 6))
             for j in range(colNum):
                 temp.append(self.ceilingPanelCheckGrid.table.GetValue(i, j))
             data.append(temp)
         self.ceilingDataDicList = self.MakeDicListData(data, "CEILING")
         for row, dics in enumerate(self.ceilingDataDicList):
-            for col, section in enumerate(WallCheckEnableSectionList):
+            for col, section in enumerate(CeilingCheckEnableSectionList):
                 if dics[section] == '':
                     if section != "产品描述":
                         self.notebook.SetSelection(1)
@@ -1525,14 +1536,17 @@ class TechCheckDialog(wx.Dialog):
                     self.ceilingPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
                     self.ceilingPanelCheckGrid.Refresh()
         self.wallDataDicList = self.wallDataDicList + self.ceilingDataDicList
-        UpdateDrafCheckInfoByID(self.log, WHICHDB, self.id, self.wallDataDicList)
+        UpdateDraftCheckInfoByID(self.log, WHICHDB, self.id, self.wallDataDicList)
         UpdateOrderSquareByID(self.log, WHICHDB, self.id, square)
         return False
 
     def MakeDicListData(self, data, type):
         dicList = []
         if type in ["WALL", 'CEILING']:
-            sectionList = copy.deepcopy(WallCheckEnableSectionList)
+            if type == "WALL":
+                sectionList = copy.deepcopy(WallCheckEnableSectionList)
+            elif type == "CEILING":
+                sectionList = copy.deepcopy(CeilingCheckEnableSectionList)
             sectionList.insert(0, "类别")
             dicList = [dict(zip(sectionList, row)) for row in data]
         return dicList
@@ -1666,17 +1680,17 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
                 gridlib.GRID_VALUE_STRING,
                 gridlib.GRID_VALUE_CHOICE + ':m2',
                 gridlib.GRID_VALUE_FLOAT + ':6,2',
-                gridlib.GRID_VALUE_STRING,
-                gridlib.GRID_VALUE_FLOAT + ':6,2',
+                gridlib.GRID_VALUE_BOOL,
+                gridlib.GRID_VALUE_BOOL,
                 gridlib.GRID_VALUE_FLOAT + ':6,2',
             ]
         elif self.type == 'CEILING':
             self.dataTypes = [
-                gridlib.GRID_VALUE_CHOICE + ':TNF-C46,TNF-C55,TNF-C64,TNF-C65,TNF-C70,TNF-C72',
+                gridlib.GRID_VALUE_CHOICE + ':TNF-C46,TNF-C55,TNF-C64,TNF-C65,TNF-C68,TNF-C70,TNF-C71,TNF-C72,TNF-C73',
                 # gridlib.GRID_VALUE_CHOICE + ':B15',
-                gridlib.GRID_VALUE_CHOICE + ':PVC,Painted,S.S(304),PVC/G,S.S(304)/G,Painted/G',
+                gridlib.GRID_VALUE_CHOICE + ':PVC,S.S(304),PVC/G,S.S(304)/G,Painted/G',
                 gridlib.GRID_VALUE_CHOICE + ':≤3000,600',
-                gridlib.GRID_VALUE_CHOICE + ':600,300',
+                gridlib.GRID_VALUE_CHOICE + ':600,300,275',
                 gridlib.GRID_VALUE_CHOICE + ':40,50,70,100',
                 gridlib.GRID_VALUE_CHOICE + ':m2',
                 gridlib.GRID_VALUE_FLOAT + ':6,2',

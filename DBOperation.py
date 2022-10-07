@@ -2086,7 +2086,7 @@ def UpdateOrderSquareByID(log,whichDB,id,square):
     db.close()
 
 
-def UpdateDrafCheckInfoByID(log,whichDB,id,dicList):
+def UpdateDraftCheckInfoByID(log, whichDB, id, dicList):
     id = int(id)
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
@@ -2112,7 +2112,9 @@ def UpdateDrafCheckInfoByID(log,whichDB,id,dicList):
             `数量` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
             `单价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
             `总价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-            `产品描述` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+            `潮湿` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+            `加强` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+            `产品描述` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
             PRIMARY KEY (`Index`) USING BTREE
             )
             COLLATE='utf8_unicode_ci'
@@ -2233,18 +2235,20 @@ def GetDraftComponentInfoByID(log, whichDB, id,type):
     if str(id) not in result:
         sql = """CREATE TABLE `%s` (
                 `Index` INT(11) NOT NULL AUTO_INCREMENT,
-                `类别` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `产品名称` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `产品型号` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `产品表面材料` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `产品长度` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `产品宽度` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `产品厚度` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `单位` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `数量` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-                `单价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-                `总价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-                `产品描述` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+                `类别` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `产品名称` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `产品型号` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `产品表面材料` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `产品长度` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `产品宽度` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `产品厚度` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `单位` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `数量` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+                `单价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                `总价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                `潮湿` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                `加强` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                `产品描述` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
                 PRIMARY KEY (`Index`) USING BTREE
                 )
                 COLLATE='utf8_unicode_ci'
