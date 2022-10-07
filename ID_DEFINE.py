@@ -27,6 +27,7 @@ quotationSheetDir = os.path.join(dirName, '报价单/')
 
 WHICHDB = 3
 
+
 dbHostName = ["127.0.0.1", '127.0.0.1', '192.168.1.108','123.60.44.240']
 dbUserName = ['root', 'root', 'slyb','root']
 dbPassword = ['', '', 'Freescalejm60','mysql123']

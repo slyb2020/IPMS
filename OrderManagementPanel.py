@@ -1658,11 +1658,11 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
 
         if self.type == 'WALL':
             self.dataTypes = [
-                gridlib.GRID_VALUE_CHOICE + ':TNF-4SF,TNF-3SF,TNF-2SF,TNF-4SA,TNF-3SA,TNF-2SA,TNF-4SG,TNF-3SG,TNF-2SG',
+                gridlib.GRID_VALUE_CHOICE + ':TNF-4SF,TNF-4SA,TNF-4SG,TNF-4SD,TNF-3SF,TNF-3SA,TNF-3SG,TNF-3SD,TNF-2SF,TNF-2SA,TNF-2SG,TNF-2SD',
                 # gridlib.GRID_VALUE_CHOICE + ':B15 Lining,B15 HNR,B15 Partition',
                 gridlib.GRID_VALUE_CHOICE + ':CP/G,GP/G,S.S/G,S.S/S.S',
                 gridlib.GRID_VALUE_CHOICE + ':≤2500',
-                gridlib.GRID_VALUE_CHOICE + ':600',
+                gridlib.GRID_VALUE_CHOICE + ':≤600,>600',
                 gridlib.GRID_VALUE_STRING,
                 gridlib.GRID_VALUE_CHOICE + ':m2',
                 gridlib.GRID_VALUE_FLOAT + ':6,2',

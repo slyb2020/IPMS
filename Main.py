@@ -23,6 +23,7 @@ from MyClass import *
 from PasswordDialog import PasswordDialog
 from SetupPropertyDialog import SetupPropertyDialog
 from DBOperation import GetAllPasswords
+from ID_DEFINE import *
 import time
 
 VERSION_STRING = "20220313A7"
@@ -81,12 +82,11 @@ class FlatMenuFrame(wx.Frame):
         # 如果要初始运行时最大化可以或上wx.MAXIMIZE
         wx.Frame.__init__(self, parent, size=(1800, 1000), style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
         self.SetIcon(images.Mondrian.GetIcon())
-        _, self.enterpriseName = GetEnterpriseInfo(None, 1)
+        self.enterpriseName = enterpriseName
         self.SetTitle("%s智能生产管理系统   Version——0.%s" % (self.enterpriseName, VERSION_STRING))
-        self._popUpMenu = None
         self.check_in_flag = False
         self.timer_count = 0
-        self.mouse_position = wx.Point()
+        # self.mouse_position = wx.Point()
         self.pswList = []
         self.infoList = []
         self.operatorID = ''
@@ -144,21 +144,21 @@ class FlatMenuFrame(wx.Frame):
         helpMenu = FM.FlatMenu()
         subMenuExit = FM.FlatMenu()
         self.newMyTheme = self._mb.GetRendererManager().AddRenderer(FM_MyRenderer())
-        new_file_bmp = wx.Bitmap(bitmapDir + "/filenew.png", wx.BITMAP_TYPE_PNG)
-        view1Bmp = wx.Bitmap(bitmapDir + "/sunling3.png", wx.BITMAP_TYPE_PNG)
-        view3Bmp = wx.Bitmap(bitmapDir + "/lbadd.png", wx.BITMAP_TYPE_PNG)
-        view2Bmp = wx.Bitmap(bitmapDir + "/lbcharge.png", wx.BITMAP_TYPE_PNG)
-        view4Bmp = wx.Bitmap(bitmapDir + "/filesave.png", wx.BITMAP_TYPE_PNG)
-        contractBmp = wx.Bitmap(bitmapDir + "/33.png", wx.BITMAP_TYPE_PNG)
-        order1Bmp = wx.Bitmap(bitmapDir + "/opened.png", wx.BITMAP_TYPE_PNG)
-        order2Bmp = wx.Bitmap(bitmapDir + "/locked.png", wx.BITMAP_TYPE_PNG)
-        order3Bmp = wx.Bitmap(bitmapDir + "/order3.png", wx.BITMAP_TYPE_PNG)
-        propertyBmp = wx.Bitmap(bitmapDir + "/property.png", wx.BITMAP_TYPE_PNG)
+        new_file_bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/filenew.png", wx.BITMAP_TYPE_PNG)
+        view1Bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/sunling3.png", wx.BITMAP_TYPE_PNG)
+        view3Bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/lbadd.png", wx.BITMAP_TYPE_PNG)
+        view2Bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/lbcharge.png", wx.BITMAP_TYPE_PNG)
+        view4Bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/filesave.png", wx.BITMAP_TYPE_PNG)
+        contractBmp = wx.Bitmap("d:/IPMS/dist/bitmaps/33.png", wx.BITMAP_TYPE_PNG)
+        order1Bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/opened.png", wx.BITMAP_TYPE_PNG)
+        order2Bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/locked.png", wx.BITMAP_TYPE_PNG)
+        order3Bmp = wx.Bitmap("d:/IPMS/dist/bitmaps/order3.png", wx.BITMAP_TYPE_PNG)
+        propertyBmp = wx.Bitmap("d:/IPMS/dist/bitmaps/property.png", wx.BITMAP_TYPE_PNG)
 
         # Set an icon to the exit/help/transparency menu item
-        exitImg = wx.Bitmap(bitmapDir + "/exit-16.png", wx.BITMAP_TYPE_PNG)
-        helpImg = wx.Bitmap(bitmapDir + "/help-16.png", wx.BITMAP_TYPE_PNG)
-        ghostBmp = wx.Bitmap(bitmapDir + "/field-16.png", wx.BITMAP_TYPE_PNG)
+        exitImg = wx.Bitmap("d:/IPMS/dist/bitmaps/exit-16.png", wx.BITMAP_TYPE_PNG)
+        helpImg = wx.Bitmap("d:/IPMS/dist/bitmaps/help-16.png", wx.BITMAP_TYPE_PNG)
+        ghostBmp = wx.Bitmap("d:/IPMS/dist/bitmaps/field-16.png", wx.BITMAP_TYPE_PNG)
 
         # Create the menu items
         item = FM.FlatMenuItem(fileMenu, MENU_CHECK_IN, "&R 登录系统...\tCtrl+R", "登录系统", wx.ITEM_NORMAL)
@@ -284,10 +284,12 @@ class MySplashScreen(SplashScreen):
         bmp = wx.Image("d:/IPMS/dist/bitmaps/BackgroundPIC.jpg").ConvertToBitmap()
         SplashScreen.__init__(self, bmp,
                               wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
-                              2000, None, -1)
+                              3000, None, -1)   #3000毫秒后触发EVT_CLOSE时间关闭Splash窗口
         wx.Yield()
         self.Bind(wx.EVT_CLOSE, self.OnClose)
-        self.fc = wx.CallLater(1000, self.ShowMain)
+        global  enterpriseName
+        _, enterpriseName = GetEnterpriseInfo(None, 1)
+        self.fc = wx.CallLater(10, self.ShowMain)   #self.fc是由wx.CallLater建立起来的10毫秒定时器
 
     def OnClose(self, evt):
         evt.Skip()
@@ -302,9 +304,9 @@ class MySplashScreen(SplashScreen):
     def ShowMain(self):
         self.frame = FlatMenuFrame(None)
         self.frame.Show()
-        wx.CallAfter(self.frame.OnCheckIn, None)
-        if self.fc.IsRunning():
+        if self.fc.IsRunning():#如果CallLater对象还在运行（说明splashScreen还没关闭），那么就把SplashScreen窗口挪到最上层
             self.Raise()
+        wx.CallAfter(self.frame.OnCheckIn, None)  #当前时间处理完成后，调用主窗口的OnCheckIn方法
 
 
 class MyApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
