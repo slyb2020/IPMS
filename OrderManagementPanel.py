@@ -2359,11 +2359,12 @@ class QuotationSheetGrid(gridlib.Grid):
         wallTotalAmount = 0.0
         wallTatalPriceUSD = 0.0
         for i, wallDict in enumerate(self.dataWall):
+            print("wallDict=",wallDict)
             wallAmount = float(wallDict['数量'])
             wallTotalAmount += wallAmount
             self.SetCellValue(11 + i, 0, str(i + 1))
             self.SetCellValue(11 + i, 1, wallDict['产品名称'])
-            self.SetCellValue(11 + i, 2, wallDict['产品型号'])
+            # self.SetCellValue(11 + i, 2, wallDict['产品型号'])
             self.SetCellValue(11 + i, 3, wallDict['产品表面材料'])
             self.SetCellValue(11 + i, 4, wallDict['产品长度'])
             self.SetCellValue(11 + i, 5, wallDict['产品宽度'])
@@ -2372,85 +2373,76 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11 + i, 8, wallDict['数量'])
             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,wallDict)
             for item in self.allProductMeterialUnitPriceList:
-                if item["产品名称"] == wallDict['产品名称'] and item["产品型号"] == wallDict['产品型号'] \
+                if item["产品名称"] == wallDict['产品名称'] \
                         and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
                     "产品宽度"] == wallDict['产品宽度']:
                     temp = item
                     break
-            self.meterialFactorX = float(temp['X面材料系数'])
-            self.meterialIdX = int(temp['X面材料id'])
-            self.meterialFactorY = float(temp['Y面材料系数'])
-            self.meterialIdY = int(temp['Y面材料id'])
-            self.meterialFactorGlue = float(temp['胶水系数'])
-            self.meterialIdGlue = int(temp['胶水id'])
-            self.meterialFactorRockWool = float(temp['岩棉系数'])
-            self.meterialIdRockWool = int(temp['岩棉id'])
-            # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdX)
-            temp2 = self.allMeterialUnitPriceList[self.meterialIdX]
-            if temp2['单位'] == 'm2':
-                self.meterialUnitPriceX = float(temp['X面材料系数']) * float(temp2['价格'])
-            else:
-                self.meterialUnitPriceX = float(temp['X面厚度']) * float(temp2['密度']) * float(temp['X面材料系数']) * float(
-                    temp2['价格']) / 1000
-            if self.meterialFactorY != None:
-                # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdY)
-                temp2 = self.allMeterialUnitPriceList[self.meterialIdY]
-                if temp2['单位'] == 'm2':
-                    self.meterialUnitPriceY = float(temp['Y面材料系数']) * float(temp2['价格'])
-                else:
-                    self.meterialUnitPriceY = float(temp['Y面厚度']) * float(temp2['密度']) * float(temp['Y面材料系数']) * float(
-                        temp2['价格']) / 1000
-            else:
-                self.meterialUnitPriceY = 0.0
-            if self.meterialFactorY != 0:
-                # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdGlue)
-                temp2 = self.allMeterialUnitPriceList[self.meterialIdGlue]
-                self.meterialUnitPriceGlue = float(temp['胶水系数']) * float(temp2['价格']) / 1000000.
-            else:
-                self.meterialUnitPriceGlue = 0.0
-            # _, temp2 = GetMeterialUnitPriceByIdInDB(self.log, WHICHDB, '2022-07-14', self.meterialIdRockWool)
-            temp2 = self.allMeterialUnitPriceList[self.meterialIdRockWool]
-            self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 150 * float(temp['产品厚度']) * float(
-                temp['岩棉系数']) * float(temp2['价格']) / 1000000.
-            meterialUnitPrice = self.meterialUnitPriceX + self.meterialUnitPriceY + self.meterialUnitPriceGlue + self.meterialUnitPriceRockWool
-            self.SetCellValue(11 + i, 12, '%.2f' % meterialUnitPrice)
-
-            productLaborAmount = 0
-            for dic in self.productLaborAmountList:
-                if wallDict['产品名称'] == dic['产品名称'] and wallDict['产品表面材料'] == dic['产品表面材料']:
-                    productLaborAmount = float(dic['每平方所需工时'])
-                    break
-            productLaborUnitPrice = productLaborAmount * self.productLaborUnitPrice
-            self.SetCellValue(11 + i, 13, '%.2f' % productLaborUnitPrice)
-
-            scrapUnitPrice = meterialUnitPrice * (self.scrapRate + 1)
-            self.SetCellValue(11 + i, 14, '%.2f' % scrapUnitPrice)
-
-            overheadUnitPrice = (scrapUnitPrice + productLaborUnitPrice) * (1 + self.overheadRate)
-            self.SetCellValue(11 + i, 15, '%.2f' % overheadUnitPrice)
-
-            profitUnitPrice = overheadUnitPrice * (1 + self.profitRate)
-            self.SetCellValue(11 + i, 16, '%.2f' % profitUnitPrice)
-
-            marginNTUnitPrice = profitUnitPrice * (1 + self.marginNT)
-            self.SetCellValue(11 + i, 17, '%.2f' % marginNTUnitPrice)
-
-            marginDKUnitPrice = marginNTUnitPrice * (1 + self.marginDK)
-            self.SetCellValue(11 + i, 18, '%.2f' % marginDKUnitPrice)
-
-            agentUnitPrice = marginDKUnitPrice * (1 + self.agentRate)
-            self.SetCellValue(11 + i, 19, '%.2f' % agentUnitPrice)
-
-            salesUnitPrice = agentUnitPrice
-            self.SetCellValue(11 + i, 20, '%.2f' % salesUnitPrice)
-
-            salesUnitPriceUSD = salesUnitPrice / self.exchangeRate
-            self.SetCellValue(11 + i, 21, '%.2f' % salesUnitPriceUSD)
-            self.SetCellValue(11 + i, 9, '%.2f' % salesUnitPriceUSD)
-
-            salesPriceUSD = salesUnitPriceUSD * wallAmount
-            self.SetCellValue(11 + i, 10, '%.2f' % salesPriceUSD)
-            wallTatalPriceUSD += salesPriceUSD
+            # temp2 = self.allMeterialUnitPriceList[self.meterialIdX]
+            # if temp2['单位'] == 'm2':
+            #     self.meterialUnitPriceX = float(temp['X面材料系数']) * float(temp2['价格'])
+            # else:
+            #     self.meterialUnitPriceX = float(temp['X面厚度']) * float(temp2['密度']) * float(temp['X面材料系数']) * float(
+            #         temp2['价格']) / 1000
+            # if self.meterialFactorY != None:
+            #     # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdY)
+            #     temp2 = self.allMeterialUnitPriceList[self.meterialIdY]
+            #     if temp2['单位'] == 'm2':
+            #         self.meterialUnitPriceY = float(temp['Y面材料系数']) * float(temp2['价格'])
+            #     else:
+            #         self.meterialUnitPriceY = float(temp['Y面厚度']) * float(temp2['密度']) * float(temp['Y面材料系数']) * float(
+            #             temp2['价格']) / 1000
+            # else:
+            #     self.meterialUnitPriceY = 0.0
+            # if self.meterialFactorY != 0:
+            #     # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdGlue)
+            #     temp2 = self.allMeterialUnitPriceList[self.meterialIdGlue]
+            #     self.meterialUnitPriceGlue = float(temp['胶水系数']) * float(temp2['价格']) / 1000000.
+            # else:
+            #     self.meterialUnitPriceGlue = 0.0
+            # # _, temp2 = GetMeterialUnitPriceByIdInDB(self.log, WHICHDB, '2022-07-14', self.meterialIdRockWool)
+            # temp2 = self.allMeterialUnitPriceList[self.meterialIdRockWool]
+            # self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 150 * float(temp['产品厚度']) * float(
+            #     temp['岩棉系数']) * float(temp2['价格']) / 1000000.
+            # meterialUnitPrice = self.meterialUnitPriceX + self.meterialUnitPriceY + self.meterialUnitPriceGlue + self.meterialUnitPriceRockWool
+            # self.SetCellValue(11 + i, 12, '%.2f' % meterialUnitPrice)
+            #
+            # productLaborAmount = 0
+            # for dic in self.productLaborAmountList:
+            #     if wallDict['产品名称'] == dic['产品名称'] and wallDict['产品表面材料'] == dic['产品表面材料']:
+            #         productLaborAmount = float(dic['每平方所需工时'])
+            #         break
+            # productLaborUnitPrice = productLaborAmount * self.productLaborUnitPrice
+            # self.SetCellValue(11 + i, 13, '%.2f' % productLaborUnitPrice)
+            #
+            # scrapUnitPrice = meterialUnitPrice * (self.scrapRate + 1)
+            # self.SetCellValue(11 + i, 14, '%.2f' % scrapUnitPrice)
+            #
+            # overheadUnitPrice = (scrapUnitPrice + productLaborUnitPrice) * (1 + self.overheadRate)
+            # self.SetCellValue(11 + i, 15, '%.2f' % overheadUnitPrice)
+            #
+            # profitUnitPrice = overheadUnitPrice * (1 + self.profitRate)
+            # self.SetCellValue(11 + i, 16, '%.2f' % profitUnitPrice)
+            #
+            # marginNTUnitPrice = profitUnitPrice * (1 + self.marginNT)
+            # self.SetCellValue(11 + i, 17, '%.2f' % marginNTUnitPrice)
+            #
+            # marginDKUnitPrice = marginNTUnitPrice * (1 + self.marginDK)
+            # self.SetCellValue(11 + i, 18, '%.2f' % marginDKUnitPrice)
+            #
+            # agentUnitPrice = marginDKUnitPrice * (1 + self.agentRate)
+            # self.SetCellValue(11 + i, 19, '%.2f' % agentUnitPrice)
+            #
+            # salesUnitPrice = agentUnitPrice
+            # self.SetCellValue(11 + i, 20, '%.2f' % salesUnitPrice)
+            #
+            # salesUnitPriceUSD = salesUnitPrice / self.exchangeRate
+            # self.SetCellValue(11 + i, 21, '%.2f' % salesUnitPriceUSD)
+            # self.SetCellValue(11 + i, 9, '%.2f' % salesUnitPriceUSD)
+            #
+            # salesPriceUSD = salesUnitPriceUSD * wallAmount
+            # self.SetCellValue(11 + i, 10, '%.2f' % salesPriceUSD)
+            # wallTatalPriceUSD += salesPriceUSD
 
         self.SetCellValue(11 + len(self.dataWall), 8, '%.2f' % wallTotalAmount)
         self.SetCellValue(11 + len(self.dataWall), 10, '%.2f' % wallTatalPriceUSD)
@@ -2518,7 +2510,7 @@ class QuotationSheetGrid(gridlib.Grid):
             ceilingTotalAmount += ceilingAmount
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 0, str(i + 1))
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 1, ceilingDict['产品名称'])
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 2, ceilingDict['产品型号'])
+            # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 2, ceilingDict['产品型号'])
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 3, ceilingDict['产品表面材料'])
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 4, ceilingDict['产品长度'])
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 5, ceilingDict['产品宽度'])
@@ -2527,99 +2519,11 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 8, ceilingDict['数量'])
             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,ceilingDict)
             for item in self.allProductMeterialUnitPriceList:
-                if item["产品名称"] == ceilingDict['产品名称'] and item["产品型号"] == ceilingDict['产品型号'] \
+                if item["产品名称"] == ceilingDict['产品名称'] \
                         and item["产品表面材料"] == ceilingDict['产品表面材料'] and item["产品长度"] == ceilingDict['产品长度'] and item[
                     "产品宽度"] == ceilingDict['产品宽度']:
                     temp = item
                     break
-            self.meterialFactorX = float(temp['X面材料系数'])
-            self.meterialIdX = int(temp['X面材料id'])
-            if temp['Y面材料系数'] != None:
-                self.meterialFactorY = float(temp['Y面材料系数'])
-            else:
-                self.meterialFactorY = 0.0
-            self.meterialIdY = int(temp['Y面材料id'])
-            self.meterialFactorGlue = float(temp['胶水系数'])
-            self.meterialIdGlue = int(temp['胶水id'])
-            self.meterialFactorRockWool = float(temp['岩棉系数'])
-            self.meterialIdRockWool = int(temp['岩棉id'])
-            # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdX)
-            temp2 = self.allMeterialUnitPriceList[self.meterialIdX]
-            if temp2['单位'] == 'm2':
-                self.meterialUnitPriceX = float(temp['X面材料系数']) * float(temp2['价格'])
-            else:
-                self.meterialUnitPriceX = float(temp['X面厚度']) * float(temp2['密度']) * float(temp['X面材料系数']) * float(
-                    temp2['价格']) / 1000
-            if self.meterialFactorY != 0:
-                # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdY)
-                temp2 = self.allMeterialUnitPriceList[self.meterialIdY]
-                if temp2['单位'] == 'm2':
-                    if temp['Y面材料系数'] != None:
-                        self.meterialUnitPriceY = float(temp['Y面材料系数']) * float(temp2['价格'])
-                    else:
-                        self.meterialUnitPriceY = 0.0
-                else:
-                    if temp['Y面厚度'] != None:
-                        self.meterialUnitPriceY = float(temp['Y面厚度']) * float(temp2['密度']) * float(
-                            temp['Y面材料系数']) * float(temp2['价格']) / 1000
-                    else:
-                        self.meterialUnitPriceY = 0.0
-            else:
-                self.meterialUnitPriceY = 0.0
-            if self.meterialFactorY != 0:
-                # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdGlue)
-                temp2 = self.allMeterialUnitPriceList[self.meterialIdGlue]
-                self.meterialUnitPriceGlue = float(temp['胶水系数']) * float(temp2['价格']) / 1000000.
-            else:
-                self.meterialUnitPriceGlue = 0.0
-            # _, temp2 = GetMeterialUnitPriceByIdInDB(self.log, WHICHDB, '2022-07-14', self.meterialIdRockWool)
-            temp2 = self.allMeterialUnitPriceList[self.meterialIdRockWool]
-            if ceilingDict['产品名称'] == 'TNF-C46':
-                self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 8. * float(ceilingDict['产品厚度']) * float(
-                    temp['岩棉系数']) * float(temp2['价格']) / 100000.
-            else:
-                self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 15. * float(
-                    ceilingDict['产品厚度']) * float(temp['岩棉系数']) * float(temp2['价格']) / 100000.
-
-            meterialUnitPrice = self.meterialUnitPriceX + self.meterialUnitPriceY + self.meterialUnitPriceGlue + self.meterialUnitPriceRockWool
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 12, '%.2f' % meterialUnitPrice)
-
-            productLaborAmount = 0
-            for dic in self.productLaborAmountList:
-                if ceilingDict['产品名称'] == dic['产品名称'] and ceilingDict['产品表面材料'] == dic['产品表面材料']:
-                    productLaborAmount = float(dic['每平方所需工时'])
-                    break
-            productLaborUnitPrice = productLaborAmount * self.productLaborUnitPrice
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 13, '%.2f' % productLaborUnitPrice)
-
-            scrapUnitPrice = meterialUnitPrice * (self.scrapRate + 1)
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 14, '%.2f' % scrapUnitPrice)
-
-            overheadUnitPrice = (scrapUnitPrice + productLaborUnitPrice) * (1 + self.overheadRate)
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 15, '%.2f' % overheadUnitPrice)
-
-            profitUnitPrice = overheadUnitPrice * (1 + self.profitRate)
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 16, '%.2f' % profitUnitPrice)
-
-            marginNTUnitPrice = profitUnitPrice * (1 + self.marginNT)
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 17, '%.2f' % marginNTUnitPrice)
-
-            marginDKUnitPrice = marginNTUnitPrice * (1 + self.marginDK)
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 18, '%.2f' % marginDKUnitPrice)
-
-            agentUnitPrice = marginDKUnitPrice * (1 + self.agentRate)
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 19, '%.2f' % agentUnitPrice)
-
-            salesUnitPrice = agentUnitPrice
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 20, '%.2f' % salesUnitPrice)
-
-            salesUnitPriceUSD = salesUnitPrice / self.exchangeRate
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 21, '%.2f' % salesUnitPriceUSD)
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 9, '%.2f' % salesUnitPriceUSD)
-
-            salesPriceUSD = salesUnitPriceUSD * ceilingAmount
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 10, '%.2f' % salesPriceUSD)
-            ceilingTatalPriceUSD += salesPriceUSD
 
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 8, '%.2f' % ceilingTotalAmount)
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 10, '%.2f' % ceilingTatalPriceUSD)
@@ -2644,6 +2548,503 @@ class QuotationSheetGrid(gridlib.Grid):
             self.moveTo = None
 
         evt.Skip()
+
+#这个类保留今后改为成本核算类
+# class QuotationSheetGrid(gridlib.Grid):
+#     def __init__(self, parent, log, id, quotationDate, exchangeRateDate):
+#         gridlib.Grid.__init__(self, parent, -1)
+#         self.id = id
+#         self.log = log
+#         self.moveTo = None
+#         self.quotationDate = quotationDate
+#         self.exchangeRateDate = exchangeRateDate
+#         self.Bind(wx.EVT_IDLE, self.OnIdle)
+#         self.dataWall = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "WALL")
+#         self.dataCeiling = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "CEILING")
+#         self.wallUnitPrice = [0] * len(self.dataWall)
+#         self.wallTotalPrice = [0] * len(self.dataWall)
+#         self.exchangeRate = 6.66
+#         for i, dic in enumerate(self.dataWall):
+#             if dic['单价'] != None:
+#                 self.wallUnitPrice[i] = float(dic['单价'])
+#             if dic['总价'] == None:
+#                 self.wallTotalPrice[i] = self.wallUnitPrice[i] * float(dic['数量'])
+#             else:
+#                 self.wallTotalPrice[i] = float(dic['总价'])
+#         self.ceilingUnitPrice = [0] * len(self.dataCeiling)
+#         self.ceilingTotalPrice = [0] * len(self.dataCeiling)
+#         for i, dic in enumerate(self.dataCeiling):
+#             if dic['单价'] != None:
+#                 self.ceilingUnitPrice[i] = float(dic['单价'])
+#             if dic['总价'] == None:
+#                 self.ceilingTotalPrice[i] = self.ceilingUnitPrice[i] * float(dic['数量'])
+#             else:
+#                 self.ceilingTotalPrice[i] = float(dic['总价'])
+#         self.Freeze()
+#         self.CreateGrid(23 + len(self.dataWall) + len(self.dataCeiling), 22)  # , gridlib.Grid.SelectRows)
+#         self.EnableEditing(False)
+#         self.SetRowLabelSize(50)
+#         self.SetColLabelSize(25)
+#         self.SetColSize(0, 50)
+#         self.SetColSize(1, 80)
+#         self.SetColSize(3, 100)
+#         self.SetColSize(4, 135)
+#         self.SetColSize(5, 100)
+#         self.SetColSize(6, 100)
+#         self.SetColSize(7, 40)
+#         self.SetColSize(11, 35)
+#         self.SetColSize(12, 100)
+#         self.SetColSize(14, 105)
+#         self.SetColSize(21, 105)
+#         for i in range(23 + len(self.dataWall) + len(self.dataCeiling)):
+#             for j in range(22):
+#                 self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
+#         self.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
+#
+#         self.productLaborUnitPrice = 20.11
+#         self.scrapRate = 0.03
+#         self.overheadRate = 0.26
+#         self.profitRate = 0.15
+#         self.marginNT = 0.2
+#         self.marginDK = 0
+#         self.agentRate = 0
+#         exchangeRate = GetExchagneRateInDB(self.log, WHICHDB, str(self.exchangeRateDate))
+#         if exchangeRate == None:
+#             wx.MessageBox("数据库中没有指定日期的美元汇率，请更换日期后重试！", "信息提示")
+#         else:
+#             self.exchangeRate = float(exchangeRate) / 100. - 0.02
+#         _, productLaborAmountList = GetProductLaborUnitPriceInDB(self.log, WHICHDB)
+#         if productLaborAmountList == None:
+#             wx.MessageBox("数据库中没有指定日期的原材料价格，请更换日期后重试！", "信息提示")
+#         else:
+#             self.productLaborAmountList = productLaborAmountList
+#
+#         self.ReCreate()
+#         self.Thaw()
+#
+#     def GetWallData(self):
+#         dataWall = []
+#         for row in range(len(self.dataWall) + 1):
+#             rowList = []
+#             for col in range(11):
+#                 rowList.append(self.GetCellValue(row + 11, col))
+#             dataWall.append(rowList)
+#         return dataWall
+#
+#     def GetCeilingData(self):
+#         dataCeiling = []
+#         for row in range(len(self.dataCeiling) + 1):
+#             rowList = []
+#             for col in range(11):
+#                 rowList.append(self.GetCellValue(row + 11 + len(self.dataWall) + 6, col))
+#             dataCeiling.append(rowList)
+#         return dataCeiling
+#
+#     def ReCreate(self):
+#         _, self.allProductMeterialUnitPriceList = GetAllProductMeterialUnitPriceInDB(self.log, WHICHDB)
+#         quotationDate = str(self.quotationDate)
+#         _, self.allMeterialUnitPriceList = GetAllMeterialUnitPriceByIdInDB(self.log, WHICHDB, quotationDate)
+#         self.ClearGrid()
+#         self.SetCellValue(0, 0, "INEXA TNF")
+#         self.SetCellValue(0, 12, "Currency rate")
+#         self.SetCellValue(0, 13, "%.2f" % self.exchangeRate)
+#         self.SetCellValue(0, 14, "USD-CNY")
+#         self.SetCellValue(0, 15, str(self.exchangeRateDate))
+#
+#         self.SetCellValue(1, 0, "Date: ")
+#         self.SetCellValue(1, 2, quotationDate)
+#         self.SetCellValue(1, 12, "OverHead")
+#         self.SetCellValue(1, 13, "26%")
+#         self.SetCellValue(1, 14, "Over-head by NT	")
+#         self.SetCellSize(1, 14, 1, 2)
+#
+#         self.SetCellValue(2, 0, "Project No.:")
+#         self.SetCellValue(2, 2, "Senta 123")
+#         self.SetCellValue(2, 12, "crap rate")
+#         self.SetCellValue(2, 13, "3%")
+#         self.SetCellValue(2, 14, "All")
+#         self.SetCellSize(2, 14, 1, 2)
+#
+#         self.SetCellValue(3, 0, "Inexa Quotation No.: ")
+#         self.SetCellValue(3, 2, "Senta 123")
+#         self.SetCellValue(3, 12, "Profile")
+#         self.SetCellValue(3, 13, "15%")
+#         self.SetCellValue(3, 14, "All")
+#         self.SetCellSize(3, 14, 1, 2)
+#
+#         self.SetCellValue(4, 12, "CM for NT")
+#         self.SetCellValue(4, 13, "20%")
+#         self.SetCellValue(4, 14, "Proposed by NT")
+#         self.SetCellSize(4, 14, 1, 2)
+#
+#         self.SetCellValue(5, 12, "CM for DK")
+#         self.SetCellValue(5, 13, "0%")
+#         self.SetCellValue(5, 14, "TBD by DK office")
+#         self.SetCellSize(5, 14, 1, 2)
+#
+#         self.SetCellValue(6, 12, "Agent rate")
+#         self.SetCellValue(6, 13, "0%")
+#         self.SetCellValue(6, 14, "TBD by DK office")
+#         self.SetCellSize(6, 14, 1, 2)
+#
+#         self.SetCellValue(7, 0, "Re:")
+#         self.SetCellValue(7, 1, "TNF accommodation system")
+#         self.SetCellValue(7, 12, "Bussiness type")
+#         self.SetCellValue(7, 13, "Export")
+#         self.SetCellValue(7, 14, "Export")
+#         self.SetCellSize(7, 14, 1, 2)
+#
+#         self.SetCellValue(8, 0, "1)TNF Wall Panel")
+#         self.SetCellValue(8, 12, "Direct costs")
+#         self.SetCellValue(8, 14, "Scrap rate")
+#         self.SetCellValue(8, 15, "Over-head")
+#         self.SetCellValue(8, 16, "Profile")
+#         self.SetCellValue(8, 17, "Margin-NT")
+#         self.SetCellValue(8, 18, "Margin-DK")
+#         self.SetCellValue(8, 19, "Agent  rate")
+#         self.SetCellValue(8, 20, "sales price")
+#         self.SetCellValue(8, 21, "Unit sales price")
+#
+#         self.SetCellValue(9, 0, "Item")
+#         self.SetCellValue(9, 1, "Product")
+#         self.SetCellValue(9, 2, "Product")
+#         self.SetCellValue(9, 3, "Product")
+#         self.SetCellValue(9, 4, "Product")
+#         self.SetCellValue(9, 5, "Product")
+#         self.SetCellValue(9, 6, "Product")
+#         self.SetCellValue(9, 7, "Unit")
+#         self.SetCellValue(9, 8, "Total")
+#         self.SetCellValue(9, 9, "Unit Price")
+#         self.SetCellValue(9, 10, "Total Price")
+#         self.SetCellValue(9, 12, "Material")
+#         self.SetCellValue(9, 13, "Labor")
+#         self.SetCellValue(9, 14, "3.0%")
+#         self.SetCellValue(9, 15, "26.0%")
+#         self.SetCellValue(9, 16, "15.0%")
+#         self.SetCellValue(9, 17, "20.0%")
+#         self.SetCellValue(9, 18, "0.0%")
+#         self.SetCellValue(9, 19, "0.0%")
+#         self.SetCellValue(9, 21, "Inc. over head")
+#
+#         self.SetCellValue(10, 1, "No.")
+#         self.SetCellValue(10, 2, "type")
+#         self.SetCellValue(10, 3, "surface")
+#         self.SetCellValue(10, 4, "height/length (mm)")
+#         self.SetCellValue(10, 5, "width (mm)")
+#         self.SetCellValue(10, 6, "thickness (mm)")
+#         self.SetCellValue(10, 8, "Quantity")
+#         self.SetCellValue(10, 9, "In USD")
+#         self.SetCellValue(10, 10, "In USD")
+#         self.SetCellValue(10, 12, "RMB")
+#         self.SetCellValue(10, 13, "RMB")
+#         self.SetCellValue(10, 14, "RMB")
+#         self.SetCellValue(10, 15, "RMB")
+#         self.SetCellValue(10, 16, "RMB")
+#         self.SetCellValue(10, 17, "RMB")
+#         self.SetCellValue(10, 18, "RMB")
+#         self.SetCellValue(10, 19, "RMB")
+#         self.SetCellValue(10, 20, "RMB")
+#         self.SetCellValue(10, 21, "USD")
+#
+#         self.SetCellSize(0, 0, 1, 2)
+#         self.SetCellSize(1, 0, 1, 2)
+#         self.SetCellSize(2, 0, 1, 2)
+#         self.SetCellSize(3, 0, 1, 2)
+#         self.SetCellSize(7, 1, 1, 10)
+#         self.SetCellSize(8, 0, 1, 2)
+#         self.SetCellSize(8, 12, 1, 2)
+#         self.SetCellSize(8, 20, 2, 1)
+#         self.SetCellSize(9, 0, 2, 1)
+#         self.SetCellSize(9, 7, 2, 1)
+#         wallTotalAmount = 0.0
+#         wallTatalPriceUSD = 0.0
+#         for i, wallDict in enumerate(self.dataWall):
+#             print("wallDict=",wallDict)
+#             wallAmount = float(wallDict['数量'])
+#             wallTotalAmount += wallAmount
+#             self.SetCellValue(11 + i, 0, str(i + 1))
+#             self.SetCellValue(11 + i, 1, wallDict['产品名称'])
+#             self.SetCellValue(11 + i, 2, wallDict['产品型号'])
+#             self.SetCellValue(11 + i, 3, wallDict['产品表面材料'])
+#             self.SetCellValue(11 + i, 4, wallDict['产品长度'])
+#             self.SetCellValue(11 + i, 5, wallDict['产品宽度'])
+#             self.SetCellValue(11 + i, 6, wallDict['产品厚度'])
+#             self.SetCellValue(11 + i, 7, wallDict['单位'])
+#             self.SetCellValue(11 + i, 8, wallDict['数量'])
+#             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,wallDict)
+#             for item in self.allProductMeterialUnitPriceList:
+#                 if item["产品名称"] == wallDict['产品名称'] and item["产品型号"] == wallDict['产品型号'] \
+#                         and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
+#                     "产品宽度"] == wallDict['产品宽度']:
+#                     temp = item
+#                     break
+#             self.meterialFactorX = float(temp['X面材料系数'])
+#             self.meterialIdX = int(temp['X面材料id'])
+#             self.meterialFactorY = float(temp['Y面材料系数'])
+#             self.meterialIdY = int(temp['Y面材料id'])
+#             self.meterialFactorGlue = float(temp['胶水系数'])
+#             self.meterialIdGlue = int(temp['胶水id'])
+#             self.meterialFactorRockWool = float(temp['岩棉系数'])
+#             self.meterialIdRockWool = int(temp['岩棉id'])
+#             # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdX)
+#             temp2 = self.allMeterialUnitPriceList[self.meterialIdX]
+#             if temp2['单位'] == 'm2':
+#                 self.meterialUnitPriceX = float(temp['X面材料系数']) * float(temp2['价格'])
+#             else:
+#                 self.meterialUnitPriceX = float(temp['X面厚度']) * float(temp2['密度']) * float(temp['X面材料系数']) * float(
+#                     temp2['价格']) / 1000
+#             if self.meterialFactorY != None:
+#                 # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdY)
+#                 temp2 = self.allMeterialUnitPriceList[self.meterialIdY]
+#                 if temp2['单位'] == 'm2':
+#                     self.meterialUnitPriceY = float(temp['Y面材料系数']) * float(temp2['价格'])
+#                 else:
+#                     self.meterialUnitPriceY = float(temp['Y面厚度']) * float(temp2['密度']) * float(temp['Y面材料系数']) * float(
+#                         temp2['价格']) / 1000
+#             else:
+#                 self.meterialUnitPriceY = 0.0
+#             if self.meterialFactorY != 0:
+#                 # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdGlue)
+#                 temp2 = self.allMeterialUnitPriceList[self.meterialIdGlue]
+#                 self.meterialUnitPriceGlue = float(temp['胶水系数']) * float(temp2['价格']) / 1000000.
+#             else:
+#                 self.meterialUnitPriceGlue = 0.0
+#             # _, temp2 = GetMeterialUnitPriceByIdInDB(self.log, WHICHDB, '2022-07-14', self.meterialIdRockWool)
+#             temp2 = self.allMeterialUnitPriceList[self.meterialIdRockWool]
+#             self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 150 * float(temp['产品厚度']) * float(
+#                 temp['岩棉系数']) * float(temp2['价格']) / 1000000.
+#             meterialUnitPrice = self.meterialUnitPriceX + self.meterialUnitPriceY + self.meterialUnitPriceGlue + self.meterialUnitPriceRockWool
+#             self.SetCellValue(11 + i, 12, '%.2f' % meterialUnitPrice)
+#
+#             productLaborAmount = 0
+#             for dic in self.productLaborAmountList:
+#                 if wallDict['产品名称'] == dic['产品名称'] and wallDict['产品表面材料'] == dic['产品表面材料']:
+#                     productLaborAmount = float(dic['每平方所需工时'])
+#                     break
+#             productLaborUnitPrice = productLaborAmount * self.productLaborUnitPrice
+#             self.SetCellValue(11 + i, 13, '%.2f' % productLaborUnitPrice)
+#
+#             scrapUnitPrice = meterialUnitPrice * (self.scrapRate + 1)
+#             self.SetCellValue(11 + i, 14, '%.2f' % scrapUnitPrice)
+#
+#             overheadUnitPrice = (scrapUnitPrice + productLaborUnitPrice) * (1 + self.overheadRate)
+#             self.SetCellValue(11 + i, 15, '%.2f' % overheadUnitPrice)
+#
+#             profitUnitPrice = overheadUnitPrice * (1 + self.profitRate)
+#             self.SetCellValue(11 + i, 16, '%.2f' % profitUnitPrice)
+#
+#             marginNTUnitPrice = profitUnitPrice * (1 + self.marginNT)
+#             self.SetCellValue(11 + i, 17, '%.2f' % marginNTUnitPrice)
+#
+#             marginDKUnitPrice = marginNTUnitPrice * (1 + self.marginDK)
+#             self.SetCellValue(11 + i, 18, '%.2f' % marginDKUnitPrice)
+#
+#             agentUnitPrice = marginDKUnitPrice * (1 + self.agentRate)
+#             self.SetCellValue(11 + i, 19, '%.2f' % agentUnitPrice)
+#
+#             salesUnitPrice = agentUnitPrice
+#             self.SetCellValue(11 + i, 20, '%.2f' % salesUnitPrice)
+#
+#             salesUnitPriceUSD = salesUnitPrice / self.exchangeRate
+#             self.SetCellValue(11 + i, 21, '%.2f' % salesUnitPriceUSD)
+#             self.SetCellValue(11 + i, 9, '%.2f' % salesUnitPriceUSD)
+#
+#             salesPriceUSD = salesUnitPriceUSD * wallAmount
+#             self.SetCellValue(11 + i, 10, '%.2f' % salesPriceUSD)
+#             wallTatalPriceUSD += salesPriceUSD
+#
+#         self.SetCellValue(11 + len(self.dataWall), 8, '%.2f' % wallTotalAmount)
+#         self.SetCellValue(11 + len(self.dataWall), 10, '%.2f' % wallTatalPriceUSD)
+#
+#         ##########################################################################################
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 0, "2)TNF Ceiling Panel")
+#         self.SetCellSize(8 + 6 + len(self.dataWall), 0, 1, 2)
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 12, "Direct costs")
+#         self.SetCellSize(8 + 6 + len(self.dataWall), 12, 1, 2)
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 14, "Scrap rate")
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 15, "Over-head")
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 16, "Profile")
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 17, "Margin-NT")
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 18, "Margin-DK")
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 19, "Agent  rate")
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 20, "sales price")
+#         self.SetCellSize(8 + 6 + len(self.dataWall), 20, 2, 1)
+#         self.SetCellValue(8 + 6 + len(self.dataWall), 21, "Unit sales price")
+#
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 0, "Item")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 1, "Product")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 2, "Product")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 3, "Product")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 4, "Product")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 5, "Product")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 6, "Product")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 7, "Unit")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 8, "Total")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 9, "Unit Price")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 10, "Total Price")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 12, "Material")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 13, "Labor")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 14, "3.0%")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 15, "26.0%")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 16, "15.0%")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 17, "20.0%")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 18, "0.0%")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 19, "0.0%")
+#         self.SetCellValue(9 + 6 + len(self.dataWall), 21, "Inc. over head")
+#
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 1, "No.")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 2, "type")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 3, "surface")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 4, "height/length (mm)")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 5, "width (mm)")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 6, "thickness (mm)")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 8, "Quantity")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 9, "In USD")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 10, "In USD")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 12, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 13, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 14, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 15, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 16, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 17, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 18, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 19, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 20, "RMB")
+#         self.SetCellValue(10 + 6 + len(self.dataWall), 21, "USD")
+#
+#         ceilingTotalAmount = 0.0
+#         ceilingTatalPriceUSD = 0.0
+#         for i, ceilingDict in enumerate(self.dataCeiling):
+#             ceilingAmount = float(ceilingDict['数量'])
+#             ceilingTotalAmount += ceilingAmount
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 0, str(i + 1))
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 1, ceilingDict['产品名称'])
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 2, ceilingDict['产品型号'])
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 3, ceilingDict['产品表面材料'])
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 4, ceilingDict['产品长度'])
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 5, ceilingDict['产品宽度'])
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 6, ceilingDict['产品厚度'])
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 7, ceilingDict['单位'])
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 8, ceilingDict['数量'])
+#             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,ceilingDict)
+#             for item in self.allProductMeterialUnitPriceList:
+#                 if item["产品名称"] == ceilingDict['产品名称'] and item["产品型号"] == ceilingDict['产品型号'] \
+#                         and item["产品表面材料"] == ceilingDict['产品表面材料'] and item["产品长度"] == ceilingDict['产品长度'] and item[
+#                     "产品宽度"] == ceilingDict['产品宽度']:
+#                     temp = item
+#                     break
+#             self.meterialFactorX = float(temp['X面材料系数'])
+#             self.meterialIdX = int(temp['X面材料id'])
+#             if temp['Y面材料系数'] != None:
+#                 self.meterialFactorY = float(temp['Y面材料系数'])
+#             else:
+#                 self.meterialFactorY = 0.0
+#             self.meterialIdY = int(temp['Y面材料id'])
+#             self.meterialFactorGlue = float(temp['胶水系数'])
+#             self.meterialIdGlue = int(temp['胶水id'])
+#             self.meterialFactorRockWool = float(temp['岩棉系数'])
+#             self.meterialIdRockWool = int(temp['岩棉id'])
+#             # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdX)
+#             temp2 = self.allMeterialUnitPriceList[self.meterialIdX]
+#             if temp2['单位'] == 'm2':
+#                 self.meterialUnitPriceX = float(temp['X面材料系数']) * float(temp2['价格'])
+#             else:
+#                 self.meterialUnitPriceX = float(temp['X面厚度']) * float(temp2['密度']) * float(temp['X面材料系数']) * float(
+#                     temp2['价格']) / 1000
+#             if self.meterialFactorY != 0:
+#                 # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdY)
+#                 temp2 = self.allMeterialUnitPriceList[self.meterialIdY]
+#                 if temp2['单位'] == 'm2':
+#                     if temp['Y面材料系数'] != None:
+#                         self.meterialUnitPriceY = float(temp['Y面材料系数']) * float(temp2['价格'])
+#                     else:
+#                         self.meterialUnitPriceY = 0.0
+#                 else:
+#                     if temp['Y面厚度'] != None:
+#                         self.meterialUnitPriceY = float(temp['Y面厚度']) * float(temp2['密度']) * float(
+#                             temp['Y面材料系数']) * float(temp2['价格']) / 1000
+#                     else:
+#                         self.meterialUnitPriceY = 0.0
+#             else:
+#                 self.meterialUnitPriceY = 0.0
+#             if self.meterialFactorY != 0:
+#                 # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdGlue)
+#                 temp2 = self.allMeterialUnitPriceList[self.meterialIdGlue]
+#                 self.meterialUnitPriceGlue = float(temp['胶水系数']) * float(temp2['价格']) / 1000000.
+#             else:
+#                 self.meterialUnitPriceGlue = 0.0
+#             # _, temp2 = GetMeterialUnitPriceByIdInDB(self.log, WHICHDB, '2022-07-14', self.meterialIdRockWool)
+#             temp2 = self.allMeterialUnitPriceList[self.meterialIdRockWool]
+#             if ceilingDict['产品名称'] == 'TNF-C46':
+#                 self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 8. * float(ceilingDict['产品厚度']) * float(
+#                     temp['岩棉系数']) * float(temp2['价格']) / 100000.
+#             else:
+#                 self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 15. * float(
+#                     ceilingDict['产品厚度']) * float(temp['岩棉系数']) * float(temp2['价格']) / 100000.
+#
+#             meterialUnitPrice = self.meterialUnitPriceX + self.meterialUnitPriceY + self.meterialUnitPriceGlue + self.meterialUnitPriceRockWool
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 12, '%.2f' % meterialUnitPrice)
+#
+#             productLaborAmount = 0
+#             for dic in self.productLaborAmountList:
+#                 if ceilingDict['产品名称'] == dic['产品名称'] and ceilingDict['产品表面材料'] == dic['产品表面材料']:
+#                     productLaborAmount = float(dic['每平方所需工时'])
+#                     break
+#             productLaborUnitPrice = productLaborAmount * self.productLaborUnitPrice
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 13, '%.2f' % productLaborUnitPrice)
+#
+#             scrapUnitPrice = meterialUnitPrice * (self.scrapRate + 1)
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 14, '%.2f' % scrapUnitPrice)
+#
+#             overheadUnitPrice = (scrapUnitPrice + productLaborUnitPrice) * (1 + self.overheadRate)
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 15, '%.2f' % overheadUnitPrice)
+#
+#             profitUnitPrice = overheadUnitPrice * (1 + self.profitRate)
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 16, '%.2f' % profitUnitPrice)
+#
+#             marginNTUnitPrice = profitUnitPrice * (1 + self.marginNT)
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 17, '%.2f' % marginNTUnitPrice)
+#
+#             marginDKUnitPrice = marginNTUnitPrice * (1 + self.marginDK)
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 18, '%.2f' % marginDKUnitPrice)
+#
+#             agentUnitPrice = marginDKUnitPrice * (1 + self.agentRate)
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 19, '%.2f' % agentUnitPrice)
+#
+#             salesUnitPrice = agentUnitPrice
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 20, '%.2f' % salesUnitPrice)
+#
+#             salesUnitPriceUSD = salesUnitPrice / self.exchangeRate
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 21, '%.2f' % salesUnitPriceUSD)
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 9, '%.2f' % salesUnitPriceUSD)
+#
+#             salesPriceUSD = salesUnitPriceUSD * ceilingAmount
+#             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 10, '%.2f' % salesPriceUSD)
+#             ceilingTatalPriceUSD += salesPriceUSD
+#
+#         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 8, '%.2f' % ceilingTotalAmount)
+#         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 10, '%.2f' % ceilingTatalPriceUSD)
+#
+#         # for i, title in enumerate(self.master.colLabelValueList):
+#         #     self.SetColLabelValue(i,title)
+#         # for i, width in enumerate(self.master.colWidthList):
+#         #     self.SetColSize(i, width)
+#         # for i, order in enumerate(self.master.dataArray[:,:7]):
+#         #     self.SetRowSize(i, 25)
+#         #     for j, item in enumerate(order):
+#         #         self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
+#         #         self.SetCellValue(i, j, str(item))
+#         #         if int(order[0])<2:
+#         #             self.SetCellBackgroundColour(i,j,wx.RED)
+#         #         elif int(order[0])<5:
+#         #             self.SetCellBackgroundColour(i,j,wx.YELLOW)
+#
+#     def OnIdle(self, evt):
+#         if self.moveTo is not None:
+#             self.SetGridCursor(self.moveTo[0], self.moveTo[1])
+#             self.moveTo = None
+#
+#         evt.Skip()
 
 
 class QuotationSheetViewDialog(wx.Dialog):
