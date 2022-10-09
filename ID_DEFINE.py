@@ -20,9 +20,12 @@ import wx
 # quotationSheetDir = 'D:\\IPMS\\dist\\报价单\\'
 dirName = os.path.dirname(os.path.abspath(__file__))
 bitmapDir = "D:/IPMS/dist/bitmaps"
-scheduleDir = os.path.join(dirName, '工单/')
-bluePrintDir = os.path.join(dirName, 'Stena 生产图纸/')
-quotationSheetDir = os.path.join(dirName, '报价单/')
+# scheduleDir = os.path.join(dirName, '工单/')
+# bluePrintDir = os.path.join(dirName, 'Stena 生产图纸/')
+# quotationSheetDir = os.path.join(dirName, '报价单/')
+scheduleDir = "D:/IPMS/dist/工单/"
+bluePrintDir = "D:/IPMS/dist/Stena 生产图纸/"
+quotationSheetDir = "D:/IPMS/dist/报价单/"
 # sys.path.append(os.path.split(dirName)[0])
 
 WHICHDB = 3

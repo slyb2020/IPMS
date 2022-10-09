@@ -148,11 +148,11 @@ def MakeMaterialScheduleTemplate(orderID,subOrderID,filename,horizontalData,cutt
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司原材料出库单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='M'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Plate Outbound Delivery Schedule")
@@ -259,11 +259,11 @@ def MakeHorizontalCutScheduleTemplate(orderID, subOrderID, filename, record=[],P
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司横剪任务单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='H'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/empBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Plate Horizontal Shear Schedule")
@@ -413,11 +413,11 @@ def MakeCutScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUMBER=
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司剪板机任务单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='C'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Plate Shear Schedule")
@@ -522,11 +522,11 @@ def MakeBendingScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUM
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司折弯任务单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='B'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Bending Machine Schedule")
@@ -572,11 +572,11 @@ def MakeS2FormingScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWN
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司2S成型任务单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='S'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd S2 Forming Schedule")
@@ -622,11 +622,11 @@ def MakeCeilingFormingScheduleTemplate(orderID,subOrderID,filename,record=[],PAG
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司天花板成型任务单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='E'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Ceiling Forming Schedule")
@@ -672,11 +672,11 @@ def MakePRPressScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUM
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司PR热压任务单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='P'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd PR Schedule")
@@ -722,11 +722,11 @@ def MakeVacuumScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUMB
     for i,page in enumerate(pages):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司特制品任务单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='V'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Vacuum Schedule")
@@ -756,11 +756,11 @@ def MakeGlueNoSheetTemplate(orderID,subOrderID,filename,record=[]):
         page += 1
         myCanvas.setFont("SimSun", 16)
         myCanvas.drawCentredString(width/2,735, text="伊纳克赛(南通)精致内饰材料有限公司胶水单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715,
                             width=40, height=40)
         tempCode='G'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Glue Sheet")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(205, 31, height, mm))
@@ -809,11 +809,11 @@ def MakeGlueNoSheetTemplate(orderID,subOrderID,filename,record=[]):
 
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,735-offset, text="伊纳克赛(南通)精致内饰材料有限公司胶水单")
-        myCanvas.drawImage(bitmapDir+"/logo.jpg", 30, 715-offset,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 715-offset,
                             width=40, height=40)
         tempCode='G'+'%05d'%int(orderID)+'-'+'%03d'%int(subOrderID)+'P%03d'%(i+1)
-        BarCodeGenerator(tempCode,dirName+"/tempBarcode.png")
-        myCanvas.drawImage(dirName+"/tempBarcode.png", width-100, height-40,
+        BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
         myCanvas.setFont("SimSun", 16)
         myCanvas.drawCentredString(width/2,715-offset, text="Inexa (NanTong) Interiors Co.Ltd Glue Sheet")
@@ -1180,8 +1180,8 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
     for pageNum in range(pageWall):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,550, text="伊纳克赛(南通)精致内饰材料有限公司产品报价单")
-        log.WriteText("here2"+bitmapDir+"logo.jpg")
-        myCanvas.drawImage(bitmapDir+"logo.jpg", 30, 530,
+        # log.WriteText("here2"+bitmapDir+"logo.jpg")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 530,
                             width=40, height=40)
         # tempCode = 'O' + '%05d' % int(87) + '-' + '%s' % str(datetime.datetime.today())
         # tempCode = 'O' + '%05d' % int(87) + '-' + '%s' % "2022-07-28"
@@ -1217,7 +1217,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
     for pageNum in range(pageCeiling):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,550, text="伊纳克赛(南通)精致内饰材料有限公司产品报价单")
-        myCanvas.drawImage(bitmapDir+"logo.jpg", 30, 530,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 530,
                             width=40, height=40)
         # tempCode = 'O' + '%05d' % int(87) + '-' + '%s' % str(datetime.datetime.today())
         # # BarCodeGenerator(tempCode,dirName+"tempBarcode.png",log)
@@ -1256,7 +1256,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
     if leftRows<5:
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,550, text="伊纳克赛(南通)精致内饰材料有限公司产品报价单")
-        myCanvas.drawImage(bitmapDir+"logo.jpg", 30, 530,
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 530,
                             width=40, height=40)
         # tempCode = 'O' + '%05d' % int(87) + '-' + '%s' % str(datetime.datetime.today())
         # # BarCodeGenerator(tempCode,dirName+"tempBarcode.png",log)

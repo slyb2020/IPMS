@@ -2333,3 +2333,41 @@ def GetTechDrawingDataByID(log,whichDB,id):
     image = base64.b64decode(temp)  # 解码
     db.close()
     return image
+
+def GetPriceDateListFromDB(log,whichDB):
+    try:
+        db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                             passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+    except:
+        wx.MessageBox("无法连接%s!" % packageDBName[whichDB], "错误信息")
+        if log:
+            log.WriteText("无法连接%s!" % packageDBName[whichDB], colour=wx.RED)
+        return -1, []
+    cursor = db.cursor()
+    sql = "select `定价日期`  from `产品报价表单`"
+    cursor.execute(sql)
+    record = cursor.fetchall()
+    temp =[]
+    for i in record:
+        temp.append(i[0])
+    db.close()
+    record = list(set(temp))
+    return record
+
+def GetPriceDicFromDB(log, whichDB, date):
+    try:
+        db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                             passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+    except:
+        wx.MessageBox("无法连接%s!" % packageDBName[whichDB], "错误信息")
+        if log:
+            log.WriteText("无法连接%s!" % packageDBName[whichDB], colour=wx.RED)
+        return -1, []
+    cursor = db.cursor()
+    sql="select * from `产品报价表单` where `定价日期`='%s'"%(date)
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    column = [index[0] for index in cursor.description]
+    data_dict = [dict(zip(column,row)) for row in result]
+    db.close()
+    return data_dict

@@ -16,7 +16,8 @@ from DBOperation import GetAllOrderAllInfo, GetAllOrderList, GetOrderDetailRecor
     UpdatePurchchaseCheckStateByID, UpdateFinancingCheckStateByID, UpdateManagerCheckStateByID, UpdateOrderSquareByID, \
     GetProductMeterialUnitPriceInDB, GetMeterialUnitPriceByIdInDB, GetProductLaborUnitPriceInDB, \
     GetAllProductMeterialUnitPriceInDB, GetAllMeterialUnitPriceByIdInDB, GetExchagneRateInDB, \
-    UpdateOrderOperatorCheckStateByID, GetQuotationDateAndExchangeDateFromDB, GetStaffInfo, GetDraftOrderDetail
+    UpdateOrderOperatorCheckStateByID, GetQuotationDateAndExchangeDateFromDB, GetStaffInfo, GetDraftOrderDetail, \
+    GetPriceDateListFromDB, GetPriceDicFromDB
 
 from DateTimeConvert import *
 from ID_DEFINE import *
@@ -1044,8 +1045,19 @@ class DraftOrderPanel(wx.Panel):
         if self.techCheckState != "Y":
             wx.MessageBox("订单没有完成技术审核，无法进行订单部审核，请稍后再试！", "信息提示")
             return
+
+        busy = PBI.PyBusyInfo("正在从云端数据库读取订单数据，请稍候！", parent=None, title="系统忙提示",
+                              icon=images.Smiles.GetBitmap())
+
+        wx.Yield()
+
+        self.priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
+        self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
+
+
         dlg = QuotationSheetDialog(self, self.log, self.ID, "下单员", name)
         dlg.CenterOnScreen()
+        del busy
         dlg.ShowModal()
         dlg.Destroy()
         self.master.dataList = []
@@ -1080,8 +1092,16 @@ class DraftOrderPanel(wx.Panel):
         if self.techCheckState != "Y":
             wx.MessageBox("订单没有完成技术审核，无法进行经理审核，请稍后再试！", "信息提示")
             return
+        busy = PBI.PyBusyInfo("正在从云端数据库读取订单数据，请稍候！", parent=None, title="系统忙提示",
+                              icon=images.Smiles.GetBitmap())
+
+        wx.Yield()
+
+        self.priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
+        self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
         dlg = QuotationSheetDialog(self, self.log, self.ID, "经理", name)
         dlg.CenterOnScreen()
+        del busy
         dlg.ShowModal()
         dlg.Destroy()
         self.master.dataList = []
@@ -1998,6 +2018,7 @@ class QuotationSheetDialog(wx.Dialog):
         self.log = log
         self.id = id
         self.character = character
+        self.priceDataDic = self.parent.priceDataDic
         self.name = name
         self.quotationRange = "国内报价"
         quotationDate, exchangeDate = GetQuotationDateAndExchangeDateFromDB(self.log, WHICHDB, self.id)
@@ -2108,6 +2129,7 @@ class QuotationSheetDialog(wx.Dialog):
         hhbox.Add(wx.StaticLine(self.controlPanel, style=wx.VERTICAL), 0, wx.EXPAND)
         hhbox.Add((10, -1))
         self.quotationRangeCtrl = wx.ComboBox(self.controlPanel,value=self.quotationRange,size=(135, -1),choices=['国内报价','国外报价'])
+        self.quotationRangeCtrl.Bind(wx.EVT_COMBOBOX,self.OnQuotationRangeChanged)
         hhbox.Add(self.quotationRangeCtrl, 0, wx.TOP, 10)
         vbox.Add(hhbox, 1, wx.EXPAND)
         self.controlPanel.SetSizer(vbox)
@@ -2144,12 +2166,18 @@ class QuotationSheetDialog(wx.Dialog):
             del busy
         event.Skip()
 
+    def OnQuotationRangeChanged(self, event):
+        if self.quotationRange!=self.quotationRangeCtrl.GetValue():
+            self.ReCreateGrid()
+        event.Skip()
+
     def ReCreateGrid(self):
         self.gridPanel.Freeze()
         self.gridPanel.DestroyChildren()
+        self.quotationRange = self.quotationRangeCtrl.GetValue()
         hbox = wx.BoxSizer()
-        self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.log, self.id, self.quotationDate,
-                                                     self.exchangeDate)
+        self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.log, self.id, self.priceDataDic, self.quotationDate,
+                                                     self.exchangeDate,self.quotationRange)
         hbox.Add(self.quotationSheetGrid, 1, wx.EXPAND)
         self.gridPanel.SetSizer(hbox)
         self.gridPanel.Layout()
@@ -2157,13 +2185,15 @@ class QuotationSheetDialog(wx.Dialog):
 
 
 class QuotationSheetGrid(gridlib.Grid):
-    def __init__(self, parent, log, id, quotationDate, exchangeRateDate):
+    def __init__(self, parent, log, id, priceDataDic, quotationDate, exchangeRateDate,quotationRange):
         gridlib.Grid.__init__(self, parent, -1)
         self.id = id
         self.log = log
         self.moveTo = None
+        self.priceDataDic = priceDataDic
         self.quotationDate = quotationDate
         self.exchangeRateDate = exchangeRateDate
+        self.quotationRange = quotationRange
         self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.dataWall = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "WALL")
         self.dataCeiling = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "CEILING")
@@ -2376,12 +2406,24 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11 + i, 6, wallDict['单位'])
             self.SetCellValue(11 + i, 7, wallDict['数量'])
             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,wallDict)
-            for item in self.allProductMeterialUnitPriceList:
+            for item in self.priceDataDic:
                 if item["产品名称"] == wallDict['产品名称'] \
                         and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
-                    "产品宽度"] == wallDict['产品宽度']:
-                    temp = item
+                    "产品宽度"] == wallDict['产品宽度'] and item["报价类别"] == self.quotationRange:
+                    self.SetCellValue(11+i,12,item['5000平方米'])
+                    self.SetCellValue(11+i,13,item['8000平方米'])
+                    self.SetCellValue(11+i,14,item['10000平方米'])
+                    self.SetCellValue(11+i,15,item['20000平方米'])
+                    self.SetCellValue(11+i,16,item['30000平方米'])
+                    self.SetCellValue(11+i,17,item['40000平方米'])
                     break
+            # for item in self.allProductMeterialUnitPriceList:
+            #     if item["产品名称"] == wallDict['产品名称'] \
+            #             and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
+            #         "产品宽度"] == wallDict['产品宽度']:
+            #         temp = item
+            #         break
+
             # temp2 = self.allMeterialUnitPriceList[self.meterialIdX]
             # if temp2['单位'] == 'm2':
             #     self.meterialUnitPriceX = float(temp['X面材料系数']) * float(temp2['价格'])

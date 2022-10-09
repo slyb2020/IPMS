@@ -52,6 +52,101 @@ def GetSheetDataFromExcelFileName(fileName,sheetName):
     data = np.array(data)
     return data
 
+class Excel2DB():
+    def __init__(self, excelFileName, tableName):
+        self.excelFileName = excelFileName
+        self.tableName = tableName
+        self.sheetNameList = self.GetSheetNameListFromExcelFileName()
+        self.data = self.GetSheetDataFromExcelFileName(self.sheetNameList[0])[1:]
+        # data=[]
+        # for i in self.data:
+        #     temp=[]
+        #     for j in i:
+        #         temp.append(str(j))
+        #     data.append(temp)
+        # self.data=data
+        print("data:",self.data)
+        # self.CreatePriceTable()
+        self.CreateStaffTable()
+    def GetSheetNameListFromExcelFileName(self):
+        wb = openpyxl.load_workbook(self.excelFileName)
+        sheets = wb.worksheets
+        result = []
+        for sheet in sheets:
+            result.append(sheet.title)
+        return result
+
+    def GetSheetDataFromExcelFileName(self, sheetName):
+        wb = openpyxl.load_workbook(self.excelFileName)
+        ws = wb.get_sheet_by_name(sheetName)
+        data = []
+        for row in ws.values:
+            temp = []
+            for value in row:
+                temp.append(value)
+            data.append(temp)
+        data = np.array(data)
+        return data
+
+    def CreatePriceTable(self):
+        import pymysql as MySQLdb
+        print(dbHostName[whichDB],dbUserName[whichDB],dbPassword[whichDB],dbName[whichDB])
+        try:
+            db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                                 passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+        except:
+            print("无法连接%s!" % dbName[whichDB])
+            if log:
+                log.WriteText("无法连接%s!" % dbName[whichDB], colour=wx.RED)
+        cursor = db.cursor()
+        for data in self.data:
+            sql = "INSERT INTO `%s` (`产品类别`,`产品名称`,`产品表面材料`,`产品长度`,`产品宽度`,`产品厚度`,`单位`,`报价类别`,`5000平方米`,`8000平方米`,`10000平方米`,`20000平方米`,`30000平方米`,`40000平方米`,`定价日期`)" \
+                  "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','2022-10-09')" \
+                  % (self.tableName, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14])
+            # sql = "INSERT INTO `%s` (`产品名称`,`产品型号`,`产品表面材料`,`产品长度`,`产品宽度`,`产品厚度`,`单位`,`SQM Per PIece`,`X面厚度`,`Y面厚度`)" \
+            #       "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" \
+            #       % (self.tableName, data[0], data[1], data[2], str(data[3]), str(data[4]), str(data[5]), data[6], str(data[7]),
+            #          str(data[8]), str(data[9]))
+            try:
+                cursor.execute(sql)
+                db.commit()  # 必须有，没有的话插入语句不会执行
+            except:
+                db.rollback()
+                print("error")
+        db.close()
+
+    def CreateStaffTable(self):
+        import pymysql as MySQLdb
+        print(dbHostName[whichDB],dbUserName[whichDB],dbPassword[whichDB],dbName[whichDB])
+        try:
+            db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                                 passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+        except:
+            print("无法连接%s!" % dbName[whichDB])
+            if log:
+                log.WriteText("无法连接%s!" % dbName[whichDB], colour=wx.RED)
+        cursor = db.cursor()
+        for data in self.data:
+            # sql = "INSERT INTO `%s` (`产品类别`,`产品名称`,`产品表面材料`,`产品长度`,`产品宽度`,`产品厚度`,`单位`,`报价类别`,`5000平方米`,`8000平方米`,`10000平方米`,`20000平方米`,`30000平方米`,`40000平方米`,`定价日期`)" \
+            #       "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','2022-10-09')" \
+            #       % (self.tableName, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14])
+            sql = "INSERT INTO `%s` (`处`,`科`,`工位名`,`职别名`,`姓名`,`入职时间`,`身份证号码`,`电话`,`工作状态`)" \
+                  "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" \
+                  % (self.tableName, str(data[1]), str(data[2]), str(data[3]), str(data[4]), str(data[5]), str(data[6]), str(data[7]), str(data[8]), str(data[9]))
+            # sql = "INSERT INTO `%s` (`产品名称`,`产品型号`,`产品表面材料`,`产品长度`,`产品宽度`,`产品厚度`,`单位`,`SQM Per PIece`,`X面厚度`,`Y面厚度`)" \
+            #       "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" \
+            #       % (self.tableName, data[0], data[1], data[2], str(data[3]), str(data[4]), str(data[5]), data[6], str(data[7]),
+            #          str(data[8]), str(data[9]))
+            try:
+                cursor.execute(sql)
+                db.commit()  # 必须有，没有的话插入语句不会执行
+            except:
+                db.rollback()
+                print("error")
+        db.close()
+
+
+
 class ExcelGridShowPanel(gridlib.Grid):  ##, mixins.GridAutoEditMixin):
     def __init__(self, parent, fileName,sheetName):
         gridlib.Grid.__init__(self, parent, -1)
@@ -347,6 +442,8 @@ def MakeProductLaborUnitPriceDB():
 
 from ID_DEFINE import *
 if __name__ == "__main__":
-    whichDB = 2
+    whichDB = 3
     log = None
-    MakeProductLaborUnitPriceDB()
+    # MakeProductLaborUnitPriceDB()
+    # excel2db = Excel2DB(excelFileName="D:\\BaiduNetdiskWorkspace\\2022年工作\\Luka\\系统 2022.08.17\\产品报价表单.xlsx",tableName='产品报价表单')
+    excel2db = Excel2DB(excelFileName="D:\\BaiduNetdiskWorkspace\\2022年工作\\Luka\\系统 2022.08.17\\公司人员信息.xlsx",tableName='info_staff')
