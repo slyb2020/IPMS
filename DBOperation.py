@@ -36,7 +36,7 @@ def GetAllPasswords(log, whichDB):
             log.WriteText("无法连接%s!" % dbName[whichDB], colour=wx.RED)
         return -1, []
     cursor = db.cursor()
-    sql = """SELECT `密码`,`处`,`科`,`工位名`,`姓名`,`员工编号`,`工作状态` from `info_staff` """
+    sql = """SELECT `密码`,`处`,`科`,`职别名`,`姓名`,`员工编号`,`工作状态` from `info_staff` """
     cursor.execute(sql)
     temp = cursor.fetchall()  # 获得压条信息
     PSW = []
@@ -1817,7 +1817,6 @@ def InsertPanelDetailIntoPackageDB(log, whichDB, orderTabelName, orderDataList):
     db.close()
 
 def InsertNewOrder(log,whichDB,dic,operatorID):
-    print("dic=",dic)
     result = 1
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
@@ -2101,19 +2100,20 @@ def UpdateDraftCheckInfoByID(log, whichDB, id, dicList):
     cursor.execute(sql)
     sql = """CREATE TABLE `%s` (
             `Index` INT(11) NOT NULL AUTO_INCREMENT,
-            `类别` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `产品名称` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `产品型号` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-            `产品表面材料` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `产品长度` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-            `产品宽度` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-            `产品厚度` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `单位` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `数量` VARCHAR(50) NOT NULL COLLATE 'utf8_general_ci',
-            `单价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-            `总价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-            `潮湿` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-            `加强` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+            `类别` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+            `产品名称` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+            `产品型号` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+            `产品表面材料` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+            `产品长度` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+            `产品宽度` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+            `产品厚度` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+            `单位` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+            `数量` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+            `单价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+            `总价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+            `潮湿` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+            `加强` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+            `实际报价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
             `产品描述` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
             PRIMARY KEY (`Index`) USING BTREE
             )
@@ -2248,6 +2248,7 @@ def GetDraftComponentInfoByID(log, whichDB, id,type):
                 `总价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
                 `潮湿` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
                 `加强` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+                `实际报价` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
                 `产品描述` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
                 PRIMARY KEY (`Index`) USING BTREE
                 )

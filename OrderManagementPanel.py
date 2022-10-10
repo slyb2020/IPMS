@@ -408,7 +408,7 @@ class OrderManagementPanel(wx.Panel):
         self.orderEditPanel.DestroyChildren()
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.draftOrderEditPanel = DraftOrderPanel(self.orderEditPanel, self, self.log, size=(600, 600), mode="EDIT",
-                                                   ID=self.data[1], character="下单员")
+                                                   ID=self.data[1], character="订单管理员")
         vbox.Add(self.draftOrderEditPanel, 1, wx.EXPAND)
         # line = wx.StaticLine(self.orderEditPanel, -1, size=(30, -1), style=wx.LI_HORIZONTAL)
         # sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
@@ -472,7 +472,7 @@ class OrderManagementPanel(wx.Panel):
         self.data = self.dataArray[row]
         if self.type == "草稿":
             self.ReCreateRightPanel()
-            if self.character == "下单员":
+            if self.character in ["订单管理员","项目经理"]:
                 self.ReCreateOrderEditPanel()
             if self.character in ["技术员","技术主管","技术部长"]:
                 self.ReCreateTechCheckPanel()
@@ -572,7 +572,7 @@ class OrderManagementPanel(wx.Panel):
             self.orderDetailPanel.SetSizer(hbox)
             self.orderDetailPanel.Layout()
         elif self.type == "草稿":
-            if self.master.operatorCharacter == "下单员":
+            if self.master.operatorCharacter in ["项目经理",'订单管理员']:
                 self.orderEditPanel = wx.Panel(self.notebook, size=(260, -1))
                 self.notebook.AddPage(self.orderEditPanel, "订单部审核")
                 self.ReCreateOrderEditPanel()
@@ -832,7 +832,7 @@ class DraftOrderPanel(wx.Panel):
             pg.SetPropertyAttribute("1.投标日期", wxpg.PG_DATE_PICKER_STYLE,
                                     wx.adv.DP_DROPDOWN | wx.adv.DP_SHOWCENTURY)
             topsizer.Add(pg, 1, wx.EXPAND)
-            if self.character == "下单员":
+            if self.character in ["项目经理",'订单管理员']:
                 if self.ID != None:
                     rowsizer = wx.BoxSizer(wx.HORIZONTAL)
                     but = wx.Button(panel, -1, "保存修改", size=(-1, 35))
@@ -1055,7 +1055,7 @@ class DraftOrderPanel(wx.Panel):
         self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
 
 
-        dlg = QuotationSheetDialog(self, self.log, self.ID, "下单员", name)
+        dlg = QuotationSheetDialog(self, self.log, self.ID, "订单管理员", name)
         dlg.CenterOnScreen()
         del busy
         dlg.ShowModal()
@@ -1518,7 +1518,10 @@ class TechCheckDialog(wx.Dialog):
             if self.wallPanelCheckGrid.table.GetValue(i, 6):
                 square += float(self.wallPanelCheckGrid.table.GetValue(i, 6))
             for j in range(colNum):
-                temp.append(self.wallPanelCheckGrid.table.GetValue(i, j))
+                res = self.wallPanelCheckGrid.table.GetValue(i, j)
+                if j in [7,8]:#这里的7，8两列分别对应潮湿和加强的两列数据
+                    res = 'Y' if res else 'N'
+                temp.append(res)
             data.append(temp)
         self.wallDataDicList = self.MakeDicListData(data, "WALL")
         for row, dics in enumerate(self.wallDataDicList):
@@ -1692,7 +1695,7 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
 
         if self.type == 'WALL':
             self.dataTypes = [
-                gridlib.GRID_VALUE_CHOICE + ':TNF-4SF,TNF-4SA,TNF-4SG,TNF-4SD,TNF-3SF,TNF-3SA,TNF-3SG,TNF-3SD,TNF-2SF,TNF-2SA,TNF-2SG,TNF-2SD',
+                gridlib.GRID_VALUE_CHOICE + ':TNF-4SF,TNF-4SA,TNF-3SF,TNF-3SA,TNF-2SF,TNF-2SA,TNF-2SG,TNF-2SD',
                 # gridlib.GRID_VALUE_CHOICE + ':B15 Lining,B15 HNR,B15 Partition',
                 gridlib.GRID_VALUE_CHOICE + ':CP/G,GP/G,S.S/G,S.S/S.S',
                 gridlib.GRID_VALUE_CHOICE + ':≤2500',
@@ -1862,7 +1865,7 @@ class CreateNewOrderDialog(wx.Dialog):
         self.Create(parent, -1, "新建订单对话框", pos, size, style)
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.propertyPanel = DraftOrderPanel(self, self.parent.work_zone_Panel.orderManagementPanel, self.log,
-                                             size=(600, 600), character="下单员")
+                                             size=(600, 600), character="订单管理员")
         sizer.Add(self.propertyPanel, 1, wx.EXPAND)
         line = wx.StaticLine(self, -1, size=(30, -1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
@@ -2033,7 +2036,7 @@ class QuotationSheetDialog(wx.Dialog):
             exchangeDate = exchangeDate.split('-')
             self.exchangeDate = datetime.date(int(exchangeDate[0]), int(exchangeDate[1]), int(exchangeDate[2]))
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
-        if self.character == '下单员':
+        if self.character in ["项目经理",'订单管理员']:
             title = "订单部审核对话框"
         elif self.character == '经理':
             title = "经理审核对话框"
@@ -2050,13 +2053,13 @@ class QuotationSheetDialog(wx.Dialog):
         # bitmap1 = wx.Bitmap("D:/IPMS/dist/bitmaps/ok3.png", wx.BITMAP_TYPE_PNG)
         # bitmap2 = wx.Bitmap("D:/IPMS/dist/bitmaps/cancel1.png", wx.BITMAP_TYPE_PNG)
         # bitmap3 = wx.Bitmap("D:/IPMS/dist/bitmaps/33.png", wx.BITMAP_TYPE_PNG)
-        if self.character == '下单员' and self.name == "生成报价单":
+        if self.character in ["项目经理",'订单管理员'] and self.name == "生成报价单":
             createQuotationSheetBTN = wx.Button(self, -1, "生成报价单", size=(200, 50))
             # createQuotationSheetBTN.SetBitmap(bitmap3, wx.LEFT)
             createQuotationSheetBTN.Bind(wx.EVT_BUTTON, self.OnCreateQuotationSheetBTN)
             btnsizer.Add((40, -1), 0)
             btnsizer.Add(createQuotationSheetBTN, 0)
-        if self.character == '下单员':
+        if self.character in ["项目经理",'订单管理员']:
             label = "完成订单部审核并退出"
         else:
             label = "完成经理审核并退出"
@@ -2097,7 +2100,7 @@ class QuotationSheetDialog(wx.Dialog):
         self.Close()
 
     def OnSaveExitBTN(self, event):
-        if self.character == "下单员":
+        if self.character in ["项目经理",'订单管理员']:
             UpdateOrderOperatorCheckStateByID(self.log, WHICHDB, self.id, 'Y', str(self.quotationDate),
                                               str(self.exchangeDate))
         else:
@@ -2200,6 +2203,7 @@ class QuotationSheetGrid(gridlib.Grid):
         self.wallUnitPrice = [0] * len(self.dataWall)
         self.wallTotalPrice = [0] * len(self.dataWall)
         self.exchangeRate = 6.66
+        self.wallRowNumList=[]
         for i, dic in enumerate(self.dataWall):
             if dic['单价'] != None:
                 self.wallUnitPrice[i] = float(dic['单价'])
@@ -2218,7 +2222,7 @@ class QuotationSheetGrid(gridlib.Grid):
                 self.ceilingTotalPrice[i] = float(dic['总价'])
         self.Freeze()
         self.CreateGrid(23 + len(self.dataWall) + len(self.dataCeiling), 22)  # , gridlib.Grid.SelectRows)
-        self.EnableEditing(False)
+        self.EnableEditing(True)
         self.SetRowLabelSize(50)
         self.SetColLabelSize(25)
         self.SetColSize(0, 50)
@@ -2228,8 +2232,12 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetColSize(5, 100)
         self.SetColSize(6, 40)
         self.SetColSize(7, 100)
-        self.SetColSize(11, 35)
+        self.SetColSize(8, 100)
+        self.SetColSize(9, 100)
+        self.SetColSize(10, 100)
+        self.SetColSize(11, 100)
         self.SetColSize(12, 100)
+        self.SetColSize(13, 40)
         self.SetColSize(14, 105)
         self.SetColSize(21, 105)
         for i in range(23 + len(self.dataWall) + len(self.dataCeiling)):
@@ -2257,6 +2265,35 @@ class QuotationSheetGrid(gridlib.Grid):
 
         self.ReCreate()
         self.Thaw()
+        self.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.OnCellChanged)
+
+
+    def OnCellChanged(self, evt):
+        col = evt.GetCol()
+        row = evt.GetRow()
+        if row in self.wallRowNumList:
+            price = self.GetCellValue(row,col)
+            try:
+                price = int(price)
+            except:
+                price=0
+                self.SetCellValue(row,col,'')
+            error=True
+            for i in range(6):
+                temp = self.GetCellValue(row,14+i)
+                temp = temp.split('-')
+                left = int(temp[0])
+                right = int(temp[1])
+                if price>=left and price<=right:
+                    error=False
+                    break
+            if error:
+                self.SetCellBackgroundColour(row,col,wx.Colour(200,100,0))
+            else:
+                self.SetCellBackgroundColour(row,col,wx.WHITE)
+        else:
+            self.SetCellValue(row,col,"")
+        evt.Skip()
 
     def GetWallData(self):
         dataWall = []
@@ -2277,58 +2314,66 @@ class QuotationSheetGrid(gridlib.Grid):
         return dataCeiling
 
     def ReCreate(self):
+        attr = gridlib.GridCellAttr()
+        # attr.SetFont(font)
+        # attr.SetBackgroundColour(wx.LIGHT_GREY)
+        attr.SetReadOnly(True)
+        attr.SetAlignment(wx.CENTER, -1)
+        for i in range(20):
+            self.SetColAttr(i, attr)
+        # attr.IncRef()
         _, self.allProductMeterialUnitPriceList = GetAllProductMeterialUnitPriceInDB(self.log, WHICHDB)
         quotationDate = str(self.quotationDate)
         _, self.allMeterialUnitPriceList = GetAllMeterialUnitPriceByIdInDB(self.log, WHICHDB, quotationDate)
         self.ClearGrid()
         self.SetCellValue(0, 0, "INEXA TNF")
-        self.SetCellValue(0, 12, "Currency rate")
-        self.SetCellValue(0, 13, "%.2f" % self.exchangeRate)
-        self.SetCellValue(0, 14, "USD-CNY")
-        self.SetCellValue(0, 15, str(self.exchangeRateDate))
+        self.SetCellValue(0, 12+2, "Currency rate")
+        self.SetCellValue(0, 13+2, "%.2f" % self.exchangeRate)
+        self.SetCellValue(0, 14+2, "USD-CNY")
+        self.SetCellValue(0, 15+2, str(self.exchangeRateDate))
 
         self.SetCellValue(1, 0, "Date: ")
         self.SetCellValue(1, 2, quotationDate)
-        self.SetCellValue(1, 12, "OverHead")
-        self.SetCellValue(1, 13, "26%")
-        self.SetCellValue(1, 14, "Over-head by NT	")
-        self.SetCellSize(1, 14, 1, 2)
+        self.SetCellValue(1, 12+2, "OverHead")
+        self.SetCellValue(1, 13+2, "26%")
+        self.SetCellValue(1, 14+2, "Over-head by NT	")
+        self.SetCellSize(1, 14+2, 1, 2)
 
         self.SetCellValue(2, 0, "Project No.:")
         self.SetCellValue(2, 2, "Senta 123")
-        self.SetCellValue(2, 12, "crap rate")
-        self.SetCellValue(2, 13, "3%")
-        self.SetCellValue(2, 14, "All")
-        self.SetCellSize(2, 14, 1, 2)
+        self.SetCellValue(2, 12+2, "crap rate")
+        self.SetCellValue(2, 13+2, "3%")
+        self.SetCellValue(2, 14+2, "All")
+        self.SetCellSize(2, 14+2, 1, 2)
 
         self.SetCellValue(3, 0, "Inexa Quotation No.: ")
         self.SetCellValue(3, 2, "Senta 123")
-        self.SetCellValue(3, 12, "Profile")
-        self.SetCellValue(3, 13, "15%")
-        self.SetCellValue(3, 14, "All")
-        self.SetCellSize(3, 14, 1, 2)
+        self.SetCellValue(3, 12+2, "Profile")
+        self.SetCellValue(3, 13+2, "15%")
+        self.SetCellValue(3, 14+2, "All")
+        self.SetCellSize(3, 14+2, 1, 2)
 
-        self.SetCellValue(4, 12, "CM for NT")
-        self.SetCellValue(4, 13, "20%")
-        self.SetCellValue(4, 14, "Proposed by NT")
-        self.SetCellSize(4, 14, 1, 2)
+        self.SetCellValue(4, 12+2, "CM for NT")
+        self.SetCellValue(4, 13+2, "20%")
+        self.SetCellValue(4, 14+2, "Proposed by NT")
+        self.SetCellSize(4, 14+2, 1, 2)
 
-        self.SetCellValue(5, 12, "CM for DK")
-        self.SetCellValue(5, 13, "0%")
-        self.SetCellValue(5, 14, "TBD by DK office")
-        self.SetCellSize(5, 14, 1, 2)
+        self.SetCellValue(5, 12+2, "CM for DK")
+        self.SetCellValue(5, 13+2, "0%")
+        self.SetCellValue(5, 14+2, "TBD by DK office")
+        self.SetCellSize(5, 14+2, 1, 2)
 
-        self.SetCellValue(6, 12, "Agent rate")
-        self.SetCellValue(6, 13, "0%")
-        self.SetCellValue(6, 14, "TBD by DK office")
-        self.SetCellSize(6, 14, 1, 2)
+        self.SetCellValue(6, 12+2, "Agent rate")
+        self.SetCellValue(6, 13+2, "0%")
+        self.SetCellValue(6, 14+2, "TBD by DK office")
+        self.SetCellSize(6, 14+2, 1, 2)
 
         self.SetCellValue(7, 0, "Re:")
         self.SetCellValue(7, 1, "TNF accommodation system")
-        self.SetCellValue(7, 12, "Bussiness type")
-        self.SetCellValue(7, 13, "Export")
-        self.SetCellValue(7, 14, "Export")
-        self.SetCellSize(7, 14, 1, 2)
+        self.SetCellValue(7, 12+2, "Bussiness type")
+        self.SetCellValue(7, 13+2, "Export")
+        self.SetCellValue(7, 14+2, "Export")
+        self.SetCellSize(7, 14+2, 1, 2)
 
         self.SetCellValue(8, 0, "1)TNF Wall Panel")
         # self.SetCellValue(8, 12, "Direct costs")
@@ -2349,15 +2394,18 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(9, 5, "Product")
         self.SetCellValue(9, 6, "Unit")
         self.SetCellValue(9, 7, "Total")
-        self.SetCellValue(9, 8, "Unit Price")
-        self.SetCellValue(9, 9, "Total Price")
-        self.SetCellValue(10, 12, "5000平方米")
-        self.SetCellValue(10, 13, "80000平方米")
-        self.SetCellValue(10, 14, "10000平方米")
-        self.SetCellValue(10, 15, "20000平方米")
-        self.SetCellValue(10, 16, "30000平方米")
-        self.SetCellValue(10, 17, "40000平方米")
-        self.SetCellValue(10, 18, "实际报价")
+        self.SetCellValue(9, 8, "Product")
+        self.SetCellValue(9, 9, "Product")
+        self.SetCellValue(9, 10, "Product")
+        self.SetCellValue(9, 8+3, "Unit Price")
+        self.SetCellValue(9, 9+3, "Total Price")
+        self.SetCellValue(10, 12+2, "5000平方米")
+        self.SetCellValue(10, 13+2, "80000平方米")
+        self.SetCellValue(10, 14+2, "10000平方米")
+        self.SetCellValue(10, 15+2, "20000平方米")
+        self.SetCellValue(10, 16+2, "30000平方米")
+        self.SetCellValue(10, 17+2, "40000平方米")
+        self.SetCellValue(10, 18+2, "实际报价")
         # self.SetCellValue(9, 19, "0.0%")
         # self.SetCellValue(9, 21, "Inc. over head")
 
@@ -2367,8 +2415,11 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(10, 4, "width (mm)")
         self.SetCellValue(10, 5, "thickness (mm)")
         self.SetCellValue(10, 7, "Quantity")
-        self.SetCellValue(10, 8, "In USD")
-        self.SetCellValue(10, 9, "In USD")
+        self.SetCellValue(10, 8, "Wet")
+        self.SetCellValue(10, 9, "Strengthen")
+        self.SetCellValue(10, 10, "OverWidth")
+        self.SetCellValue(10, 8+3, "In USD")
+        self.SetCellValue(10, 9+3, "In USD")
         # self.SetCellValue(10, 12, "RMB")
         # self.SetCellValue(10, 13, "RMB")
         # self.SetCellValue(10, 14, "RMB")
@@ -2386,14 +2437,15 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellSize(3, 0, 1, 2)
         self.SetCellSize(7, 1, 1, 10)
         self.SetCellSize(8, 0, 1, 2)
-        self.SetCellSize(8, 12, 1, 2)
-        self.SetCellSize(8, 20, 2, 1)
+        self.SetCellSize(8, 12+2, 1, 2)
+        self.SetCellSize(8, 20+2, 2, 1)
         self.SetCellSize(9, 0, 2, 1)
         self.SetCellSize(9, 6, 2, 1)
         wallTotalAmount = 0.0
         wallTatalPriceUSD = 0.0
+        self.wallRowNumList = []
         for i, wallDict in enumerate(self.dataWall):
-            print("wallDict=",wallDict)
+            self.wallRowNumList.append(11+i)
             wallAmount = float(wallDict['数量'])
             wallTotalAmount += wallAmount
             self.SetCellValue(11 + i, 0, str(i + 1))
@@ -2405,18 +2457,44 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11 + i, 5, wallDict['产品厚度'])
             self.SetCellValue(11 + i, 6, wallDict['单位'])
             self.SetCellValue(11 + i, 7, wallDict['数量'])
+            self.SetCellValue(11 + i, 8, "Y" if wallDict['潮湿']=='Y' else "")
+            self.SetCellValue(11 + i, 9, "Y" if wallDict['加强']=='Y' else "")
+            # self.SetCellValue(11 + i, 10, wallDict['超宽'])
             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,wallDict)
+            renderer = gridlib.GridCellNumberRenderer()
+            self.SetCellRenderer(11+i, 20, renderer)
+            price = '' if not wallDict['实际报价'] else wallDict['实际报价']
+            self.SetCellValue(11+i,20,price)
             for item in self.priceDataDic:
                 if item["产品名称"] == wallDict['产品名称'] \
                         and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
                     "产品宽度"] == wallDict['产品宽度'] and item["报价类别"] == self.quotationRange:
-                    self.SetCellValue(11+i,12,item['5000平方米'])
-                    self.SetCellValue(11+i,13,item['8000平方米'])
-                    self.SetCellValue(11+i,14,item['10000平方米'])
-                    self.SetCellValue(11+i,15,item['20000平方米'])
-                    self.SetCellValue(11+i,16,item['30000平方米'])
-                    self.SetCellValue(11+i,17,item['40000平方米'])
+                    self.SetCellValue(11+i,12+2,item['5000平方米'])
+                    self.SetCellValue(11+i,13+2,item['8000平方米'])
+                    self.SetCellValue(11+i,14+2,item['10000平方米'])
+                    self.SetCellValue(11+i,15+2,item['20000平方米'])
+                    self.SetCellValue(11+i,16+2,item['30000平方米'])
+                    self.SetCellValue(11+i,17+2,item['40000平方米'])
                     break
+            error=True
+            try:
+                price = int(price)
+            except:
+                price = 0
+            for j in range(6):
+                temp = self.GetCellValue(11+i,14+j)
+                if temp=="":
+                    break
+                temp = temp.split('-')
+                left = int(temp[0])
+                right = int(temp[1])
+                if price>=left and price<=right:
+                    error=False
+                    break
+            if error:
+                self.SetCellBackgroundColour(i+11,20,wx.Colour(200,100,0))
+            else:
+                self.SetCellBackgroundColour(i+11,20,wx.WHITE)
             # for item in self.allProductMeterialUnitPriceList:
             #     if item["产品名称"] == wallDict['产品名称'] \
             #             and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
@@ -2491,7 +2569,7 @@ class QuotationSheetGrid(gridlib.Grid):
             # wallTatalPriceUSD += salesPriceUSD
 
         self.SetCellValue(11 + len(self.dataWall), 7, '%.2f' % wallTotalAmount)
-        self.SetCellValue(11 + len(self.dataWall), 9, '%.2f' % wallTatalPriceUSD)
+        self.SetCellValue(11 + len(self.dataWall), 9+3, '%.2f' % wallTatalPriceUSD)
 
         ##########################################################################################
         self.SetCellValue(8 + 6 + len(self.dataWall), 0, "2)TNF Ceiling Panel")
@@ -2516,8 +2594,11 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(9 + 6 + len(self.dataWall), 5, "Product")
         self.SetCellValue(9 + 6 + len(self.dataWall), 6, "Unit")
         self.SetCellValue(9 + 6 + len(self.dataWall), 7, "Total")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 8, "Unit Price")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 9, "Total Price")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 8, "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 9, "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 10, "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 8+3, "Unit Price")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 9+3, "Total Price")
         # self.SetCellValue(9 + 6 + len(self.dataWall), 12, "Material")
         # self.SetCellValue(9 + 6 + len(self.dataWall), 13, "Labor")
         # self.SetCellValue(9 + 6 + len(self.dataWall), 14, "3.0%")
@@ -2534,15 +2615,18 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(10 + 6 + len(self.dataWall), 4, "width (mm)")
         self.SetCellValue(10 + 6 + len(self.dataWall), 5, "thickness (mm)")
         self.SetCellValue(10 + 6 + len(self.dataWall), 7, "Quantity")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 8, "In USD")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 9, "In USD")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 12, "5000平方米")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 13, "8000平方米")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 14, "10000平方米")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 15, "20000平方米")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 16, "30000平方米")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 17, "40000平方米")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 18, "实际报价")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 8, "Wet")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 9, "Strengthen")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 10, "OverWidth")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 8+3, "In USD")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 9+3, "In USD")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 12+2, "5000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 13+2, "8000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 14+2, "10000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 15+2, "20000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 16+2, "30000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 17+2, "40000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 18+2, "实际报价")
         # self.SetCellValue(10 + 6 + len(self.dataWall), 19, "RMB")
         # self.SetCellValue(10 + 6 + len(self.dataWall), 20, "RMB")
         # self.SetCellValue(10 + 6 + len(self.dataWall), 21, "USD")
@@ -2570,7 +2654,7 @@ class QuotationSheetGrid(gridlib.Grid):
                     break
 
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, '%.2f' % ceilingTotalAmount)
-        self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9, '%.2f' % ceilingTatalPriceUSD)
+        self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
 
         # for i, title in enumerate(self.master.colLabelValueList):
         #     self.SetColLabelValue(i,title)

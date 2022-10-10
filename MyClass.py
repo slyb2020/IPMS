@@ -156,13 +156,13 @@ class MainPanel(wx.Panel):
         Images.Add(GetExpandedIconBitmap())
         Images.Add(GetCollapsedIconBitmap())
 
-        if self.parent.operatorCharacter in ["技术员", "技术主管", "技术部长", "下单员", "经理"]:
+        if self.parent.operatorCharacter in ["技术员", "技术主管", "技术部长", "项目经理",'订单管理员', "副总经理"]:
             item = self._pnl.AddFoldPanel("订单操作面板", collapsed=False,
                                           foldIcons=Images)
             item.SetLabel("订单操作面板")
             panel = wx.Panel(item, -1, size=(300, 700))
             vbox = wx.BoxSizer(wx.VERTICAL)
-            if self.parent.operatorCharacter == "下单员":
+            if self.parent.operatorCharacter in ["项目经理",'订单管理员']:
                 bitmap = wx.Bitmap(bitmapDir + "/aquabutton.png",
                                    wx.BITMAP_TYPE_PNG)
                 self.newOrderBTN = AB.AquaButton(panel, wx.ID_ANY, bitmap, "  新建订单", size=(100, 50))
@@ -174,9 +174,9 @@ class MainPanel(wx.Panel):
                 vbox.Add(self.newOrderBTN, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
                 # vbox.Add(self.editOrderBTN, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
                 vbox.Add(static, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-            if self.parent.operatorCharacter in ["下单员", "技术员", "技术主管", "技术部长", "经理"]:
+            if self.parent.operatorCharacter in ["项目经理",'订单管理员', "技术员", "技术主管", "技术部长", "副总经理"]:
                 value = "草稿订单"
-                if self.parent.operatorCharacter == "下单员":
+                if self.parent.operatorCharacter in ["项目经理",'订单管理员']:
                     value = "草稿订单"
                 self.orderTypeCOMBO = wx.ComboBox(panel, value=value, choices=["草稿订单", "在产订单", "完工订单", "废弃订单"])
                 self.orderTypeCOMBO.Bind(wx.EVT_COMBOBOX, self.OnOrderTypeCOMBOChanged)
@@ -186,7 +186,7 @@ class MainPanel(wx.Panel):
             panel.SetSizer(vbox)
             # self.ReCreateOrderInfoPanel()
             self._pnl.AddFoldPanelWindow(item, panel, fpb.FPB_ALIGN_WIDTH, 5, 0)
-            if self.parent.operatorCharacter in ["下单员", "技术员", "技术主管", "技术部长", '经理']:
+            if self.parent.operatorCharacter in ["项目经理",'订单管理员', "技术员", "技术主管", "技术部长", '副总经理']:
                 item.Expand()
             else:
                 item.Collapse()
@@ -764,8 +764,8 @@ class WorkZonePanel(wx.Panel):
         self.SetSizer(hbox)
         self.systemIntroductionPanel = SystemIntroductionPanel(self.notebook)
         self.notebook.AddPage(self.systemIntroductionPanel, "系统介绍")
-
-        if self.master.operatorCharacter in ["技术员", "技术主管", "技术部长", "下单员", "经理", "财务人员", "采购员"]:
+        print(self.master.operatorCharacter)
+        if self.master.operatorCharacter in ["技术员", "技术主管", "技术部长", "项目经理",'订单管理员', "副总经理" ]:
             if self.master.operatorCharacter in ["技术员", "技术主管", "技术部长"]:
                 self.orderManagementPanel = OrderManagementPanel(self.notebook, self.master, self.log,
                                                                  character=self.master.operatorCharacter, type="草稿")
