@@ -2373,3 +2373,26 @@ def GetPriceDicFromDB(log, whichDB, date):
     data_dict = [dict(zip(column,row)) for row in result]
     db.close()
     return data_dict
+
+def UpdateDraftOrderInDB(log, whichDB, id, dicList):
+    print("id=",id)
+    try:
+        db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                             passwd='%s' % dbPassword[whichDB], db='%s' % orderCheckDBName[whichDB], charset='utf8')
+    except:
+        wx.MessageBox("无法连接%s!" % packageDBName[whichDB], "错误信息")
+        if log:
+            log.WriteText("无法连接%s!" % packageDBName[whichDB], colour=wx.RED)
+        return -1, []
+    cursor = db.cursor()
+    for data in dicList:
+        print(data)
+        sql = "UPDATE `%s` SET `单价`='%s',`总价`='%s',`实际报价`='%s' WHERE `Index` = %s" \
+              % (id, data['单价'],data['总价'],data['实际报价'],data['Index'])
+        try:
+            cursor.execute(sql)
+            db.commit()  # 必须有，没有的话插入语句不会执行
+        except:
+            print("here error")
+            db.rollback()
+    db.close()

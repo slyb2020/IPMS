@@ -1,28 +1,26 @@
 import copy
 import threading
 from operator import itemgetter
-import numpy as np
-import wx
+
 import wx.grid as gridlib
 import wx.lib.agw.pybusyinfo as PBI
-import images
 from wx.lib.pdfviewer import pdfViewer, pdfButtonPanel
-from MakePdfReport import *
-# from BluePrintManagementPanel import BluePrintShowPanel
 
-from DBOperation import GetAllOrderAllInfo, GetAllOrderList, GetOrderDetailRecord, InsertNewOrder, GetStaffInfoWithID, \
-    GetDraftOrderDetailByID, UpdateDraftOrderInfoByID, GetTechDrawingDataByID, GetTechCheckStateByID, \
-    UpdateTechCheckStateByID, GetDraftComponentInfoByID, UpdateDraftCheckInfoByID, UpdateDraftOrderStateInDB, \
+import images
+from DBOperation import GetAllOrderAllInfo, GetAllOrderList, GetOrderDetailRecord, InsertNewOrder, \
+    UpdateDraftOrderInfoByID, GetTechDrawingDataByID, UpdateTechCheckStateByID, GetDraftComponentInfoByID, \
+    UpdateDraftCheckInfoByID, UpdateDraftOrderStateInDB, \
     UpdatePurchchaseCheckStateByID, UpdateFinancingCheckStateByID, UpdateManagerCheckStateByID, UpdateOrderSquareByID, \
-    GetProductMeterialUnitPriceInDB, GetMeterialUnitPriceByIdInDB, GetProductLaborUnitPriceInDB, \
-    GetAllProductMeterialUnitPriceInDB, GetAllMeterialUnitPriceByIdInDB, GetExchagneRateInDB, \
-    UpdateOrderOperatorCheckStateByID, GetQuotationDateAndExchangeDateFromDB, GetStaffInfo, GetDraftOrderDetail, \
-    GetPriceDateListFromDB, GetPriceDicFromDB
-
+    GetExchagneRateInDB, \
+    UpdateOrderOperatorCheckStateByID, GetStaffInfo, GetDraftOrderDetail, \
+    GetPriceDateListFromDB, GetPriceDicFromDB, UpdateDraftOrderInDB
 from DateTimeConvert import *
-from ID_DEFINE import *
+from MakePdfReport import *
 from OrderDetailTree import OrderDetailTree
 from SetupPropertyDialog import *
+
+
+# from BluePrintManagementPanel import BluePrintShowPanel
 
 
 class OrderDetailGrid(gridlib.Grid):
@@ -2012,6 +2010,8 @@ class QuotationSheetDialog(wx.Dialog):
 
     def OnSaveExitBTN(self, event):
         if self.character in ["项目经理",'订单管理员']:
+            print("here")
+            UpdateDraftOrderInDB(self.log, WHICHDB, self.id, self.quotationSheetGrid.dataWall)
             UpdateOrderOperatorCheckStateByID(self.log, WHICHDB, self.id, 'Y', str(self.quotationDate),
                                               str(self.exchangeDate))
         else:
@@ -2230,7 +2230,19 @@ class QuotationSheetGrid(gridlib.Grid):
                 totalPriceUS = float(self.GetCellValue(row,7))*unitPriceUS
                 self.SetCellValue(row, 11, "%6.2f"%unitPriceUS)
                 self.SetCellValue(row, 12, "%6.2f"%totalPriceUS)
-
+                sumupPriceUS=0.0
+                for i in range(len(self.dataWall)):
+                    temp = self.GetCellValue(11+i,20)
+                    temp = float(temp) if temp else 0
+                    self.dataWall[i]["实际报价"]=str(temp)
+                    temp = self.GetCellValue(11+i,11)
+                    temp = float(temp) if temp else 0
+                    self.dataWall[i]["单价"]=str(temp)
+                    temp = self.GetCellValue(11+i,12)
+                    temp = float(temp) if temp else 0
+                    self.dataWall[i]["总价"]=str(temp)
+                    sumupPriceUS += temp
+                self.SetCellValue(11+len(self.dataWall),12,"%6.2f"%sumupPriceUS)
         else:
             self.SetCellValue(row,col,"")
         evt.Skip()

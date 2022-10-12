@@ -764,7 +764,6 @@ class WorkZonePanel(wx.Panel):
         self.SetSizer(hbox)
         self.systemIntroductionPanel = SystemIntroductionPanel(self.notebook)
         self.notebook.AddPage(self.systemIntroductionPanel, "系统介绍")
-        print(self.master.operatorCharacter)
         if self.master.operatorCharacter in ["技术员", "技术主管", "技术部长", "项目经理",'订单管理员', "副总经理" ]:
             if self.master.operatorCharacter in ["技术员", "技术主管", "技术部长"]:
                 self.orderManagementPanel = OrderManagementPanel(self.notebook, self.master, self.log,
