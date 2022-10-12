@@ -177,7 +177,7 @@ class OrderGrid(gridlib.Grid):
 
         for i, order in enumerate(self.master.dataArray):
             self.SetRowSize(i, 25)
-            for j, item in enumerate(order):  # z最后一列位子订单列表，不再grid上显示
+            for j, item in enumerate(order[:-2]):  # z最后一列位子订单列表，不再grid上显示
                 # self.SetCellBackgroundColour(i,j,wx.Colour(250, 250, 250))
                 self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
                 self.SetCellValue(i, j, str(item))
@@ -258,6 +258,10 @@ class OrderUpdateCheckThread(threading.Thread):
                 self.staffInfo = staffInfo
                 self.parent.staffInfo = staffInfo
                 wx.CallAfter(self.parent.ReCreate)
+            if not self.parent.priceDataDic:
+                priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
+                self.parent.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, priceDateLatest)
+
             wx.Sleep(0.1)
 
 
@@ -272,13 +276,14 @@ class OrderManagementPanel(wx.Panel):
         self.dataList = []
         self.staffInfo = []
         self.draftOrderDic = []
+        self.priceDataDic = []
         self.orderUpdateCheckThread = OrderUpdateCheckThread(self, self.log)
         self.orderUpdateCheckThread.start()
 
     def ReCreate(self):
         if not self.staffInfo or not self.dataList:
             return
-        self.Freeze()
+        # self.Freeze()
         self.DestroyChildren()
         self.busy = False
         self.showRange = []
@@ -387,7 +392,7 @@ class OrderManagementPanel(wx.Panel):
         self.leftPanel.SetSizer(vvbox)
         self.orderGrid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnCellLeftClick)
         self.Layout()
-        self.Thaw()
+        # self.Thaw()
 
         def ReCreateOrderDetailTree(self):
             self.orderDetailTreePanel.DestroyChildren()
@@ -480,7 +485,7 @@ class OrderManagementPanel(wx.Panel):
                 self.ReCreatePurchaseCheckPanel()
             if self.character in ["财务人员"]:
                 self.ReCreateFinancialCheckPanel()
-            if self.character in ["经理"]:
+            if self.character in ["副总经理","经理"]:
                 self.ReCreateManagerCheckPanel()
         elif self.type in orderWorkingStateList:
             if not self.busy:
@@ -584,7 +589,7 @@ class OrderManagementPanel(wx.Panel):
                 self.notebook.AddPage(self.orderPurchaseCheckPanel, "采购部审核")
             # self.orderFinancialCheckPanel = wx.Panel(self.notebook,size=(260,-1))
             # self.notebook.AddPage(self.orderFinancialCheckPanel, "财务部审核")
-            if self.master.operatorCharacter == '经理':
+            if self.master.operatorCharacter in ["副总经理","经理"]:
                 self.orderManagerCheckPanel = wx.Panel(self.notebook, size=(260, -1))
                 self.notebook.AddPage(self.orderManagerCheckPanel, "经理审核")
         self.rightPanel.Thaw()
@@ -688,6 +693,7 @@ class DraftOrderPanel(wx.Panel):
         self.ID = ID
         self.mode = mode
         self.character = character
+        self.priceDataDic = []
         self.ReCreate()
 
     def ReCreate(self):
@@ -1050,14 +1056,15 @@ class DraftOrderPanel(wx.Panel):
                               icon=images.Smiles.GetBitmap())
 
         wx.Yield()
-
-        self.priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
-        self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
-
-
+        startTime=time.time()
+        # self.priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
+        # self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
+        while self.priceDataDic==[]:
+            self.priceDataDic = self.master.priceDataDic
         dlg = QuotationSheetDialog(self, self.log, self.ID, "订单管理员", name)
         dlg.CenterOnScreen()
         del busy
+        endTime = time.time()
         dlg.ShowModal()
         dlg.Destroy()
         self.master.dataList = []
@@ -1236,10 +1243,10 @@ class WallPanelTechCheckGrid(gridlib.Grid):
             temp = []
             for section in WallCheckEnableSectionList:
                 if section == '潮湿' or section == '加强':
-                    if dic[section] == '0':
-                        dic[section]=False
+                    if dic[section] == '1' or dic[section]=="Y":
+                        dic[section]=True
                     else:
-                        dic[section] = True
+                        dic[section] = False
                 temp.append(dic[section])
             self.data.append(temp)
 
@@ -1574,116 +1581,6 @@ class TechCheckDialog(wx.Dialog):
             dicList = [dict(zip(sectionList, row)) for row in data]
         return dicList
 
-
-# class TechCheckFrame(wx.Frame):
-#     def __init__(self, parent, log,id,character):
-#         self.parent = parent
-#         self.log = log
-#         self.id = id
-#         self.character = character
-#         wx.Frame.__init__(
-#             self, parent, -1, "设计审核窗口 —— %05d"%self.id, size=(1350,800)
-#         )
-#         self.SetBackgroundColour(wx.Colour(240,240,240))
-#         self.Freeze()
-#         self.notebook = wx.Notebook(self, -1, size=(21, 21), style=
-#                                     # wx.BK_DEFAULT
-#                                     # wx.BK_TOP
-#                                     wx.BK_BOTTOM
-#                                     # wx.BK_LEFT
-#                                     # wx.BK_RIGHT
-#                                     # | wx.NB_MULTILINE
-#                                     )
-#         il = wx.ImageList(16, 16)
-#         idx1 = il.Add(images._rt_smiley.GetBitmap())
-#         self.total_page_num = 0
-#         self.notebook.AssignImageList(il)
-#         idx2 = il.Add(images.GridBG.GetBitmap())
-#         idx3 = il.Add(images.Smiles.GetBitmap())
-#         idx4 = il.Add(images._rt_undo.GetBitmap())
-#         idx5 = il.Add(images._rt_save.GetBitmap())
-#         idx6 = il.Add(images._rt_redo.GetBitmap())
-#         vbox = wx.BoxSizer(wx.VERTICAL)
-#         vbox.Add(self.notebook, 1, wx.EXPAND)
-#         hhbox = wx.BoxSizer()
-#         saveBTN = wx.Button(self, -1, "保存",size=(100,45))
-#         saveBTN.SetDefault()
-#         saveBTN.Bind(wx.EVT_BUTTON, self.OnSaveBTN)
-#         hhbox.Add(saveBTN,1,wx.ALL,10)
-#         saveExitBTN = wx.Button(self, -1, "保存并退出",size=(100,45))
-#         saveExitBTN.Bind(wx.EVT_BUTTON, self.OnSaveExitBTN)
-#         hhbox.Add(saveExitBTN,1,wx.ALL,10)
-#         cancelBTN = wx.Button(self, -1, "取消",size=(100,45))
-#         cancelBTN.Bind(wx.EVT_BUTTON, self.OnCancelBTN)
-#         hhbox.Add(cancelBTN,1,wx.ALL,10)
-#         vbox.Add(hhbox,0,wx.EXPAND)
-#         self.SetSizer(vbox)
-#         self.Layout()
-#         self.wallCheckPanel = wx.Panel(self.notebook)
-#         self.notebook.AddPage(self.wallCheckPanel, "TNF Wall Panel")
-#         self.ceilingCheckPanel = wx.Panel(self.notebook)
-#         self.notebook.AddPage(self.ceilingCheckPanel, "TNF Ceiling Panel")
-#         self.interiorDoorCheckPanel = wx.Panel(self.notebook)
-#         self.notebook.AddPage(self.interiorDoorCheckPanel, "TNF Interior Door")
-#         self.doorAccessoryCheckPanel = wx.Panel(self.notebook)
-#         self.notebook.AddPage(self.doorAccessoryCheckPanel, "TNF Door Accessory")
-#         self.wetUnitCheckPanel = wx.Panel(self.notebook)
-#         self.notebook.AddPage(self.wetUnitCheckPanel, "TNF Wet Unit")
-#         self.Thaw()
-#
-#         # p = wx.Panel(self, -1, style=0)
-#         hbox = wx.BoxSizer()
-#         self.wallPanelCheckGrid = WallPanelTechCheckGrid(self.wallCheckPanel, self.log, type="WALL", id=self.id)
-#         hbox.Add(self.wallPanelCheckGrid, 1, wx.EXPAND)
-#         self.wallCheckPanel.SetSizer(hbox)
-#         self.wallCheckPanel.Layout()
-#
-#     def OnSaveExitBTN(self,evt):
-#         error=self.Save()
-#         if not error:
-#             self.Close()
-#         evt.Skip()
-#
-#     def OnCancelBTN(self,evt):
-#         self.Close()
-#         evt.Skip()
-#
-#     def OnSaveBTN(self, evt):
-#         self.Save()
-#         evt.Skip()
-#
-#     def Save(self):
-#         rowNum = self.wallPanelCheckGrid.table.GetNumberRows()
-#         colNum = self.wallPanelCheckGrid.table.GetNumberCols()
-#         data=[]
-#         error=False
-#         for i in range(rowNum-1):
-#             temp = ["WALL"]
-#             for j in range(colNum):
-#                 temp.append(self.wallPanelCheckGrid.table.GetValue(i,j))
-#             data.append(temp)
-#         self.wallDataDicList = self.MakeDicListData(data,"WALL")
-#         for row,dics in enumerate(self.wallDataDicList):
-#             for col,section in enumerate(WallCheckEnableSectionList):
-#                 if dics[section] == '':
-#                     if section!="产品描述":
-#                         self.wallPanelCheckGrid.SetCellBackgroundColour(row,col,wx.Colour(255,200,200))
-#                         self.wallPanelCheckGrid.Refresh()
-#                         wx.MessageBox("'%s'字段不能为空！"%section,"信息提示")
-#                         return True
-#                 else:
-#                     self.wallPanelCheckGrid.SetCellBackgroundColour(row,col,wx.Colour(255,255,255))
-#                     self.wallPanelCheckGrid.Refresh()
-#         UpdateDrafCheckInfoByID(self.log,WHICHDB,self.id,self.wallDataDicList)
-#         return False
-#
-#     def MakeDicListData(self,data,type):
-#         dicList=[]
-#         if type=="WALL":
-#             sectionList=copy.deepcopy(WallCheckEnableSectionList)
-#             sectionList.insert(0,"类别")
-#             dicList = [dict(zip(sectionList, row)) for row in data]
-#         return dicList
 
 class WallPanelCheckDataTable(gridlib.GridTableBase):
     def __init__(self, log, type, data):
@@ -2024,17 +1921,30 @@ class QuotationSheetDialog(wx.Dialog):
         self.priceDataDic = self.parent.priceDataDic
         self.name = name
         self.quotationRange = "国内报价"
-        quotationDate, exchangeDate = GetQuotationDateAndExchangeDateFromDB(self.log, WHICHDB, self.id)
-        if quotationDate == None or quotationDate == 'None':
+        quotationDate = None
+        exchangeDate = None
+        self.quotationDate = None
+        self.exchangeDate = None
+        for record in self.parent.master.dataList:
+            if record[0]==self.id:
+                quotationDate = record[-2] if record[-2]!='None' and record[-2]!='' else str(datetime.date.today())
+                exchangeDate = record[-1] if record[-1]!='None' and record[-1]!=''else str(datetime.date.today())
+                quotationDate = quotationDate.split('-')
+                self.quotationDate = datetime.date(int(quotationDate[0]), int(quotationDate[1]), int(quotationDate[2]))
+                exchangeDate = exchangeDate.split('-')
+                self.exchangeDate = datetime.date(int(exchangeDate[0]), int(exchangeDate[1]), int(exchangeDate[2]))
+                break
+        # quotationDate, exchangeDate = GetQuotationDateAndExchangeDateFromDB(self.log, WHICHDB, self.id)
+        if not quotationDate:
             self.quotationDate = datetime.date.today() - datetime.timedelta(1)
-        else:
-            quotationDate = quotationDate.split('-')
-            self.quotationDate = datetime.date(int(quotationDate[0]), int(quotationDate[1]), int(quotationDate[2]))
-        if exchangeDate == None or exchangeDate == 'None':
+        # else:
+        #     quotationDate = quotationDate.split('-')
+        #     self.quotationDate = datetime.date(int(quotationDate[0]), int(quotationDate[1]), int(quotationDate[2]))
+        if not self.exchangeDate:
             self.exchangeDate = datetime.date.today() - datetime.timedelta(1)
-        else:
-            exchangeDate = exchangeDate.split('-')
-            self.exchangeDate = datetime.date(int(exchangeDate[0]), int(exchangeDate[1]), int(exchangeDate[2]))
+        # else:
+        #     exchangeDate = exchangeDate.split('-')
+        #     self.exchangeDate = datetime.date(int(exchangeDate[0]), int(exchangeDate[1]), int(exchangeDate[2]))
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
         if self.character in ["项目经理",'订单管理员']:
             title = "订单部审核对话框"
@@ -2075,8 +1985,9 @@ class QuotationSheetDialog(wx.Dialog):
         sizer.Add(btnsizer, 0, wx.ALIGN_CENTER | wx.ALL, 10)
         self.SetSizer(sizer)
         sizer.Fit(self)
-        self.ReCreateControlPanel()
-        self.ReCreateGrid()
+        self.CreateControlPanel()
+        self.CreateGrid()
+        # self.ReCreateGrid()
 
     def OnCreateQuotationSheetBTN(self, event):
         filename = quotationSheetDir + '报价单%05d.pdf' % self.id
@@ -2107,7 +2018,7 @@ class QuotationSheetDialog(wx.Dialog):
             UpdateManagerCheckStateByID(self.log, WHICHDB, self.id, 'Y', self.quotationDate, self.exchangeDate)
         self.Close()
 
-    def ReCreateControlPanel(self):
+    def CreateControlPanel(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
         hhbox = wx.BoxSizer()
         hhbox.Add((20, -1))
@@ -2171,12 +2082,25 @@ class QuotationSheetDialog(wx.Dialog):
 
     def OnQuotationRangeChanged(self, event):
         if self.quotationRange!=self.quotationRangeCtrl.GetValue():
-            self.ReCreateGrid()
+            self.quotationRange = self.quotationRangeCtrl.GetValue()
+            self.quotationSheetGrid.quotationRange = self.quotationRange
+            self.quotationSheetGrid.ReCreate()
         event.Skip()
 
     def ReCreateGrid(self):
         self.gridPanel.Freeze()
         self.gridPanel.DestroyChildren()
+        self.quotationRange = self.quotationRangeCtrl.GetValue()
+        hbox = wx.BoxSizer()
+        self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.log, self.id, self.priceDataDic, self.quotationDate,
+                                                     self.exchangeDate,self.quotationRange)
+        hbox.Add(self.quotationSheetGrid, 1, wx.EXPAND)
+        self.gridPanel.SetSizer(hbox)
+        self.gridPanel.Layout()
+        self.gridPanel.Thaw()
+
+    def CreateGrid(self):
+        self.gridPanel.Freeze()
         self.quotationRange = self.quotationRangeCtrl.GetValue()
         hbox = wx.BoxSizer()
         self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.log, self.id, self.priceDataDic, self.quotationDate,
@@ -2252,16 +2176,25 @@ class QuotationSheetGrid(gridlib.Grid):
         self.marginNT = 0.2
         self.marginDK = 0
         self.agentRate = 0
-        exchangeRate = GetExchagneRateInDB(self.log, WHICHDB, str(self.exchangeRateDate))
+        # exchangeRate = GetExchagneRateInDB(self.log, WHICHDB, str(self.exchangeRateDate))
+        exchangeRate = 718
         if exchangeRate == None:
             wx.MessageBox("数据库中没有指定日期的美元汇率，请更换日期后重试！", "信息提示")
         else:
             self.exchangeRate = float(exchangeRate) / 100. - 0.02
-        _, productLaborAmountList = GetProductLaborUnitPriceInDB(self.log, WHICHDB)
-        if productLaborAmountList == None:
-            wx.MessageBox("数据库中没有指定日期的原材料价格，请更换日期后重试！", "信息提示")
-        else:
-            self.productLaborAmountList = productLaborAmountList
+        # _, productLaborAmountList = GetProductLaborUnitPriceInDB(self.log, WHICHDB)
+        # if productLaborAmountList == None:
+        #     wx.MessageBox("数据库中没有指定日期的原材料价格，请更换日期后重试！", "信息提示")
+        # else:
+        #     self.productLaborAmountList = productLaborAmountList
+        for i in range(20):
+            attr = gridlib.GridCellAttr()
+            # attr.SetFont(font)
+            # attr.SetBackgroundColour(wx.LIGHT_GREY)
+            attr.SetReadOnly(True)
+            attr.SetAlignment(wx.CENTER, -1)
+            self.SetColAttr(i, attr)
+        # attr.IncRef()
 
         self.ReCreate()
         self.Thaw()
@@ -2291,6 +2224,13 @@ class QuotationSheetGrid(gridlib.Grid):
                 self.SetCellBackgroundColour(row,col,wx.Colour(200,100,0))
             else:
                 self.SetCellBackgroundColour(row,col,wx.WHITE)
+            if self.GetCellValue(row,col):
+                print(self.exchangeRate)
+                unitPriceUS = price/self.exchangeRate
+                totalPriceUS = float(self.GetCellValue(row,7))*unitPriceUS
+                self.SetCellValue(row, 11, "%6.2f"%unitPriceUS)
+                self.SetCellValue(row, 12, "%6.2f"%totalPriceUS)
+
         else:
             self.SetCellValue(row,col,"")
         evt.Skip()
@@ -2314,17 +2254,9 @@ class QuotationSheetGrid(gridlib.Grid):
         return dataCeiling
 
     def ReCreate(self):
-        attr = gridlib.GridCellAttr()
-        # attr.SetFont(font)
-        # attr.SetBackgroundColour(wx.LIGHT_GREY)
-        attr.SetReadOnly(True)
-        attr.SetAlignment(wx.CENTER, -1)
-        for i in range(20):
-            self.SetColAttr(i, attr)
-        # attr.IncRef()
-        _, self.allProductMeterialUnitPriceList = GetAllProductMeterialUnitPriceInDB(self.log, WHICHDB)
+        # _, self.allProductMeterialUnitPriceList = GetAllProductMeterialUnitPriceInDB(self.log, WHICHDB)
         quotationDate = str(self.quotationDate)
-        _, self.allMeterialUnitPriceList = GetAllMeterialUnitPriceByIdInDB(self.log, WHICHDB, quotationDate)
+        # _, self.allMeterialUnitPriceList = GetAllMeterialUnitPriceByIdInDB(self.log, WHICHDB, quotationDate)
         self.ClearGrid()
         self.SetCellValue(0, 0, "INEXA TNF")
         self.SetCellValue(0, 12+2, "Currency rate")
@@ -2467,8 +2399,12 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11+i,20,price)
             for item in self.priceDataDic:
                 if item["产品名称"] == wallDict['产品名称'] \
-                        and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
-                    "产品宽度"] == wallDict['产品宽度'] and item["报价类别"] == self.quotationRange:
+                        and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] \
+                        and item["报价类别"] == self.quotationRange:
+                    if wallDict['产品宽度'] != "≤600":
+                        self.SetCellValue(11+i,10,"Y")
+                    else:
+                        self.SetCellValue(11+i,10,"")
                     self.SetCellValue(11+i,12+2,item['5000平方米'])
                     self.SetCellValue(11+i,13+2,item['8000平方米'])
                     self.SetCellValue(11+i,14+2,item['10000平方米'])
@@ -2646,12 +2582,12 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 6, ceilingDict['单位'])
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 7, ceilingDict['数量'])
             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,ceilingDict)
-            for item in self.allProductMeterialUnitPriceList:
-                if item["产品名称"] == ceilingDict['产品名称'] \
-                        and item["产品表面材料"] == ceilingDict['产品表面材料'] and item["产品长度"] == ceilingDict['产品长度'] and item[
-                    "产品宽度"] == ceilingDict['产品宽度']:
-                    temp = item
-                    break
+            # for item in self.allProductMeterialUnitPriceList:
+            #     if item["产品名称"] == ceilingDict['产品名称'] \
+            #             and item["产品表面材料"] == ceilingDict['产品表面材料'] and item["产品长度"] == ceilingDict['产品长度'] and item[
+            #         "产品宽度"] == ceilingDict['产品宽度']:
+            #         temp = item
+            #         break
 
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, '%.2f' % ceilingTotalAmount)
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
