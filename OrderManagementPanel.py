@@ -259,7 +259,8 @@ class OrderUpdateCheckThread(threading.Thread):
             if not self.parent.priceDataDic:
                 priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
                 self.parent.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, priceDateLatest)
-
+            if not self.parent.exChangeRateDic:
+                self.parent.exChangeRateDic = GetExchagneRateInDB(self.log, WHICHDB)
             wx.Sleep(0.1)
 
 
@@ -275,6 +276,7 @@ class OrderManagementPanel(wx.Panel):
         self.staffInfo = []
         self.draftOrderDic = []
         self.priceDataDic = []
+        self.exChangeRateDic = None
         self.orderUpdateCheckThread = OrderUpdateCheckThread(self, self.log)
         self.orderUpdateCheckThread.start()
 
@@ -1689,66 +1691,6 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
         return self.CanGetValueAs(row, col, typeName)
 
 
-# class CheckGrid(gridlib.Grid):
-#     def __init__(self, parent, log, type, id, character="技术员"):
-#         gridlib.Grid.__init__(self, parent, -1)
-#         self.Freeze()
-#         self.log = log
-#         table = WallPanelCheckDataTable(log)
-#
-#         # The second parameter means that the grid is to take ownership of the
-#         # table and will destroy it when done.  Otherwise you would need to keep
-#         # a reference to it and call it's Destroy method later.
-#         self.SetTable(table, True)
-#
-#         self.SetRowLabelSize(0)
-#         self.SetMargins(0, 0)
-#         self.AutoSizeColumns(False)
-#
-#         self.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
-#
-#     def OnLeftDClick(self, evt):
-#         if self.CanEnableCellControl():
-#             self.EnableCellEditControl()
-#
-#         # self.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
-#         #
-#         # self.SetRowLabelSize(50)
-#         # self.SetColLabelSize(25)
-#         #
-#         # titleList = CheckTitleDict[type]
-#         # for i, title in enumerate(titleList):
-#         #     self.SetColLabelValue(i,title)
-#         # colWidthList = CheckColWidthDict[type]
-#         # for i, width in enumerate(colWidthList):
-#         #     self.SetColSize(i, width)
-#         #
-#         # for i, order in enumerate(self.master.dataArray):
-#         #     self.SetRowSize(i, 25)
-#         #     for j, item in enumerate(order):#z最后一列位子订单列表，不再grid上显示
-#         #         # self.SetCellBackgroundColour(i,j,wx.Colour(250, 250, 250))
-#         #         self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
-#         #         self.SetCellValue(i, j, str(item))
-#         #         if j==0:
-#         #             if int(order[0])<2:
-#         #                 self.SetCellBackgroundColour(i,j,wx.RED)
-#         #             elif int(order[0])<5:
-#         #                 self.SetCellBackgroundColour(i,j,wx.YELLOW)
-#         #         elif j>=9:
-#         #             if item=="未审核":
-#         #                 self.SetCellBackgroundColour(i,j,wx.RED)
-#         #             elif item =="审核通过":
-#         #                 self.SetCellBackgroundColour(i,j,wx.GREEN)
-#         #             else:
-#         #                 self.SetCellBackgroundColour(i,j,wx.YELLOW)
-#
-#     def OnIdle(self, evt):
-#         if self.moveTo is not None:
-#             self.SetGridCursor(self.moveTo[0], self.moveTo[1])
-#             self.moveTo = None
-#
-#         evt.Skip()
-
 class CreateNewOrderDialog(wx.Dialog):
     def __init__(self, parent, log, size=wx.DefaultSize, pos=wx.DefaultPosition,
                  style=wx.DEFAULT_DIALOG_STYLE):
@@ -2039,6 +1981,11 @@ class QuotationSheetDialog(wx.Dialog):
                                                                    | wx.adv.DP_ALLOWNONE)
         self.exchangeDateCtrl.SetValue(self.exchangeDate)
         hhbox.Add(self.exchangeDateCtrl, 0, wx.TOP, 10)
+        hhbox.Add((10,-1))
+        self.exchangeRateTXT = wx.TextCtrl(self.controlPanel, size=(80,-1), style=wx.TE_READONLY)
+        for i in self.parent.master.exChangeRateDic:
+            print(i)
+        hhbox.Add(self.exchangeRateTXT, 0, wx.TOP,10)
         hhbox.Add((10, -1))
         hhbox.Add(wx.StaticLine(self.controlPanel, style=wx.VERTICAL), 0, wx.EXPAND)
         hhbox.Add((10, -1))
@@ -2055,29 +2002,29 @@ class QuotationSheetDialog(wx.Dialog):
 
     def OnExchangeRatDateChanged(self, event):
         if event.GetDate() != self.exchangeDate:
-            exchangeDate = event.GetDate()
-            exchangeDate = wxdate2pydate(exchangeDate)
-            result = GetExchagneRateInDB(self.log, WHICHDB, exchangeDate)
-            if result != None:
-                self.exchangeDate = exchangeDate
-                busy = PBI.PyBusyInfo("正在为您生成新的报价单，请稍候。。。", parent=None, title="系统忙提示",
-                                      icon=images.Smiles.GetBitmap())
-                wx.Yield()
-                self.ReCreateGrid()
-                del busy
-            else:
-                wx.MessageBox("系统无法获得此日期的美元汇率，请更改日期后重试！")
-                self.exchangeDateCtrl.SetValue(self.exchangeDate)
+            self.exchangeDate = event.GetDate()
+            self.exchangeDate = wxdate2pydate(self.exchangeDate)
+            print(self.exchangeDate)
+            # result = GetExchagneRateInDB(self.log, WHICHDB, exchangeDate)
+            # print("result=",result)
+            # if result != None:
+            #     self.exchangeDate = exchangeDate
+            #     print(result)
+            #     self.quotationSheetGrid.ReCreate()
+            # else:
+            #     wx.MessageBox("系统无法获得此日期的美元汇率，请更改日期后重试！")
+            #     self.exchangeDateCtrl.SetValue(self.exchangeDate)
 
     def OnQuotationDateChanged(self, event):
         if event.GetDate() != self.quotationDate:
             self.quotationDate = event.GetDate()
             self.quotationDate = wxdate2pydate(self.quotationDate)
-            busy = PBI.PyBusyInfo("正在为您生成新的报价单，请稍候。。。", parent=None, title="系统忙提示",
-                                  icon=images.Smiles.GetBitmap())
-            wx.Yield()
-            self.ReCreateGrid()
-            del busy
+            self.quotationSheetGrid.SetCellValue(1,2,str(self.quotationDate))
+            # busy = PBI.PyBusyInfo("正在为您生成新的报价单，请稍候。。。", parent=None, title="系统忙提示",
+            #                       icon=images.Smiles.GetBitmap())
+            # wx.Yield()
+            # self.ReCreateGrid()
+            # del busy
         event.Skip()
 
     def OnQuotationRangeChanged(self, event):
@@ -2403,6 +2350,8 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11 + i, 7, wallDict['数量'])
             self.SetCellValue(11 + i, 8, "Y" if wallDict['潮湿']=='Y' else "")
             self.SetCellValue(11 + i, 9, "Y" if wallDict['加强']=='Y' else "")
+            self.SetCellValue(11 + i, 11, wallDict['单价'])
+            self.SetCellValue(11 + i, 12, wallDict['总价'])
             # self.SetCellValue(11 + i, 10, wallDict['超宽'])
             # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,wallDict)
             renderer = gridlib.GridCellNumberRenderer()

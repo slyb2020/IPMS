@@ -1960,8 +1960,8 @@ def UpdateOrderOperatorCheckStateByID(log,whichDB,id,state,quotationDate,exchang
             log.WriteText("无法连接%s!" % packageDBName[whichDB], colour=wx.RED)
         return -1, []
     cursor = db.cursor()
-    # sql = "UPDATE `订单信息` SET `订单部审核状态`= '%s',`报价参考日期`= '%s',`汇率参考日期`= '%s' where `Index`= %s " % (state,quotationDate,exchangeRateDate,id)
-    sql = "UPDATE `订单信息` SET `订单部审核状态`= '%s' where `Index`= %s " % (state,id)
+    sql = "UPDATE `订单信息` SET `订单部审核状态`= '%s',`报价参考日期`= '%s',`汇率参考日期`= '%s' where `Index`= %s " % (state,quotationDate,exchangeRateDate,id)
+    # sql = "UPDATE `订单信息` SET `订单部审核状态`= '%s' where `Index`= %s " % (state,id)
     try:
         cursor.execute(sql)
         db.commit()  # 必须有，没有的话插入语句不会执行
@@ -2176,7 +2176,7 @@ def SaveMeterialTodayPriceInDB(log,whichDB,dicList):
 
 
 
-def GetExchagneRateInDB(log,whichDB,Date):
+def GetExchagneRateInDB(log,whichDB):
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
                              passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
@@ -2186,14 +2186,14 @@ def GetExchagneRateInDB(log,whichDB,Date):
             log.WriteText("无法连接%s!" % dbName[whichDB], colour=wx.RED)
         return None
     cursor = db.cursor()
-    sql ="SELECT `汇率` FROM `美元汇率表` where `日期`='%s'"%(Date)
-    # sql="select * from `原材料单价表` where `市价更新日期`='%s'"%(Date)
+    sql="select * from `美元汇率表`"
     cursor.execute(sql)
-    result = cursor.fetchone()
-    if result != None:
-        result=result[0]
+    result = cursor.fetchall()
+    result = result[-100:]
+    column = [index[0] for index in cursor.description]
+    data_dict = [dict(zip(column,row)) for row in result]
     db.close()
-    return result
+    return data_dict
 
 def GetMeterialPrice(log,whichDB):
     try:
