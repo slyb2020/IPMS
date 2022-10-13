@@ -18,7 +18,8 @@ from BarCodeGenerator import BarCodeGenerator
 from DBOperation import UpdatePanelGluePageInDB,UpdatePanelGlueLabelPageInDB
 from reportlab.lib.styles import ParagraphStyle
 
-pdfmetrics.registerFont(TTFont('SimSun', 'Font/SimSun.ttf'))  #注册字体
+pdfmetrics.registerFont(TTFont('SimSun', 'D:/IPMS/dist/Font/SimSun.ttf'))  #注册字体
+pdfmetrics.registerFont(TTFont('Times', 'D:/IPMS/dist/Font/times.ttf'))  #注册字体
 
 
 def DrawLine(my_canvas,lineWidth,startX,startY,endX,endY):
@@ -154,7 +155,7 @@ def MakeMaterialScheduleTemplate(orderID,subOrderID,filename,horizontalData,cutt
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Plate Outbound Delivery Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -265,7 +266,7 @@ def MakeHorizontalCutScheduleTemplate(orderID, subOrderID, filename, record=[],P
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/empBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Plate Horizontal Shear Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -419,7 +420,7 @@ def MakeCutScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUMBER=
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Plate Shear Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -528,7 +529,7 @@ def MakeBendingScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUM
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Bending Machine Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -578,7 +579,7 @@ def MakeS2FormingScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWN
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd S2 Forming Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -628,7 +629,7 @@ def MakeCeilingFormingScheduleTemplate(orderID,subOrderID,filename,record=[],PAG
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Ceiling Forming Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -678,7 +679,7 @@ def MakePRPressScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUM
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd PR Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -728,7 +729,7 @@ def MakeVacuumScheduleTemplate(orderID,subOrderID,filename,record=[],PAGEROWNUMB
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 12)
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,715, text="Inexa (NanTong) Interiors Co.Ltd Vacuum Schedule")
         DrawLine(myCanvas,1,*coord(10, 31, height, mm),*coord(200, 31, height, mm))
         myCanvas.drawString(40,685, text="订单号；%s-%03d"%(orderID,int(subOrderID)))
@@ -778,7 +779,7 @@ def MakeGlueNoSheetTemplate(orderID,subOrderID,filename,record=[]):
         DrawLine(myCanvas,1,*coord(50+39, 55, height, mm),*coord(50+39, 115, height, mm))
         DrawLine(myCanvas,1,*coord(50+39*2, 55, height, mm),*coord(50+39*2, 115, height, mm))
         DrawLine(myCanvas,1,*coord(50+39*3, 55, height, mm),*coord(50+39*3, 115, height, mm))
-        myCanvas.setFont("SimSun", 22)
+        myCanvas.setFont("Times", 22)
         myCanvas.drawString(170,565, text="%s"%(data[8]))
         myCanvas.drawString(170+110,565, text="%s"%(data[9]))
         myCanvas.drawString(170+110*2,565, text="%s"%(data[14]))
@@ -791,7 +792,7 @@ def MakeGlueNoSheetTemplate(orderID,subOrderID,filename,record=[]):
         myCanvas.drawString(40+110*3,515, text="数量(Amount)")
         myCanvas.drawString(40+110*4,515, text="重量(Weight)")
 
-        myCanvas.setFont("SimSun", 20)
+        myCanvas.setFont("Times", 20)
         myCanvas.drawString(55,480, text="%s mm"%(data[10]))
         myCanvas.drawString(55+110,480, text="%s mm"%(data[11]))
         myCanvas.drawString(60+110*2,480, text="%s mm"%(data[12]))
@@ -815,7 +816,7 @@ def MakeGlueNoSheetTemplate(orderID,subOrderID,filename,record=[]):
         BarCodeGenerator(tempCode,"D:/IPMS/dist/bitmaps/tempBarcode.png")
         myCanvas.drawImage("D:/IPMS/dist/bitmaps/tempBarcode.png", width-100, height-40,
                             width=100, height=40)
-        myCanvas.setFont("SimSun", 16)
+        myCanvas.setFont("Times", 16)
         myCanvas.drawCentredString(width/2,715-offset, text="Inexa (NanTong) Interiors Co.Ltd Glue Sheet")
         DrawLine(myCanvas,1,*coord(10, 31+offset2, height, mm),*coord(205, 31+offset2, height, mm))
         DrawLine(myCanvas,1,*coord(10, 31+offset2, height, mm),*coord(10, 131+offset2, height, mm))
@@ -832,7 +833,7 @@ def MakeGlueNoSheetTemplate(orderID,subOrderID,filename,record=[]):
         DrawLine(myCanvas,1,*coord(50+39, 55+offset2, height, mm),*coord(50+39, 115+offset2, height, mm))
         DrawLine(myCanvas,1,*coord(50+39*2, 55+offset2, height, mm),*coord(50+39*2, 115+offset2, height, mm))
         DrawLine(myCanvas,1,*coord(50+39*3, 55+offset2, height, mm),*coord(50+39*3, 115+offset2, height, mm))
-        myCanvas.setFont("SimSun", 22)
+        myCanvas.setFont("Times", 22)
         myCanvas.drawString(170,565-offset, text="%s"%(data[8]))
         myCanvas.drawString(170+110,565-offset, text="%s"%(data[9]))
         myCanvas.drawString(170+110*2,565-offset, text="%s"%(data[14]))
@@ -845,7 +846,7 @@ def MakeGlueNoSheetTemplate(orderID,subOrderID,filename,record=[]):
         myCanvas.drawString(40+110*3,515-offset, text="数量(Amount)")
         myCanvas.drawString(40+110*4,515-offset, text="重量(Weight)")
 
-        myCanvas.setFont("SimSun", 20)
+        myCanvas.setFont("Times", 20)
         myCanvas.drawString(55,480-offset, text="%s mm"%(data[10]))
         myCanvas.drawString(55+110,480-offset, text="%s mm"%(data[11]))
         myCanvas.drawString(60+110*2,480-offset, text="%s mm"%(data[12]))
@@ -1082,7 +1083,7 @@ def MakeFormingScheduleTemplate(filename,data=[]):
     myCanvas.drawCentredString(width/2,730, text="伊纳克赛(南通)精致内饰材料有限公司成型任务单")
     myCanvas.drawImage(bitmapDir+"/python_logo.png", 30, 710,
                         width=40, height=40)
-    myCanvas.setFont("SimSun", 12)
+    myCanvas.setFont("Times", 12)
     myCanvas.drawCentredString(width/2,710, text="Inexa (NanTong) Interiors Co.Ltd Forming Schedule")
     DrawLine(myCanvas,1,*coord(10, 33, height, mm),*coord(200, 33, height, mm))
     myCanvas.drawString(40,670, text="订单号；%s"%'64757-001')
@@ -1099,42 +1100,49 @@ def DrawQuotationSheet(c,record):
 
     # Create a Justify style
     styles.add(ParagraphStyle(name='Center', alignment=1))
-    Title1 = Paragraph('<font name="SimSun">Item</font>',style = styles['Center'])
-    Title2 = Paragraph('<font name="SimSun">Product</font>',style = styles['Center'])
-    Title3 = Paragraph('<font name="SimSun">Product</font>',style = styles['Center'])
-    Title4 = Paragraph('<font name="SimSun">Product</font>',style = styles['Center'])
-    Title5 = Paragraph('<font name="SimSun">Product</font>',style = styles['Center'])
-    Title6 = Paragraph('<font name="SimSun">Product</font>',style = styles['Center'])
-    Title7 = Paragraph('<font name="SimSun">Product</font>',style = styles['Center'])
-    Title8 = Paragraph('<font name="SimSun">Unit</font>',style = styles['Center'])
-    Title9 = Paragraph('<font name="SimSun">Total</font>',style = styles['Center'])
-    Title10 = Paragraph('<font name="SimSun">Unit Price</font>',style = styles['Center'])
-    Title11 = Paragraph('<font name="SimSun">Total Price</font>',style = styles['Center'])
-    Title21 = Paragraph('<font name="SimSun"> </font>',style = styles['Center'])
-    Title22 = Paragraph('<font name="SimSun">No.</font>',style = styles['Center'])
-    Title23 = Paragraph('<font name="SimSun">Type</font>',style = styles['Center'])
-    Title24 = Paragraph('<font name="SimSun">Surface</font>',style = styles['Center'])
-    Title25 = Paragraph('<font name="SimSun">Height/length(mm)</font>',style = styles['Center'])
-    Title26 = Paragraph('<font name="SimSun">Width(mm)</font>',style = styles['Center'])
-    Title27 = Paragraph('<font name="SimSun">Thickness(mm)</font>',style = styles['Center'])
-    Title28 = Paragraph('<font name="SimSun">Unit</font>',style = styles['Center'])
-    Title29 = Paragraph('<font name="SimSun">Quantity</font>',style = styles['Center'])
-    Title30 = Paragraph('<font name="SimSun">In USD</font>',style = styles['Center'])
-    Title31 = Paragraph('<font name="SimSun">In USD</font>',style = styles['Center'])
+    Title1 = Paragraph('<font name="Times">Item</font>',style = styles['Center'])
+    Title2 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title3 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title4 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title5 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title6 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title7 = Paragraph('<font name="Times">Total</font>',style = styles['Center'])
+    Title8 = Paragraph('<font name="Times">Unit</font>',style = styles['Center'])
+    Title9 = Paragraph('<font name="Times">Wet</font>',style = styles['Center'])
+    Title10 = Paragraph('<font name="Times">Strengthen</font>',style = styles['Center'])
+    Title11 = Paragraph('<font name="Times">OverWidth</font>',style = styles['Center'])
+    Title12 = Paragraph('<font name="Times">Unit Price</font>',style = styles['Center'])
+    Title13 = Paragraph('<font name="Times">Total Price</font>',style = styles['Center'])
+    Title21 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    Title22 = Paragraph('<font name="Times">Type</font>',style = styles['Center'])
+    Title23 = Paragraph('<font name="Times">Surface</font>',style = styles['Center'])
+    Title24 = Paragraph('<font name="Times">Height/Length(mm)</font>',style = styles['Center'])
+    Title25 = Paragraph('<font name="Times">Width(mm)</font>',style = styles['Center'])
+    Title26 = Paragraph('<font name="Times">Thickness(mm)</font>',style = styles['Center'])
+    Title27 = Paragraph('<font name="Times">Quantity</font>',style = styles['Center'])
+    Title28 = Paragraph('<font name="Times">Unit</font>',style = styles['Center'])
+    Title29 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    Title30 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    Title31 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    Title32 = Paragraph('<font name="Times">In USD</font>',style = styles['Center'])
+    Title33 = Paragraph('<font name="Times">In USD</font>',style = styles['Center'])
     data = [
-            [Title1, Title2, Title3, Title4, Title5, Title6, Title7, Title8, Title9, Title10, Title11],
-            [Title21, Title22, Title23, Title24, Title25, Title26, Title27, Title28, Title29, Title30, Title31],]
+        [Title1, Title2, Title3, Title4, Title5, Title6, Title7, Title8, Title9, Title10, Title11, Title12, Title13],
+        [Title21, Title22, Title23, Title24, Title25, Title26, Title27, Title28, Title29, Title30, Title31, Title32,Title33,],]
     for item in record:
         data.append(item)
     tableStyle =[
                            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),       #   类别，(起始列，起始行）,(结束列，结束行)，线宽，颜色  #GRID是内外都有线   #BOX是只有外框，内部没线
                            ('BOX', (0, 0), (-1, -1), 1, colors.black),
                            ('BACKGROUND', (0, 0), (-1, 1), colors.khaki),
-                           ('BACKGROUND', (4, 2), (6, -1), colors.beige),
-                           ('BACKGROUND', (9, 2), (9, -1), colors.pink),
-                           ('BACKGROUND', (10, 2), (10, -1), colors.lavender),
+                           ('BACKGROUND', (3, 2), (5, -1), colors.beige),
+                           ('BACKGROUND', (11, 2), (11, -1), colors.pink),
+                           ('BACKGROUND', (12, 2), (12, -1), colors.lavender),
                            ('SPAN',(0,0),(0,1)),
                            ('SPAN',(7,0),(7,1)),
+                           ('SPAN',(8,0),(8,1)),
+                           ('SPAN',(9,0),(9,1)),
+                           ('SPAN',(10,0),(10,1)),
                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                            ('LINEABOVE', (0, 2), (-1, 2), 1, colors.black),
                            # ('LINEBEFORE', (2, 1), (2, -2), 1, colors.pink),
@@ -1149,7 +1157,7 @@ def DrawQuotationSheet(c,record):
                            # ('BACKGROUND', (3, 2), (3, 2), colors.beige),
                            # # ('ALIGN', (3, 2), (3, 2), 'LEFT'),
                            ]
-    tableColWidths = [15*mm,20.0*mm,25.0*mm,35.0*mm,35.0*mm,25.0*mm,30.0*mm,14.0*mm,20.0*mm,25*mm,25*mm]
+    tableColWidths = [12*mm,18.0*mm,18.0*mm,35.0*mm,22.0*mm,28.0*mm,20.0*mm,12.0*mm,12.0*mm,22*mm,22*mm,24*mm,25*mm]
 
     t = Table(data, style=tableStyle,colWidths=tableColWidths)
     startY = 8 + (23 - len(data)) * 6.3
@@ -1191,14 +1199,16 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         # myCanvas.drawImage(dirName+"tempBarcode.png", width-100, height-40,
         #                     width=100, height=40)
         # log.WriteText("here5"+dirName+"tempBarcode.png")
-        myCanvas.setFont("SimSun", 18)
+        myCanvas.setFont("Times", 18)
         myCanvas.drawCentredString(width/2,525, text="Inexa (NanTong) Interiors Co.Ltd Quotation Sheet")
         DrawLine(myCanvas,1,*coord(10, 28, height, mm),*coord(287, 28, height, mm))
         myCanvas.setFont("SimSun", 12)
-        myCanvas.drawString(40,500, text="报价单号(Quotation Sheet No.):%s"%'64757-001')
+
+        myCanvas.drawString(40,500, text="报价单号(Quotation Sheet No.):%s"%filename[-9:-4])
         myCanvas.drawRightString(width-50, 500, '出单日期(Date of Issue ):%s'%(datetime.date.today()))
         myCanvas.drawRightString(width-50, 480, '有效日期(Date of Expiry):%s'%(datetime.date.today()+datetime.timedelta(expiry)))
         myCanvas.drawString(40,470, text="Re:")
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
         myCanvas.drawString(40,450, text="1) TNF Wall Panel")
         DrawQuotationSheet(myCanvas,dataWall[pageNum*20:(pageNum+1)*20])#A1代表非尾页，A3代表尾页
@@ -1212,6 +1222,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         #         DrawQuotationSheet(myCanvas, dataHead, type='A2')
             # 墙板尾页，A23代表及时墙板第二页又是墙板尾页。B1代表天花板首页，B2代表天花板中间页，B3代表天花板尾页
         # DrawLine(myCanvas, 1, *coord(0, 2 + num * gap, height, mm), *coord(287, 2 + num * gap, height, mm))
+        myCanvas.setFont("SimSun", 12)
         myCanvas.drawRightString(width - 50, 15, '页码(Page)：%s/%s' % (pageNum+1, pageTotal))
         myCanvas.showPage()  # 这句话相当于分页，显示页面即完成当前页面，开始新页面
     for pageNum in range(pageCeiling):
@@ -1223,7 +1234,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         # # BarCodeGenerator(tempCode,dirName+"tempBarcode.png",log)
         # myCanvas.drawImage(dirName+"tempBarcode.png", width-100, height-40,
         #                     width=100, height=40)
-        myCanvas.setFont("SimSun", 18)
+        myCanvas.setFont("Times", 18)
         myCanvas.drawCentredString(width/2,530, text="Inexa (NanTong) Interiors Co.Ltd Quotation Sheet")
         DrawLine(myCanvas,1,*coord(10, 28, height, mm),*coord(287, 28, height, mm))
         myCanvas.setFont("SimSun", 12)
@@ -1231,6 +1242,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         myCanvas.drawRightString(width-50, 500, '出单日期(Issue  Date):%s'%(datetime.date.today()))
         myCanvas.drawRightString(width-50, 480, '有效日期(Expiry Date):%s'%(datetime.date.today()+datetime.timedelta(expiry)))
         myCanvas.drawString(40,470, text="Re:")
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
         myCanvas.drawString(40,450, text="2) TNF Ceiling Panel")
         DrawQuotationSheet(myCanvas,dataCeiling[pageNum*20:(pageNum+1)*19])
@@ -1244,6 +1256,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         #         DrawQuotationSheet(myCanvas, dataHead, type='A2')
             # 墙板尾页，A23代表及时墙板第二页又是墙板尾页。B1代表天花板首页，B2代表天花板中间页，B3代表天花板尾页
         # DrawLine(myCanvas, 1, *coord(0, 2 + num * gap, height, mm), *coord(287, 2 + num * gap, height, mm))
+        myCanvas.setFont("SimSun", 12)
         myCanvas.drawRightString(width - 50, 15, '页码(Page)：%s/%s' % (pageNum+1+pageWall, pageTotal))
         if pageNum == (pageCeiling-1):
             if leftRows>len(annotationList):
@@ -1262,7 +1275,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         # # BarCodeGenerator(tempCode,dirName+"tempBarcode.png",log)
         # myCanvas.drawImage(dirName+"tempBarcode.png", width-100, height-40,
         #                     width=100, height=40)
-        myCanvas.setFont("SimSun", 18)
+        myCanvas.setFont("Times", 18)
         myCanvas.drawCentredString(width/2,530, text="Inexa (NanTong) Interiors Co.Ltd Quotation Sheet")
         DrawLine(myCanvas,1,*coord(10, 28, height, mm),*coord(287, 28, height, mm))
         myCanvas.setFont("SimSun", 12)
@@ -1270,6 +1283,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         myCanvas.drawRightString(width-50, 500, '出单日期(Issue  Date):%s'%(datetime.date.today()))
         myCanvas.drawRightString(width-50, 480, '有效日期(Expiry Date):%s'%(datetime.date.today()+datetime.timedelta(expiry)))
         myCanvas.drawString(40,470, text="Re:")
+        myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
         for i in range(5-leftRows):
             myCanvas.drawString(40, 440-i*18, text=annotationList[leftRows+i])

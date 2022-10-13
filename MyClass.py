@@ -772,6 +772,9 @@ class WorkZonePanel(wx.Panel):
                 self.orderManagementPanel = OrderManagementPanel(self.notebook, self.master, self.log,
                                                                  character=self.master.operatorCharacter)
             self.notebook.AddPage(self.orderManagementPanel, "订单管理")
+            self.notebook.SetSelection(1)
+        else:
+            self.notebook.SetSelection(0)
         # if self.master.operatorCharacter in ["采购员", "经理"]:
         #     self.meterialPriceManagementPanel = MeterialPriceManagementPanel(self.notebook, self.log)
         #     self.notebook.AddPage(self.meterialPriceManagementPanel, "原材料价格管理")
@@ -786,7 +789,6 @@ class WorkZonePanel(wx.Panel):
         #     self.manufactureManagementPanel = ManufactureManagementPanel(self.notebook, self.master, self.log)
         #     self.notebook.AddPage(self.manufactureManagementPanel, "生产管理")
         # self.orderManagementPanel.ReCreate()
-        self.notebook.SetSelection(1)
         # if self.master.operatorCharacter == '下单员':
         #     self.notebook.SetSelection(1)
         # elif self.master.operatorCharacter in ["技术员","管理员"]:

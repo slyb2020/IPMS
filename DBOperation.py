@@ -2375,7 +2375,6 @@ def GetPriceDicFromDB(log, whichDB, date):
     return data_dict
 
 def UpdateDraftOrderInDB(log, whichDB, id, dicList):
-    print("id=",id)
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
                              passwd='%s' % dbPassword[whichDB], db='%s' % orderCheckDBName[whichDB], charset='utf8')
@@ -2386,7 +2385,6 @@ def UpdateDraftOrderInDB(log, whichDB, id, dicList):
         return -1, []
     cursor = db.cursor()
     for data in dicList:
-        print(data)
         sql = "UPDATE `%s` SET `单价`='%s',`总价`='%s',`实际报价`='%s' WHERE `Index` = %s" \
               % (id, data['单价'],data['总价'],data['实际报价'],data['Index'])
         try:
