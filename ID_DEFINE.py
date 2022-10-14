@@ -58,6 +58,7 @@ WallCheckEnableSectionDic = {
 MeterialCharacterList = ['材料名', '规格', '供应商', '价格', '单位', '备注']
 MeterialCharacterWidthList = [180, 180, 200, 160, 100, 100]
 
+CURRENCYDICT = {"人民币":"RMB","美元":"USD","欧元":"EUR","英镑":"GBP","日元":"JPY","卢布":"RUB",}
 BIDMODE = ['wxPython Rules', 'wxPython Rocks', 'wxPython Is The Best']
 BIDMETHOD = ['离岸价', '到岸价']
 

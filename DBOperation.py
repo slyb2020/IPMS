@@ -126,13 +126,13 @@ def GetAllOrderAllInfo(log, whichDB,type):
         return -1, []
     cursor = db.cursor()
     if type == "草稿":
-        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`投标时间`,`下单时间`,`下单员ID`,`状态`,`设计审核状态`,`采购审核状态`,`财务审核状态`,`订单部审核状态`,`经理审核状态`,`报价参考日期`,`汇率参考日期` from `订单信息` where `状态`='%s' """%type
+        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`投标时间`,`下单时间`,`下单员ID`,`状态`,`设计审核状态`,`采购审核状态`,`财务审核状态`,`订单部审核状态`,`经理审核状态`,`报价参考日期`,`汇率参考日期`,`备注` from `订单信息` where `状态`='%s' """%type
     elif type == "在产":
-        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`订单交货日期`,`下单时间`,`下单员ID`,`状态`,`报价参考日期`,`汇率参考日期` from `订单信息` where `状态`='%s' """%type
+        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`订单交货日期`,`下单时间`,`下单员ID`,`状态`,`报价参考日期`,`汇率参考日期`,`备注` from `订单信息` where `状态`='%s' """%type
     elif type == "完工":
-        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`订单交货日期`,`下单时间`,`下单员ID`,`状态`,`报价参考日期`,`汇率参考日期` from `订单信息` where `状态`='%s' """%type
+        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`订单交货日期`,`下单时间`,`下单员ID`,`状态`,`报价参考日期`,`汇率参考日期`,`备注` from `订单信息` where `状态`='%s' """%type
     elif type == "废弃":
-        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`投标时间`,`下单时间`,`下单员ID`,`状态`,`设计审核状态`,`采购审核状态`,`财务审核状态`,`订单部审核状态`,`经理审核状态`,`报价参考日期`,`汇率参考日期` from `订单信息` where `状态`='%s' """%type
+        sql = """SELECT `订单编号`,`订单名称`,`总价`,`产品数量`,`投标时间`,`下单时间`,`下单员ID`,`状态`,`设计审核状态`,`采购审核状态`,`财务审核状态`,`订单部审核状态`,`经理审核状态`,`报价参考日期`,`汇率参考日期`,`备注` from `订单信息` where `状态`='%s' """%type
     cursor.execute(sql)
     temp = cursor.fetchall()  # 获得压条信息
     db.close()
@@ -1948,7 +1948,7 @@ def GetPDF(log,whichDB):
         file.write(image)
         file.close()
 
-def UpdateOrderOperatorCheckStateByID(log,whichDB,id,state,quotationDate,exchangeRateDate):
+def UpdateOrderOperatorCheckStateByID(log,whichDB,id,state,quotationDate,exchangeRateDate,currencyName='人民币'):
     id = int(id)
     result = 1
     try:
@@ -1960,7 +1960,7 @@ def UpdateOrderOperatorCheckStateByID(log,whichDB,id,state,quotationDate,exchang
             log.WriteText("无法连接%s!" % packageDBName[whichDB], colour=wx.RED)
         return -1, []
     cursor = db.cursor()
-    sql = "UPDATE `订单信息` SET `订单部审核状态`= '%s',`报价参考日期`= '%s',`汇率参考日期`= '%s' where `Index`= %s " % (state,quotationDate,exchangeRateDate,id)
+    sql = "UPDATE `订单信息` SET `订单部审核状态`= '%s',`报价参考日期`= '%s',`汇率参考日期`= '%s',`备注`= '%s' where `Index`= %s " % (state,quotationDate,exchangeRateDate,currencyName,id)
     # sql = "UPDATE `订单信息` SET `订单部审核状态`= '%s' where `Index`= %s " % (state,id)
     try:
         cursor.execute(sql)

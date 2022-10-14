@@ -1,6 +1,7 @@
 import copy
 import threading
 from operator import itemgetter
+import json
 
 import wx
 import wx.grid as gridlib
@@ -176,7 +177,7 @@ class OrderGrid(gridlib.Grid):
 
         for i, order in enumerate(self.master.dataArray):
             self.SetRowSize(i, 25)
-            for j, item in enumerate(order[:-2]):  # z最后一列位子订单列表，不再grid上显示
+            for j, item in enumerate(order[:-3]):  # z最后一列位子订单列表，不再grid上显示
                 # self.SetCellBackgroundColour(i,j,wx.Colour(250, 250, 250))
                 self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
                 self.SetCellValue(i, j, str(item))
@@ -256,7 +257,10 @@ class OrderUpdateCheckThread(threading.Thread):
             if self.staffInfo != staffInfo:
                 self.staffInfo = staffInfo
                 self.parent.staffInfo = staffInfo
-                wx.CallAfter(self.parent.ReCreate)
+                try:
+                    wx.CallAfter(self.parent.ReCreate)
+                except:
+                    pass
             if not self.parent.priceDataDic:
                 priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
                 self.parent.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, priceDateLatest)
@@ -278,7 +282,7 @@ class OrderManagementPanel(wx.Panel):
         self.draftOrderDic = []
         self.priceDataDic = []
         self.exChangeRateDic = None
-        self.exChangeRate = None
+        self.exchangeRate = None
         self.orderUpdateCheckThread = OrderUpdateCheckThread(self, self.log)
         self.orderUpdateCheckThread.start()
 
@@ -286,10 +290,7 @@ class OrderManagementPanel(wx.Panel):
         if not self.staffInfo or not self.dataList:
             return
         # self.Freeze()
-        try:
-            self.DestroyChildren()
-        except:
-            pass
+        self.DestroyChildren()
         self.busy = False
         self.showRange = []
         if self.type == "草稿":
@@ -307,10 +308,6 @@ class OrderManagementPanel(wx.Panel):
                                       "采购审核", "财务审核", "订单部审核", "经理审核"]
             self.colWidthList = [60, 60, 80, 70, 60, 85, 85, 60, 60, 70, 70, 70, 70, 70]
         self.orderDetailData = []
-        # if not self.dataList:
-        #     _, self.dataList = GetAllOrderAllInfo(self.log, WHICHDB, self.type)
-        # else:
-        #     self.log.WriteText("订单数据发生变化，系统完成显示更新！")
         orderList = []
         for record in self.dataList:  # 这个循环是把要在grid中显示的数据排序，对齐，内容规整好
             record = list(record)
@@ -351,6 +348,7 @@ class OrderManagementPanel(wx.Panel):
             size = (1100, -1)
         elif self.type in ["在产", "完工"]:
             size = (710, -1)
+
         self.leftPanel = wx.Panel(self, size=size)
         hbox.Add(self.leftPanel, 0, wx.EXPAND)
         self.rightPanel = wx.Panel(self, style=wx.BORDER_THEME)
@@ -1044,8 +1042,8 @@ class DraftOrderPanel(wx.Panel):
         dlg = wx.MessageDialog(self, "您确定要废弃此订单吗？", "信息提示", style=wx.YES_NO)
         if dlg.ShowModal() == wx.ID_YES:
             if UpdateDraftOrderStateInDB(self.log, WHICHDB, self.ID, "废弃") == 0:
-                self.master.ReCreate()
-                wx.MessageBox("订单已成功废弃，系统稍候刷新显示！", "信息提示")
+                # self.master.ReCreate()
+                wx.MessageBox("订单已成功废弃，系统稍后将刷新显示！", "信息提示")
             else:
                 wx.MessageBox("订单废弃操作失败！", "信息提示")
         dlg.Destroy()
@@ -1069,11 +1067,10 @@ class DraftOrderPanel(wx.Panel):
         dlg = QuotationSheetDialog(self, self.master, self.log, self.ID, "订单管理员", name)
         dlg.CenterOnScreen()
         del busy
-        endTime = time.time()
         dlg.ShowModal()
         dlg.Destroy()
-        self.master.dataList = []
-        self.master.ReCreate()
+        # self.master.dataList = []
+        # self.master.ReCreate()
 
     def OnDraftOrderEditOkBTN(self, event):
         d = self.pg.GetPropertyValues(inc_attributes=True)
@@ -1116,8 +1113,8 @@ class DraftOrderPanel(wx.Panel):
         del busy
         dlg.ShowModal()
         dlg.Destroy()
-        self.master.dataList = []
-        self.master.ReCreate()
+        # self.master.dataList = []
+        # self.master.ReCreate()
 
     def OnFinishManagerCheck(self, event):
         pass
@@ -1166,11 +1163,11 @@ class DraftOrderPanel(wx.Panel):
             UpdatePurchchaseCheckStateByID(self.log, WHICHDB, self.ID, 'Y')
             UpdateFinancingCheckStateByID(self.log, WHICHDB, self.ID, 'Y')
             self.master.dataList = []
-            self.master.ReCreate()
+            # self.master.ReCreate()
 
     def OnFinishTechCheck(self, event):
         UpdateTechCheckStateByID(self.log, WHICHDB, self.ID, "Y")
-        self.master.ReCreate()
+        # self.master.ReCreate()
 
 
 class WallPanelOtherCheckGrid(gridlib.Grid):
@@ -1871,14 +1868,17 @@ class QuotationSheetDialog(wx.Dialog):
         exchangeDate = None
         self.quotationDate = None
         self.exchangeDate = None
+        self.currencyName = '人民币'
+        self.exchangeRateDic = {}
         for record in self.parent.master.dataList:
             if record[0]==self.id:
-                quotationDate = record[-2] if record[-2]!='None' and record[-2]!='' else str(datetime.date.today())
-                exchangeDate = record[-1] if record[-1]!='None' and record[-1]!=''else str(datetime.date.today())
+                quotationDate = record[-3] if record[-3]!='None' and record[-3]!='' else str(datetime.date.today())
+                exchangeDate = record[-2] if record[-2]!='None' and record[-2]!=''else str(datetime.date.today())
                 quotationDate = quotationDate.split('-')
                 self.quotationDate = datetime.date(int(quotationDate[0]), int(quotationDate[1]), int(quotationDate[2]))
                 exchangeDate = exchangeDate.split('-')
                 self.exchangeDate = datetime.date(int(exchangeDate[0]), int(exchangeDate[1]), int(exchangeDate[2]))
+                self.currencyName = record[-1] if record[-1] else '人民币'
                 break
         # quotationDate, exchangeDate = GetQuotationDateAndExchangeDateFromDB(self.log, WHICHDB, self.id)
         if not quotationDate:
@@ -1962,7 +1962,7 @@ class QuotationSheetDialog(wx.Dialog):
         if self.character in ["项目经理",'订单管理员']:
             UpdateDraftOrderInDB(self.log, WHICHDB, self.id, self.quotationSheetGrid.dataWall)
             UpdateOrderOperatorCheckStateByID(self.log, WHICHDB, self.id, 'Y', str(self.quotationDate),
-                                              str(self.exchangeDate))
+                                              str(self.exchangeDate), self.currencyName)
         else:
             UpdateManagerCheckStateByID(self.log, WHICHDB, self.id, 'Y', self.quotationDate, self.exchangeDate)
         self.Close()
@@ -1988,6 +1988,15 @@ class QuotationSheetDialog(wx.Dialog):
                                                                    | wx.adv.DP_ALLOWNONE)
         self.exchangeDateCtrl.SetValue(self.exchangeDate)
         hhbox.Add(self.exchangeDateCtrl, 0, wx.TOP, 10)
+        hhbox.Add((10, -1))
+        hhbox.Add(wx.StaticText(self.controlPanel, label="报价币种："), 0, wx.TOP, 15)
+        if self.currencyName != "人民币":
+            self.exchangeDateCtrl.Enable(True)
+        else:
+            self.exchangeDateCtrl.Enable(False)
+        self.currencyNameCOMBO = wx.ComboBox(self.controlPanel, value=self.currencyName, size=(100, -1),choices=["人民币",'美元','英镑','欧元','日元','卢布'])
+        self.currencyNameCOMBO.Bind(wx.EVT_COMBOBOX, self.OnCurrencyNameChanged)
+        hhbox.Add(self.currencyNameCOMBO,0,wx.TOP,10)
         hhbox.Add((10,-1))
         self.exchangeRateTXT = wx.TextCtrl(self.controlPanel, size=(80,-1), style=wx.TE_READONLY)
         for i in range(10):
@@ -1995,15 +2004,17 @@ class QuotationSheetDialog(wx.Dialog):
                 wx.Sleep(1)
             else:
                 break
-        self.parent.master.exchangeRate=None
+        self.exchangeRate=None
         for item in self.parent.master.exChangeRateDic:
             if self.exchangeDate == item['日期']:
-                self.parent.master.exchangeRate = item['汇率']
+                self.exchangeRateDic = item
+                self.exchangeRate = self.exchangeRateDic[self.currencyName]
                 break
-        if not self.parent.master.exchangeRate:
-            self.parent.master.exchangeRate = self.parent.master.exChangeRateDic[-1]['汇率']
+        if not self.exchangeRate:
+            self.exchangeRateDic = self.parent.master.exChangeRateDic[-1]
+            self.exchangeRate = self.exchangeRateDic[self.currencyName]
             #这块儿应加入把新值插入汇率数据库的操作
-        self.exchangeRateTXT.SetValue(self.parent.master.exchangeRate)
+        self.exchangeRateTXT.SetValue(self.exchangeRate)
         hhbox.Add(self.exchangeRateTXT, 0, wx.TOP,10)
         hhbox.Add((10, -1))
         hhbox.Add(wx.StaticLine(self.controlPanel, style=wx.VERTICAL), 0, wx.EXPAND)
@@ -2019,6 +2030,20 @@ class QuotationSheetDialog(wx.Dialog):
             self.quotationDateCtrl.Enable(False)
             self.exchangeDateCtrl.Enable(False)
 
+    def OnCurrencyNameChanged(self,event):
+        if self.currencyName != self.currencyNameCOMBO.GetValue():
+            self.currencyName = self.currencyNameCOMBO.GetValue()
+            if self.currencyName != "人民币" and self.name !='生成报价单':
+                self.exchangeDateCtrl.Enable(True)
+            else:
+                self.exchangeDateCtrl.Enable(False)
+            self.exchangeRate = self.exchangeRateDic[self.currencyName]
+            self.exchangeRateTXT.SetValue(str(self.exchangeRate))
+            self.quotationSheetGrid.exchangeRate = self.exchangeRate
+            self.quotationSheetGrid.currencyName = self.currencyName
+            self.quotationSheetGrid.ReCreate()
+
+
     def OnExchangeRatDateChanged(self, event):
         if event.GetDate() != self.exchangeDate:
             self.exchangeDate = event.GetDate()
@@ -2026,34 +2051,20 @@ class QuotationSheetDialog(wx.Dialog):
             self.parent.master.exchangeRate = None
             for item in self.parent.master.exChangeRateDic:
                 if str(self.exchangeDate) == item['日期']:
-                    self.parent.master.exchangeRate = item['汇率']
+                    self.parent.master.exchangeRate = item[self.currencyName]
                     break
             if not self.parent.master.exchangeRate:
-                self.parent.master.exchangeRate = self.parent.master.exChangeRateDic[-1]['汇率']
+                self.parent.master.exchangeRate = self.parent.master.exChangeRateDic[-1][self.currencyName]
                 # 这块儿应加入把新值插入汇率数据库的操作
             self.exchangeRateTXT.SetValue(self.parent.master.exchangeRate)
+            self.quotationSheetGrid.exchangeRate = self.parent.master.exchangeRate
             self.quotationSheetGrid.ReCreate()
-
-            # result = GetExchagneRateInDB(self.log, WHICHDB, exchangeDate)
-            # print("result=",result)
-            # if result != None:
-            #     self.exchangeDate = exchangeDate
-            #     print(result)
-            #     self.quotationSheetGrid.ReCreate()
-            # else:
-            #     wx.MessageBox("系统无法获得此日期的美元汇率，请更改日期后重试！")
-            #     self.exchangeDateCtrl.SetValue(self.exchangeDate)
 
     def OnQuotationDateChanged(self, event):
         if event.GetDate() != self.quotationDate:
             self.quotationDate = event.GetDate()
             self.quotationDate = wxdate2pydate(self.quotationDate)
             self.quotationSheetGrid.SetCellValue(1,2,str(self.quotationDate))
-            # busy = PBI.PyBusyInfo("正在为您生成新的报价单，请稍候。。。", parent=None, title="系统忙提示",
-            #                       icon=images.Smiles.GetBitmap())
-            # wx.Yield()
-            # self.ReCreateGrid()
-            # del busy
         event.Skip()
 
     def OnQuotationRangeChanged(self, event):
@@ -2069,7 +2080,7 @@ class QuotationSheetDialog(wx.Dialog):
         self.quotationRange = self.quotationRangeCtrl.GetValue()
         hbox = wx.BoxSizer()
         self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.master, self.log, self.id, self.priceDataDic, self.quotationDate,
-                                                     self.exchangeDate,self.quotationRange, self.name)
+                                                     self.exchangeDate,self.quotationRange, self.name, self.currencyName, self.exchangeRate)
         hbox.Add(self.quotationSheetGrid, 1, wx.EXPAND)
         self.gridPanel.SetSizer(hbox)
         self.gridPanel.Layout()
@@ -2080,7 +2091,7 @@ class QuotationSheetDialog(wx.Dialog):
         self.quotationRange = self.quotationRangeCtrl.GetValue()
         hbox = wx.BoxSizer()
         self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.master, self.log, self.id, self.priceDataDic, self.quotationDate,
-                                                     self.exchangeDate,self.quotationRange, self.name)
+                                                     self.exchangeDate,self.quotationRange, self.name, self.currencyName, self.exchangeRate)
         hbox.Add(self.quotationSheetGrid, 1, wx.EXPAND)
         self.gridPanel.SetSizer(hbox)
         self.gridPanel.Layout()
@@ -2088,7 +2099,7 @@ class QuotationSheetDialog(wx.Dialog):
 
 
 class QuotationSheetGrid(gridlib.Grid):
-    def __init__(self, parent, master, log, id, priceDataDic, quotationDate, exchangeRateDate,quotationRange,name):
+    def __init__(self, parent, master, log, id, priceDataDic, quotationDate, exchangeRateDate,quotationRange,name,currencyName='人民币',exchangeRate=100):
         gridlib.Grid.__init__(self, parent, -1)
         self.master = master
         self.id = id
@@ -2099,12 +2110,13 @@ class QuotationSheetGrid(gridlib.Grid):
         self.quotationDate = quotationDate
         self.exchangeRateDate = exchangeRateDate
         self.quotationRange = quotationRange
+        self.currencyName = currencyName
         self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.dataWall = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "WALL")
         self.dataCeiling = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "CEILING")
         self.wallUnitPrice = [0] * len(self.dataWall)
         self.wallTotalPrice = [0] * len(self.dataWall)
-        self.exchangeRate = 6.66
+        self.exchangeRate = exchangeRate
         self.wallRowNumList=[]
         for i, dic in enumerate(self.dataWall):
             if dic['单价'] != None:
@@ -2154,17 +2166,7 @@ class QuotationSheetGrid(gridlib.Grid):
         self.marginNT = 0.2
         self.marginDK = 0
         self.agentRate = 0
-        # exchangeRate = GetExchagneRateInDB(self.log, WHICHDB, str(self.exchangeRateDate))
-        exchangeRate = self.master.exchangeRate
-        if exchangeRate == None:
-            wx.MessageBox("数据库中没有指定日期的美元汇率，请更换日期后重试！", "信息提示")
-        else:
-            self.exchangeRate = float(exchangeRate) / 100. - 0.02
-        # _, productLaborAmountList = GetProductLaborUnitPriceInDB(self.log, WHICHDB)
-        # if productLaborAmountList == None:
-        #     wx.MessageBox("数据库中没有指定日期的原材料价格，请更换日期后重试！", "信息提示")
-        # else:
-        #     self.productLaborAmountList = productLaborAmountList
+        # exchangeRate = self.master.exchangeRate
         colNum = 21 if self.name=='生成报价单' else 20
         for i in range(colNum):
             attr = gridlib.GridCellAttr()
@@ -2204,6 +2206,9 @@ class QuotationSheetGrid(gridlib.Grid):
             else:
                 self.SetCellBackgroundColour(row,col,wx.WHITE)
             if self.GetCellValue(row,col):
+                price = price * 1.3 if self.GetCellValue(11 + i, 10) == 'Y' else price
+                price = price + 15 if self.GetCellValue(11 + i, 8) == "Y" else price
+                price = price + 20 if self.GetCellValue(11 + i, 9) == "Y" else price
                 unitPriceUS = price/self.exchangeRate*100
                 totalPriceUS = float(self.GetCellValue(row,6))*unitPriceUS
                 self.SetCellValue(row, 11, "%6.2f"%unitPriceUS)
@@ -2247,81 +2252,72 @@ class QuotationSheetGrid(gridlib.Grid):
         # _, self.allProductMeterialUnitPriceList = GetAllProductMeterialUnitPriceInDB(self.log, WHICHDB)
         quotationDate = str(self.quotationDate)
         # _, self.allMeterialUnitPriceList = GetAllMeterialUnitPriceByIdInDB(self.log, WHICHDB, quotationDate)
-        self.exchangeRate = float(self.master.exchangeRate)
+        self.exchangeRate = float(self.exchangeRate)
         self.ClearGrid()
         self.SetCellValue(0, 0, "INEXA TNF")
-        self.SetCellValue(0, 12+2, "Currency rate")
-        self.SetCellValue(0, 13+2, "%.2f" % self.exchangeRate)
-        self.SetCellValue(0, 14+2, "USD-CNY")
-        self.SetCellValue(0, 15+2, str(self.exchangeRateDate))
-
+        # self.SetCellValue(0, 12+2, "Currency rate")
+        # self.SetCellValue(0, 13+2, "%.2f" % self.exchangeRate)
+        # self.SetCellValue(0, 14+2, "USD-CNY")
+        # self.SetCellValue(0, 15+2, str(self.exchangeRateDate))
+        #
         self.SetCellValue(1, 0, "Date: ")
         self.SetCellValue(1, 2, quotationDate)
-        self.SetCellValue(1, 12+2, "OverHead")
-        self.SetCellValue(1, 13+2, "26%")
-        self.SetCellValue(1, 14+2, "Over-head by NT	")
-        self.SetCellSize(1, 14+2, 1, 2)
-
+        # self.SetCellValue(1, 12+2, "OverHead")
+        # self.SetCellValue(1, 13+2, "26%")
+        # self.SetCellValue(1, 14+2, "Over-head by NT	")
+        # self.SetCellSize(1, 14+2, 1, 2)
+        #
         self.SetCellValue(2, 0, "Project No.:")
         self.SetCellValue(2, 2, "Senta 123")
-        self.SetCellValue(2, 12+2, "crap rate")
-        self.SetCellValue(2, 13+2, "3%")
-        self.SetCellValue(2, 14+2, "All")
-        self.SetCellSize(2, 14+2, 1, 2)
-
+        # self.SetCellValue(2, 12+2, "crap rate")
+        # self.SetCellValue(2, 13+2, "3%")
+        # self.SetCellValue(2, 14+2, "All")
+        # self.SetCellSize(2, 14+2, 1, 2)
+        #
         self.SetCellValue(3, 0, "Inexa Quotation No.: ")
         self.SetCellValue(3, 2, "Senta 123")
-        self.SetCellValue(3, 12+2, "Profile")
-        self.SetCellValue(3, 13+2, "15%")
-        self.SetCellValue(3, 14+2, "All")
-        self.SetCellSize(3, 14+2, 1, 2)
-
-        self.SetCellValue(4, 12+2, "CM for NT")
-        self.SetCellValue(4, 13+2, "20%")
-        self.SetCellValue(4, 14+2, "Proposed by NT")
-        self.SetCellSize(4, 14+2, 1, 2)
-
-        self.SetCellValue(5, 12+2, "CM for DK")
-        self.SetCellValue(5, 13+2, "0%")
-        self.SetCellValue(5, 14+2, "TBD by DK office")
-        self.SetCellSize(5, 14+2, 1, 2)
-
-        self.SetCellValue(6, 12+2, "Agent rate")
-        self.SetCellValue(6, 13+2, "0%")
-        self.SetCellValue(6, 14+2, "TBD by DK office")
-        self.SetCellSize(6, 14+2, 1, 2)
+        # self.SetCellValue(3, 12+2, "Profile")
+        # self.SetCellValue(3, 13+2, "15%")
+        # self.SetCellValue(3, 14+2, "All")
+        # self.SetCellSize(3, 14+2, 1, 2)
+        #
+        # self.SetCellValue(4, 12+2, "CM for NT")
+        # self.SetCellValue(4, 13+2, "20%")
+        # self.SetCellValue(4, 14+2, "Proposed by NT")
+        # self.SetCellSize(4, 14+2, 1, 2)
+        #
+        # self.SetCellValue(5, 12+2, "CM for DK")
+        # self.SetCellValue(5, 13+2, "0%")
+        # self.SetCellValue(5, 14+2, "TBD by DK office")
+        # self.SetCellSize(5, 14+2, 1, 2)
+        #
+        # self.SetCellValue(6, 12+2, "Agent rate")
+        # self.SetCellValue(6, 13+2, "0%")
+        # self.SetCellValue(6, 14+2, "TBD by DK office")
+        # self.SetCellSize(6, 14+2, 1, 2)
 
         self.SetCellValue(7, 0, "Re:")
         self.SetCellValue(7, 1, "TNF accommodation system")
-        self.SetCellValue(7, 12+2, "Bussiness type")
-        self.SetCellValue(7, 13+2, "Export")
-        self.SetCellValue(7, 14+2, "Export")
+        # self.SetCellValue(7, 12+2, "Bussiness type")
+        # self.SetCellValue(7, 13+2, "Export")
+        # self.SetCellValue(7, 14+2, "Export")
         self.SetCellSize(7, 14+2, 1, 2)
 
         self.SetCellValue(8, 0, "1)TNF Wall Panel")
-        # self.SetCellValue(8, 12, "Direct costs")
-        # self.SetCellValue(8, 14, "Scrap rate")
-        # self.SetCellValue(8, 15, "Over-head")
-        # self.SetCellValue(8, 16, "Profile")
-        # self.SetCellValue(8, 17, "Margin-NT")
-        # self.SetCellValue(8, 18, "Margin-DK")
-        # self.SetCellValue(8, 19, "Agent  rate")
-        # self.SetCellValue(8, 20, "sales price")
-        # self.SetCellValue(8, 21, "Unit sales price")
 
-        self.SetCellValue(9, 0, "Item")
-        self.SetCellValue(9, 1, "Product")
-        self.SetCellValue(9, 2, "Product")
-        self.SetCellValue(9, 3, "Product")
-        self.SetCellValue(9, 4, "Product")
-        self.SetCellValue(9, 5, "Product")
-        self.SetCellValue(9, 7, "Unit")
-        self.SetCellValue(9, 6, "Total")
-        self.SetCellValue(9, 8, "Product")
-        self.SetCellValue(9, 9, "Product")
-        self.SetCellValue(9, 10, "Product")
-        self.SetCellValue(9, 8+3, "Unit Price")
-        self.SetCellValue(9, 9+3, "Total Price")
+        self.SetCellValue(9, 0, "编号" if self.currencyName=='人民币' else "Item")
+        self.SetCellValue(9, 1, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 2, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 3, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 4, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 5, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 7, "单位" if self.currencyName=='人民币' else "Unit")
+        self.SetCellValue(9, 6, "总计" if self.currencyName=='人民币' else"Total")
+        self.SetCellValue(9, 8, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 9, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 10, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9, 8+3, "单价" if self.currencyName=='人民币' else "Unit Price")
+        self.SetCellValue(9, 9+3, "总价" if self.currencyName=='人民币' else "Total Price")
         self.SetCellValue(10, 12+2, "5000平方米")
         self.SetCellValue(10, 13+2, "80000平方米")
         self.SetCellValue(10, 14+2, "10000平方米")
@@ -2332,27 +2328,17 @@ class QuotationSheetGrid(gridlib.Grid):
         # self.SetCellValue(9, 19, "0.0%")
         # self.SetCellValue(9, 21, "Inc. over head")
 
-        self.SetCellValue(10, 1, "Name")
-        self.SetCellValue(10, 2, "surface")
-        self.SetCellValue(10, 3, "height/length (mm)")
-        self.SetCellValue(10, 4, "width (mm)")
-        self.SetCellValue(10, 5, "thickness (mm)")
-        self.SetCellValue(10, 6, "Quantity")
-        self.SetCellValue(10, 8, "Wet")
-        self.SetCellValue(10, 9, "Strengthen")
-        self.SetCellValue(10, 10, "OverWidth")
-        self.SetCellValue(10, 8+3, "In USD")
-        self.SetCellValue(10, 9+3, "In USD")
-        # self.SetCellValue(10, 12, "RMB")
-        # self.SetCellValue(10, 13, "RMB")
-        # self.SetCellValue(10, 14, "RMB")
-        # self.SetCellValue(10, 15, "RMB")
-        # self.SetCellValue(10, 16, "RMB")
-        # self.SetCellValue(10, 17, "RMB")
-        # self.SetCellValue(10, 18, "RMB")
-        # self.SetCellValue(10, 19, "RMB")
-        # self.SetCellValue(10, 20, "RMB")
-        # self.SetCellValue(10, 21, "USD")
+        self.SetCellValue(10, 1, "型号" if self.currencyName=='人民币' else "Name")
+        self.SetCellValue(10, 2, "表材" if self.currencyName=='人民币' else "surface")
+        self.SetCellValue(10, 3, "高度/长度 (mm)" if self.currencyName=='人民币' else "height/length (mm)")
+        self.SetCellValue(10, 4, "宽度 (mm)" if self.currencyName=='人民币' else "width (mm)")
+        self.SetCellValue(10, 5, "厚度 (mm)" if self.currencyName=='人民币' else "thickness (mm)")
+        self.SetCellValue(10, 6, "数量" if self.currencyName=='人民币' else "Quantity")
+        self.SetCellValue(10, 8, "潮湿" if self.currencyName=='人民币' else "Wet")
+        self.SetCellValue(10, 9, "加强" if self.currencyName=='人民币' else "Strengthen")
+        self.SetCellValue(10, 10, "超宽" if self.currencyName=='人民币' else "OverWidth")
+        self.SetCellValue(10, 8+3, "元" if self.currencyName=='人民币' else "In %s"%CURRENCYDICT[self.currencyName])
+        self.SetCellValue(10, 9+3, "元" if self.currencyName=='人民币' else "In %s"%CURRENCYDICT[self.currencyName])
 
         self.SetCellSize(0, 0, 1, 2)
         self.SetCellSize(1, 0, 1, 2)
@@ -2363,7 +2349,7 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellSize(8, 12+2, 1, 2)
         self.SetCellSize(8, 20+2, 2, 1)
         self.SetCellSize(9, 0, 2, 1)
-        self.SetCellSize(9, 6, 2, 1)
+        self.SetCellSize(9, 7, 2, 1)
         wallTotalAmount = 0.0
         wallTatalPriceUSD = 0.0
         self.wallRowNumList = []
@@ -2424,9 +2410,9 @@ class QuotationSheetGrid(gridlib.Grid):
                 self.SetCellBackgroundColour(i+11,20,wx.Colour(200,100,0))
             else:
                 self.SetCellBackgroundColour(i+11,20,wx.WHITE)
+            price = price*1.3 if self.GetCellValue(11+i,10)=='Y' else price
             price = price+15 if wallDict["潮湿"]=="Y" else price
             price = price+20 if wallDict["加强"]=="Y" else price
-            price = price*1.3 if self.GetCellValue(11+i,10)=='Y' else price
             unitPriceUS = price*100 / self.exchangeRate
             totalPriceUS = float(self.GetCellValue(11+i, 6)) * unitPriceUS
             self.SetCellValue(i+11, 11, "%6.2f" % unitPriceUS)
@@ -2523,6 +2509,8 @@ class QuotationSheetGrid(gridlib.Grid):
         ##########################################################################################
         self.SetCellValue(8 + 6 + len(self.dataWall), 0, "2)TNF Ceiling Panel")
         self.SetCellSize(8 + 6 + len(self.dataWall), 0, 1, 2)
+        self.SetCellSize(9 + 6 + len(self.dataWall), 0, 2, 1)
+        self.SetCellSize(9 + 6 + len(self.dataWall), 7, 2, 1)
         # self.SetCellValue(8 + 7 + len(self.dataWall), 12, "5000平方米")
         # self.SetCellSize(8 + 6 + len(self.dataWall), 12, 2, 1)
         # self.SetCellValue(8 + 7 + len(self.dataWall), 13, "8000平方米")
@@ -2535,19 +2523,19 @@ class QuotationSheetGrid(gridlib.Grid):
         # self.SetCellSize(8 + 7 + len(self.dataWall), 20, 2, 1)
         # self.SetCellValue(8 + 7 + len(self.dataWall), 21, "Unit sales price")
 
-        self.SetCellValue(9 + 6 + len(self.dataWall), 0, "Item")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 1, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 2, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 3, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 4, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 5, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 7, "Unit")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 6, "Total")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 8, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 9, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 10, "Product")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 8+3, "Unit Price")
-        self.SetCellValue(9 + 6 + len(self.dataWall), 9+3, "Total Price")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 0, "型号" if self.currencyName=='人民币' else "Name")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 1, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 2, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 3, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 4, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 5, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 7, "单位" if self.currencyName=='人民币' else "Unit")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 6, "总计" if self.currencyName=='人民币' else"Total")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 8, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 9, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 10, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 8+3, "单价" if self.currencyName=='人民币' else "Unit Price")
+        self.SetCellValue(9 + 6 + len(self.dataWall), 9+3, "总价" if self.currencyName=='人民币' else "Total Price")
         # self.SetCellValue(9 + 6 + len(self.dataWall), 12, "Material")
         # self.SetCellValue(9 + 6 + len(self.dataWall), 13, "Labor")
         # self.SetCellValue(9 + 6 + len(self.dataWall), 14, "3.0%")
@@ -2558,17 +2546,17 @@ class QuotationSheetGrid(gridlib.Grid):
         # self.SetCellValue(9 + 6 + len(self.dataWall), 19, "0.0%")
         # self.SetCellValue(9 + 6 + len(self.dataWall), 21, "Inc. over head")
 
-        self.SetCellValue(10 + 6 + len(self.dataWall), 1, "Name")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 2, "surface")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 3, "height/length (mm)")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 4, "width (mm)")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 5, "thickness (mm)")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 6, "Quantity")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 8, "Wet")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 9, "Strengthen")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 10, "OverWidth")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 8+3, "In USD")
-        self.SetCellValue(10 + 6 + len(self.dataWall), 9+3, "In USD")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 1, "型号" if self.currencyName=='人民币' else "Name")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 2, "表材" if self.currencyName=='人民币' else "surface")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 3, "高度/长度 (mm)" if self.currencyName=='人民币' else "height/length (mm)")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 4, "宽度 (mm)" if self.currencyName=='人民币' else "width (mm)")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 5, "厚度" if self.currencyName=='人民币' else "thickness (mm)")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 6, "数量" if self.currencyName=='人民币' else "Quantity")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 8, "潮湿" if self.currencyName=='人民币' else "Wet")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 9, "加强" if self.currencyName=='人民币' else "Strengthen")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 10, "超宽" if self.currencyName=='人民币' else "OverWidth")
+        self.SetCellValue(10 + 6 + len(self.dataWall), 8+3, "元" if self.currencyName=='人民币' else "In %s"%CURRENCYDICT[self.currencyName])
+        self.SetCellValue(10 + 6 + len(self.dataWall), 9+3, "元" if self.currencyName=='人民币' else "In %s"%CURRENCYDICT[self.currencyName])
         self.SetCellValue(10 + 6 + len(self.dataWall), 12+2, "5000平方米")
         self.SetCellValue(10 + 6 + len(self.dataWall), 13+2, "8000平方米")
         self.SetCellValue(10 + 6 + len(self.dataWall), 14+2, "10000平方米")
@@ -2576,9 +2564,6 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(10 + 6 + len(self.dataWall), 16+2, "30000平方米")
         self.SetCellValue(10 + 6 + len(self.dataWall), 17+2, "40000平方米")
         self.SetCellValue(10 + 6 + len(self.dataWall), 18+2, "实际报价")
-        # self.SetCellValue(10 + 6 + len(self.dataWall), 19, "RMB")
-        # self.SetCellValue(10 + 6 + len(self.dataWall), 20, "RMB")
-        # self.SetCellValue(10 + 6 + len(self.dataWall), 21, "USD")
 
         ceilingTotalAmount = 0.0
         ceilingTatalPriceUSD = 0.0
@@ -2606,19 +2591,6 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, 'm2')
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
 
-        # for i, title in enumerate(self.master.colLabelValueList):
-        #     self.SetColLabelValue(i,title)
-        # for i, width in enumerate(self.master.colWidthList):
-        #     self.SetColSize(i, width)
-        # for i, order in enumerate(self.master.dataArray[:,:7]):
-        #     self.SetRowSize(i, 25)
-        #     for j, item in enumerate(order):
-        #         self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
-        #         self.SetCellValue(i, j, str(item))
-        #         if int(order[0])<2:
-        #             self.SetCellBackgroundColour(i,j,wx.RED)
-        #         elif int(order[0])<5:
-        #             self.SetCellBackgroundColour(i,j,wx.YELLOW)
 
     def OnIdle(self, evt):
         if self.moveTo is not None:
@@ -2837,7 +2809,6 @@ class QuotationSheetGrid(gridlib.Grid):
 #         wallTotalAmount = 0.0
 #         wallTatalPriceUSD = 0.0
 #         for i, wallDict in enumerate(self.dataWall):
-#             print("wallDict=",wallDict)
 #             wallAmount = float(wallDict['数量'])
 #             wallTotalAmount += wallAmount
 #             self.SetCellValue(11 + i, 0, str(i + 1))
