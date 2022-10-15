@@ -252,7 +252,10 @@ class OrderUpdateCheckThread(threading.Thread):
             if self.dataList != dataList:
                 self.dataList = dataList
                 self.parent.dataList = dataList
-                wx.CallAfter(self.parent.ReCreate)
+                try:
+                    wx.CallAfter(self.parent.ReCreate)
+                except:
+                    pass
             _, staffInfo = GetStaffInfo(self.log, WHICHDB)
             if self.staffInfo != staffInfo:
                 self.staffInfo = staffInfo
@@ -290,7 +293,10 @@ class OrderManagementPanel(wx.Panel):
         if not self.staffInfo or not self.dataList:
             return
         # self.Freeze()
-        self.DestroyChildren()
+        try:
+            self.DestroyChildren()
+        except:
+            pass
         self.busy = False
         self.showRange = []
         if self.type == "草稿":
@@ -312,9 +318,10 @@ class OrderManagementPanel(wx.Panel):
         for record in self.dataList:  # 这个循环是把要在grid中显示的数据排序，对齐，内容规整好
             record = list(record)
             startDay = datetime.date.today()
-            temp = record[4].split('-')
-            endDay = datetime.date(year=int(temp[0]), month=int(temp[1]), day=int(temp[2]))
-            record.insert(0, (endDay - startDay).days)
+            if record[4]:
+                temp = record[4].split('-')
+                endDay = datetime.date(year=int(temp[0]), month=int(temp[1]), day=int(temp[2]))
+                record.insert(0, (endDay - startDay).days)
             record[1] = "%05d" % int(record[1])
             if record[3] == "" or record[3] == None:
                 record[3] = "暂无报价"
@@ -397,19 +404,19 @@ class OrderManagementPanel(wx.Panel):
         self.Layout()
         # self.Thaw()
 
-        def ReCreateOrderDetailTree(self):
-            self.orderDetailTreePanel.DestroyChildren()
-            _, self.orderDetailData = GetOrderDetailRecord(self.log, 1, self.data[0])
-            if len(self.orderDetailData) == 0:
-                self.treeStructure = []
-            else:
-                self.treeStructure = self.TreeDataTransform()
-            self.orderDetailTree = OrderDetailTree(self.orderDetailTreePanel, self, self.log, self.data[0],
-                                                   self.treeStructure)
-            vbox = wx.BoxSizer(wx.VERTICAL)
-            vbox.Add(self.orderDetailTree, 1, wx.EXPAND)
-            self.orderDetailTreePanel.SetSizer(vbox)
-            self.orderDetailTreePanel.Layout()
+    def ReCreateOrderDetailTree(self):
+        self.orderDetailTreePanel.DestroyChildren()
+        _, self.orderDetailData = GetOrderDetailRecord(self.log, 1, self.data[0])
+        if len(self.orderDetailData) == 0:
+            self.treeStructure = []
+        else:
+            self.treeStructure = self.TreeDataTransform()
+        self.orderDetailTree = OrderDetailTree(self.orderDetailTreePanel, self, self.log, self.data[0],
+                                               self.treeStructure)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(self.orderDetailTree, 1, wx.EXPAND)
+        self.orderDetailTreePanel.SetSizer(vbox)
+        self.orderDetailTreePanel.Layout()
 
     def ReCreateOrderEditPanel(self):
         self.orderEditPanel.Freeze()
@@ -709,7 +716,7 @@ class DraftOrderPanel(wx.Panel):
         self.bidMode = BIDMODE[0]
         self.bidMethod = BIDMETHOD[0]
         self.draftOrderType = 0
-        self.techDrawingName = ""
+        self.techDrawingName1 = ""
         self.techDrawingName2 = ""
         self.techDrawingName3 = ""
         self.techDrawingName4 = ""
@@ -742,27 +749,26 @@ class DraftOrderPanel(wx.Panel):
             self.draftOrderType = int(dic['草稿订单类别'])
             self.bidMode = dic["投标方式"]
             self.bidMethod = dic["投标格式"]
-            self.techDrawingName = dic["客户原始技术图纸名"]
+            self.techDrawingName1 = dic["客户原始技术图纸名1"]
             self.techDrawingName2 = dic["客户原始技术图纸名2"]
             self.techDrawingName3 = dic["客户原始技术图纸名3"]
             self.techDrawingName4 = dic["客户原始技术图纸名4"]
             self.techCheckState = dic['设计审核状态']
             self.orderOperatorCheckState = dic['订单部审核状态']
             self.managerCheckState = dic['经理审核状态']
-            self.techDrawingName = self.techDrawingName.strip("\"")
+            self.techDrawingName1 = self.techDrawingName1.strip("/")
             if self.techDrawingName2 == None:
                 self.techDrawingName2 = ""
             else:
-                self.techDrawingName2 = self.techDrawingName2.strip("\"")
+                self.techDrawingName2 = self.techDrawingName2.strip("/")
             if self.techDrawingName3 == None:
                 self.techDrawingName3 = ""
             else:
-                self.techDrawingName3 = self.techDrawingName3.strip("\"")
+                self.techDrawingName3 = self.techDrawingName3.strip("/")
             if self.techDrawingName4 == None:
                 self.techDrawingName4 = ""
             else:
-                self.techDrawingName4 = self.techDrawingName4.strip("\"")
-
+                self.techDrawingName4 = self.techDrawingName4.strip("/")
         self.Freeze()
         self.DestroyChildren()
         self.panel = panel = wx.Panel(self, wx.ID_ANY)
@@ -827,7 +833,7 @@ class DraftOrderPanel(wx.Panel):
 
         pg.Append(wxpg.PropertyCategory("3 - 附件"))
         if self.mode in ["NEW", "EDIT"]:
-            pg.Append(wxpg.FileProperty("1.产品清单或图纸文件", value=self.techDrawingName))
+            pg.Append(wxpg.FileProperty("1.产品清单或图纸文件", value=self.techDrawingName1))
             pg.Append(wxpg.FileProperty("2.产品清单或图纸文件", value=self.techDrawingName2))
             pg.Append(wxpg.FileProperty("3.产品清单或图纸文件", value=self.techDrawingName3))
             pg.Append(wxpg.FileProperty("4.产品清单或图纸文件", value=self.techDrawingName4))
@@ -881,25 +887,25 @@ class DraftOrderPanel(wx.Panel):
                     # self.orderEditPanel.SetSizer(sizer)
                     # sizer.Fit(self.orderEditPanel)
         else:
-            techDrawingName = self.techDrawingName.split("\\")[-1]
-            techDrawingName = "%d." % self.ID + techDrawingName
-            techDrawingName2 = self.techDrawingName2.split("\\")[-1]
+            techDrawingName1 = self.techDrawingName1.split("/")[-1]
+            techDrawingName1 = "%d." % self.ID + techDrawingName1
+            techDrawingName2 = self.techDrawingName2.split("/")[-1]
             if techDrawingName2 != "":
                 techDrawingName2 = "%d." % self.ID + techDrawingName2
-            techDrawingName3 = self.techDrawingName3.split("\\")[-1]
+            techDrawingName3 = self.techDrawingName3.split("/")[-1]
             if techDrawingName3 != "":
                 techDrawingName3 = "%d." % self.ID + techDrawingName3
-            techDrawingName4 = self.techDrawingName4.split("\\")[-1]
+            techDrawingName4 = self.techDrawingName4.split("/")[-1]
             if techDrawingName4 != "":
                 techDrawingName4 = "%d." % self.ID + techDrawingName4
-            pg.Append(wxpg.LongStringProperty("1.产品清单或图纸文件", value=techDrawingName))
+            pg.Append(wxpg.LongStringProperty("1.产品清单或图纸文件", value=techDrawingName1))
             pg.SetPropertyEditor("1.产品清单或图纸文件", "TechDrawingButtonEditor")
             pg.Append(wxpg.LongStringProperty("2.产品清单或图纸文件", value=techDrawingName2))
-            pg.SetPropertyEditor("2.产品清单或图纸文件", "SampleMultiButtonEditor")
+            pg.SetPropertyEditor("2.产品清单或图纸文件", "TechDrawingButtonEditor")
             pg.Append(wxpg.LongStringProperty("3.产品清单或图纸文件", value=techDrawingName3))
-            pg.SetPropertyEditor("3.产品清单或图纸文件", "SampleMultiButtonEditor")
+            pg.SetPropertyEditor("3.产品清单或图纸文件", "TechDrawingButtonEditor")
             pg.Append(wxpg.LongStringProperty("4.产品清单或图纸文件", value=techDrawingName4))
-            pg.SetPropertyEditor("4.产品清单或图纸文件", "SampleMultiButtonEditor")
+            pg.SetPropertyEditor("4.产品清单或图纸文件", "TechDrawingButtonEditor")
             topsizer.Add(pg, 1, wx.EXPAND)
             rowsizer = wx.BoxSizer(wx.HORIZONTAL)
             if self.character in ["技术员","技术主管","技术部长"]:
@@ -1059,7 +1065,6 @@ class DraftOrderPanel(wx.Panel):
                               icon=images.Smiles.GetBitmap())
 
         wx.Yield()
-        startTime=time.time()
         # self.priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
         # self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
         while self.priceDataDic==[]:
@@ -1076,9 +1081,12 @@ class DraftOrderPanel(wx.Panel):
         d = self.pg.GetPropertyValues(inc_attributes=True)
         dic = {}
         for k, v in d.items():
+            if "产品清单或图纸文件" in k:
+                temp = str(v)
+                v = temp.replace('\\','/')
             dic[k] = v
-
         # operatorID = self.parent.parent.operatorID
+
         for key in dic.keys():
             if key == "1.产品清单或图纸文件" and dic[key] == "" and dic['2.草稿订单类别'] == '详细报价':
                 wx.MessageBox("%s不能为空，请重新输入！" % key)
@@ -1086,11 +1094,16 @@ class DraftOrderPanel(wx.Panel):
             if dic[key] == "" and '*' in key:
                 wx.MessageBox("%s不能为空，请重新输入！" % key)
                 return
+        busy = PBI.PyBusyInfo("正在数据保存到云端数据库，请稍候！", parent=None, title="系统忙提示",
+                              icon=images.Smiles.GetBitmap())
+
+        wx.Yield()
         code = UpdateDraftOrderInfoByID(self.log, WHICHDB, dic, self.ID)
-        if code > 0:
-            wx.MessageBox("更新成功！")
+        del busy
+        if code >= 0:
+            wx.MessageBox("更新成功！","信息提示")
         else:
-            wx.MessageBox("更新失败！")
+            wx.MessageBox("更新失败！","信息提示")
 
     def OnDraftOrderEditCancelBTN(self, event):
         self.ReCreate()
@@ -1735,7 +1748,11 @@ class CreateNewOrderDialog(wx.Dialog):
         d = self.propertyPanel.pg.GetPropertyValues(inc_attributes=True)
         self.propertyDic = {}
         for k, v in d.items():
+            if "产品清单或图纸文件" in k:
+                temp = str(v)
+                v = temp.replace('\\','/')
             self.propertyDic[k] = v
+
         operatorID = self.parent.parent.operatorID
         for key in self.propertyDic.keys():
             if self.propertyDic[key] == "" and '*' in key:
@@ -1750,14 +1767,11 @@ class CreateNewOrderDialog(wx.Dialog):
         if delta < 5:
             wx.MessageBox("投标日期与下单日期太近，请修改后再试！")
             return
-        # elif
         result = InsertNewOrder(self.log, WHICHDB, self.propertyDic, operatorID)
-        # if result<0:
-        #     wx.MessageBox("存储出错，请检查后重试！","系统提示")
-        # else:
-        #     wx.MessageBox("操作成功！")
-        wx.MessageBox("操作成功！")
-        # GetPDF(self.log,1)
+        if result<0:
+            wx.MessageBox("存储出错，请检查后重试！","系统提示")
+        else:
+            wx.MessageBox("操作成功！")
         event.Skip()
 
 
@@ -1959,10 +1973,11 @@ class QuotationSheetDialog(wx.Dialog):
         self.Close()
 
     def OnSaveExitBTN(self, event):
-        if self.character in ["项目经理",'订单管理员']:
+        sumupPrice = float(self.quotationSheetGrid.wallSumupPricesRMB) + float(self.quotationSheetGrid.ceilingSumupPricesRMB)
+        if self.character in ["项目经理",'订单管理员','副总经理']:
             UpdateDraftOrderInDB(self.log, WHICHDB, self.id, self.quotationSheetGrid.dataWall)
             UpdateOrderOperatorCheckStateByID(self.log, WHICHDB, self.id, 'Y', str(self.quotationDate),
-                                              str(self.exchangeDate), self.currencyName)
+                                              str(self.exchangeDate), self.currencyName, str(sumupPrice))
         else:
             UpdateManagerCheckStateByID(self.log, WHICHDB, self.id, 'Y', self.quotationDate, self.exchangeDate)
         self.Close()
@@ -2118,6 +2133,8 @@ class QuotationSheetGrid(gridlib.Grid):
         self.wallTotalPrice = [0] * len(self.dataWall)
         self.exchangeRate = exchangeRate
         self.wallRowNumList=[]
+        self.wallSumupPricesRMB = 0.0
+        self.ceilingSumupPricesRMB = 0.0
         for i, dic in enumerate(self.dataWall):
             if dic['单价'] != None:
                 self.wallUnitPrice[i] = float(dic['单价'])
@@ -2213,8 +2230,15 @@ class QuotationSheetGrid(gridlib.Grid):
                 totalPriceUS = float(self.GetCellValue(row,6))*unitPriceUS
                 self.SetCellValue(row, 11, "%6.2f"%unitPriceUS)
                 self.SetCellValue(row, 12, "%6.2f"%totalPriceUS)
-                sumupPriceUS=0.0
+                self.wallSumupPrices = 0.0
+                self.wallSumupPricesRMB = 0.0
                 for i in range(len(self.dataWall)):
+                    price = float(self.GetCellValue(11 + i, 20))
+                    price = price * 1.3 if self.GetCellValue(11 + i, 10) == 'Y' else price
+                    price = price + 15 if self.GetCellValue(11 + i, 8) == "Y" else price
+                    price = price + 20 if self.GetCellValue(11 + i, 9) == "Y" else price
+                    totalPriceRMB = float(self.GetCellValue(row, 6)) * price
+                    self.wallSumupPricesRMB += totalPriceRMB
                     temp = self.GetCellValue(11+i,20)
                     temp = float(temp) if temp else 0
                     self.dataWall[i]["实际报价"]=str(temp)
@@ -2224,8 +2248,8 @@ class QuotationSheetGrid(gridlib.Grid):
                     temp = self.GetCellValue(11+i,12)
                     temp = float(temp) if temp else 0
                     self.dataWall[i]["总价"]=str(temp)
-                    sumupPriceUS += temp
-                self.SetCellValue(11+len(self.dataWall),12,"%6.2f"%sumupPriceUS)
+                    self.wallSumupPrices += temp
+                self.SetCellValue(11+len(self.dataWall),12,"%6.2f"%self.wallSumupPrices)
         else:
             self.SetCellValue(row,col,"")
         evt.Skip()
@@ -2418,7 +2442,14 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(i+11, 11, "%6.2f" % unitPriceUS)
             self.SetCellValue(i+11, 12, "%6.2f" % totalPriceUS)
         sumupPriceUS = 0.0
+        self.wallSumupPricesRMB = 0.0
         for i in range(len(self.dataWall)):
+            price = float(self.GetCellValue(11+i,20))
+            price = price * 1.3 if self.GetCellValue(11 + i, 10) == 'Y' else price
+            price = price + 15 if self.GetCellValue(11 + i, 8) == "Y" else price
+            price = price + 20 if self.GetCellValue(11 + i, 9) == "Y" else price
+            totalPriceRMB = float(self.GetCellValue(11 + i, 6)) * price
+            self.wallSumupPricesRMB += totalPriceRMB
             temp = self.GetCellValue(11 + i, 20)
             temp = float(temp) if temp else 0
             self.dataWall[i]["实际报价"] = str(temp)

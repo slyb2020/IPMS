@@ -44,4 +44,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    a = 'D:\BaiduNetdiskWorkspace\2022年工作\Luka\2排产部分说明.docx'
+    a = a.replace('\\', '/')
+    print(a)

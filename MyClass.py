@@ -633,7 +633,7 @@ class MainPanel(wx.Panel):
         dlg.CenterOnScreen()
         dlg.ShowModal()
         dlg.Destroy()
-        self.work_zone_Panel.orderManagementPanel.ReCreate()
+        # self.work_zone_Panel.orderManagementPanel.ReCreate()
 
     def OnImportOrderDataBTN(self, event):
         from DBOperation import GetTableListFromDB
