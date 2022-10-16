@@ -229,7 +229,7 @@ class MainPanel(wx.Panel):
     def OnOrderTypeCOMBOChanged(self, event):
         type = self.orderTypeCOMBO.GetValue()[:2]
         self.work_zone_Panel.orderManagementPanel.type = type
-        self.work_zone_Panel.orderManagementPanel.ReCreate()
+        # self.work_zone_Panel.orderManagementPanel.ReCreate()
 
     def ReCreateOrderInfoPanel(self):
         self.orderInfoPanel.DestroyChildren()

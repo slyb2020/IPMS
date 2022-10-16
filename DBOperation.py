@@ -2300,7 +2300,7 @@ def GetTechCheckStateByID(log,whichDB,id):
     db.close()
     return record[0]
 
-def GetTechDrawingDataByID(log,whichDB,id):
+def GetTechDrawingDataByID(log,whichDB,id,fileName):
     id = int(id)
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
@@ -2320,9 +2320,17 @@ def GetTechDrawingDataByID(log,whichDB,id):
     # cursor.execute(sql)
     # record=cursor.fetchone()
     # image = base64.b64decode(record[0])  # 解码
-
+    sql = "select `客户原始技术图纸名1`,`客户原始技术图纸名2`,`客户原始技术图纸名3`,`客户原始技术图纸名4` from `订单信息` where `订单编号`=%s" % (id)
+    cursor.execute(sql)
+    temp=cursor.fetchone()
+    number=-1
+    for i, name in enumerate(temp):
+        name = name.split('/')[-1]
+        if fileName == name:
+            number = i+1
+            break
     temp =""
-    sql = "select `原始技术文档1`  from `订单原始技术文档` where `订单编号`=%s" % (id)
+    sql = "select `原始技术文档%s`  from `订单原始技术文档` where `订单编号`=%s" % (number,id)
     cursor.execute(sql)
     record=cursor.fetchone()
     temp=record[0]
