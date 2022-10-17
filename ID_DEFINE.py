@@ -64,10 +64,10 @@ BIDMETHOD = ['离岸价', '到岸价']
 
 CheckTitleDict = {
     "WALL": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
-             'Product \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
+             'Product \r\nNo.Wdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
              'Product \r\nWet','Product \r\nStrengthen'],
     "CEILING": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
-             'Product \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
+             'Product \r\nNo.Wdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
              ]
     }
 # CheckTitleDict = {
@@ -80,10 +80,10 @@ CheckTitleDict = {
 #     }
 OtherCheckTitleDict = {
     "WALL": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
-             'Procuct \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
+             'Procuct \r\nWdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
              'Unit \r\nPrice', 'Total \r\nPrice', 'Product \r\nWet'],
     "CEILING": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
-             'Procuct \r\nNo.Wdith (mm)', 'Procuct \r\nNo.Thickness (mm)', 'Unit', 'Total \r\nQuantity',
+             'Procuct \r\nWdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
              'Unit \r\nPrice', 'Total \r\nPrice', 'Product \r\nDescription']
     }
 # OtherCheckTitleDict = {
@@ -95,12 +95,16 @@ OtherCheckTitleDict = {
 #              'Unit \r\nPrice', 'Total \r\nPrice', 'Product \r\nDescription']
 #     }
 CheckColWidthDict = {
-    'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 155],
-    'CEILING': [125, 125, 160, 150, 150, 150, 80, 150, 155],
+    'WALL': [125, 125, 160, 150, 150, 80, 150, 150, 155],
+    'CEILING': [125, 125, 160, 150, 150, 80, 150, 150, 155],
     }
 OtherCheckColWidthDict = {
     'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 80, 80, 155],
     'CEILING': [125, 125, 160, 150, 150, 150, 80, 150, 80, 80, 155],
+    }
+CellingEnableThicknessDict = {
+    "TNF-C46":["600"],"TNF-C55":['300'],"TNF-C64":["600"],"TNF-C65":["300"],"TNF-C68":["600","300"],
+    "TNF-C70":["600","300"],"TNF-C71":["600","300"],"TNF-C72":["600","300"],"TNF-C73":["275"],
     }
 # CheckColWidthDict = {
 #     'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 155],

@@ -201,7 +201,7 @@ class MainPanel(wx.Panel):
                 bitmap = wx.Bitmap(bitmapDir + "/aquabutton.png",
                                    wx.BITMAP_TYPE_PNG)
                 self.inputTodayPriceBTN = AB.AquaButton(panel, wx.ID_ANY, bitmap, "  录入今日原材料价格", size=(100, 50))
-                self.inputTodayPriceBTN.Bind(wx.EVT_BUTTON, self.OnInputTodayPriceBTN)
+                # self.inputTodayPriceBTN.Bind(wx.EVT_BUTTON, self.OnInputTodayPriceBTN)
                 self.inputTodayPriceBTN.SetForegroundColour(wx.BLACK)
                 # self.editOrderBTN = AB.AquaButton(panel, wx.ID_ANY, bitmap, "  批量排产", size=(100, 50))
                 # self.editOrderBTN.SetForegroundColour(wx.BLACK)

@@ -66,9 +66,9 @@ class Excel2DB():
         #     data.append(temp)
         # self.data=data
         print("data:",self.data)
-        # self.CreatePriceTable()
-        self.CreateStaffTable()
-        self.EditStaffRecord()
+        self.CreatePriceTable()
+        # self.CreateStaffTable()
+        # self.EditStaffRecord()
 
     def GetSheetNameListFromExcelFileName(self):
         wb = openpyxl.load_workbook(self.excelFileName)
@@ -479,5 +479,5 @@ if __name__ == "__main__":
     whichDB = 3
     log = None
     # MakeProductLaborUnitPriceDB()
-    # excel2db = Excel2DB(excelFileName="D:\\BaiduNetdiskWorkspace\\2022年工作\\Luka\\系统 2022.08.17\\产品报价表单.xlsx",tableName='产品报价表单')
-    excel2db = Excel2DB(excelFileName="D:\\BaiduNetdiskWorkspace\\2022年工作\\Luka\\系统 2022.08.17\\公司人员信息.xlsx",tableName='info_staff')
+    excel2db = Excel2DB(excelFileName="D:\\BaiduNetdiskWorkspace\\2022年工作\\Luka\\系统 2022.08.17\\产品报价表单.xlsx",tableName='产品报价表单')
+    # excel2db = Excel2DB(excelFileName="D:\\BaiduNetdiskWorkspace\\2022年工作\\Luka\\系统 2022.08.17\\公司人员信息.xlsx",tableName='info_staff')

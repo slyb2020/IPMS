@@ -374,63 +374,65 @@ class OrderManagementPanel(wx.Panel):
             size = (1100, -1)
         elif self.type in ["在产", "完工"]:
             size = (710, -1)
+        try:
+            self.leftPanel = wx.Panel(self, size=size)
+            hbox.Add(self.leftPanel, 0, wx.EXPAND)
+            self.rightPanel = wx.Panel(self, style=wx.BORDER_THEME)
+            hbox.Add(self.rightPanel, 1, wx.EXPAND)
+            self.SetSizer(hbox)
+            vvbox = wx.BoxSizer(wx.VERTICAL)
+            self.orderGrid = OrderGrid(self.leftPanel, self, self.log)
+            vvbox.Add(self.orderGrid, 1, wx.EXPAND)
+            hhbox = wx.BoxSizer()
+            searchPanel = wx.Panel(self.leftPanel, size=(-1, 30), style=wx.BORDER_DOUBLE)
+            vvbox.Add(searchPanel, 0, wx.EXPAND)
+            hhbox = wx.BoxSizer()
+            self.searchResetBTN = wx.Button(searchPanel, label='Rest', size=(48, -1))
+            # self.searchResetBTN.Bind(wx.EVT_BUTTON, self.OnResetSearchItem)
+            hhbox.Add(self.searchResetBTN, 0, wx.EXPAND)
+            self.orderIDSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[0], -1),
+                                                 style=wx.TE_PROCESS_ENTER)
+            # self.orderIDSearchCtrl.Bind(wx.EVT_TEXT_ENTER, self.OnOrderIDSearch)
+            hhbox.Add(self.orderIDSearchCtrl, 0, wx.EXPAND)
+            self.customerNameSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[1], -1))
+            # self.customerNameSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnOrderStateSearch)
+            hhbox.Add(self.customerNameSearchCtrl, 0, wx.EXPAND)
+            ##################################奇怪，这段代码会极大地拖慢程序运行速度###############################################
+            # self.productNameSearchCtrl = wx.ComboBox(searchPanel, choices=['A1', 'B0', 'B1', 'B5', 'B7'],
+            #                                          size=(self.colWidthList[2], -1))
+            # self.productNameSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnProductNameSearch)
+            # hhbox.Add(self.productNameSearchCtrl, 0, wx.EXPAND)
+            ################################################################################################################
+            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[2], -1)),0,wx.EXPAND)
+            self.productAmountSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[3], -1))
+            hhbox.Add(self.productAmountSearchCtrl, 0, wx.EXPAND)
+            self.deliverDateSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[4], -1))
+            hhbox.Add(self.deliverDateSearchCtrl, 0, wx.EXPAND)
+            self.orderDateSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[5], -1))
+            hhbox.Add(self.orderDateSearchCtrl, 0, wx.EXPAND)
+            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[6], -1)),0,wx.EXPAND)
+            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[7], -1)),0,wx.EXPAND)
+            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[8], -1)),0,wx.EXPAND)
+            if self.type in ["草稿","废弃"]:
+                hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[9], -1)),0,wx.EXPAND)
+                hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[10], -1)),0,wx.EXPAND)
+                hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[11], -1)),0,wx.EXPAND)
+                hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[12], -1)),0,wx.EXPAND)
+                hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[13], -1)),0,wx.EXPAND)
+            # self.operatorSearchCtrl = wx.ComboBox(searchPanel, choices=["1803089"], size=(self.colWidthList[6], -1))
+            # self.operatorSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnOperatorSearch)
+            # hhbox.Add(self.operatorSearchCtrl, 0, wx.EXPAND)
+            # self.orderStateSearchCtrl = wx.ComboBox(searchPanel, choices=["接单", "排产", "下料", "加工", "打包", "发货"],
+            #                                         size=(self.colWidthList[7], -1))
+            # self.orderStateSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnOrderStateSearch)
+            # hhbox.Add(self.orderStateSearchCtrl, 0, wx.EXPAND)
 
-        self.leftPanel = wx.Panel(self, size=size)
-        hbox.Add(self.leftPanel, 0, wx.EXPAND)
-        self.rightPanel = wx.Panel(self, style=wx.BORDER_THEME)
-        hbox.Add(self.rightPanel, 1, wx.EXPAND)
-        self.SetSizer(hbox)
-        vvbox = wx.BoxSizer(wx.VERTICAL)
-        self.orderGrid = OrderGrid(self.leftPanel, self, self.log)
-        vvbox.Add(self.orderGrid, 1, wx.EXPAND)
-        hhbox = wx.BoxSizer()
-        searchPanel = wx.Panel(self.leftPanel, size=(-1, 30), style=wx.BORDER_DOUBLE)
-        vvbox.Add(searchPanel, 0, wx.EXPAND)
-        hhbox = wx.BoxSizer()
-        self.searchResetBTN = wx.Button(searchPanel, label='Rest', size=(48, -1))
-        # self.searchResetBTN.Bind(wx.EVT_BUTTON, self.OnResetSearchItem)
-        hhbox.Add(self.searchResetBTN, 0, wx.EXPAND)
-        self.orderIDSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[0], -1),
-                                             style=wx.TE_PROCESS_ENTER)
-        # self.orderIDSearchCtrl.Bind(wx.EVT_TEXT_ENTER, self.OnOrderIDSearch)
-        hhbox.Add(self.orderIDSearchCtrl, 0, wx.EXPAND)
-        self.customerNameSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[1], -1))
-        # self.customerNameSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnOrderStateSearch)
-        hhbox.Add(self.customerNameSearchCtrl, 0, wx.EXPAND)
-        ##################################奇怪，这段代码会极大地拖慢程序运行速度###############################################
-        # self.productNameSearchCtrl = wx.ComboBox(searchPanel, choices=['A1', 'B0', 'B1', 'B5', 'B7'],
-        #                                          size=(self.colWidthList[2], -1))
-        # self.productNameSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnProductNameSearch)
-        # hhbox.Add(self.productNameSearchCtrl, 0, wx.EXPAND)
-        ################################################################################################################
-        hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[2], -1)),0,wx.EXPAND)
-        self.productAmountSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[3], -1))
-        hhbox.Add(self.productAmountSearchCtrl, 0, wx.EXPAND)
-        self.deliverDateSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[4], -1))
-        hhbox.Add(self.deliverDateSearchCtrl, 0, wx.EXPAND)
-        self.orderDateSearchCtrl = wx.TextCtrl(searchPanel, size=(self.colWidthList[5], -1))
-        hhbox.Add(self.orderDateSearchCtrl, 0, wx.EXPAND)
-        hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[6], -1)),0,wx.EXPAND)
-        hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[7], -1)),0,wx.EXPAND)
-        hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[8], -1)),0,wx.EXPAND)
-        if self.type in ["草稿","废弃"]:
-            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[9], -1)),0,wx.EXPAND)
-            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[10], -1)),0,wx.EXPAND)
-            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[11], -1)),0,wx.EXPAND)
-            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[12], -1)),0,wx.EXPAND)
-            hhbox.Add(wx.TextCtrl(searchPanel, size=(self.colWidthList[13], -1)),0,wx.EXPAND)
-        # self.operatorSearchCtrl = wx.ComboBox(searchPanel, choices=["1803089"], size=(self.colWidthList[6], -1))
-        # self.operatorSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnOperatorSearch)
-        # hhbox.Add(self.operatorSearchCtrl, 0, wx.EXPAND)
-        # self.orderStateSearchCtrl = wx.ComboBox(searchPanel, choices=["接单", "排产", "下料", "加工", "打包", "发货"],
-        #                                         size=(self.colWidthList[7], -1))
-        # self.orderStateSearchCtrl.Bind(wx.EVT_COMBOBOX, self.OnOrderStateSearch)
-        # hhbox.Add(self.orderStateSearchCtrl, 0, wx.EXPAND)
-
-        searchPanel.SetSizer(hhbox)
-        self.leftPanel.SetSizer(vvbox)
-        self.orderGrid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnCellLeftClick)
-        self.Layout()
+            searchPanel.SetSizer(hhbox)
+            self.leftPanel.SetSizer(vvbox)
+            self.orderGrid.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnCellLeftClick)
+            self.Layout()
+        except:
+            pass
         # self.Thaw()
 
     def ReCreateOrderDetailTree(self):
@@ -1305,10 +1307,13 @@ class WallPanelTechCheckGrid(gridlib.Grid):
         font.SetWeight(wx.FONTWEIGHT_BOLD)
         attr = gridlib.GridCellAttr()
         attr.SetFont(font)
-        attr.SetBackgroundColour(wx.LIGHT_GREY)
+        # attr.SetBackgroundColour(wx.LIGHT_GREY)
         attr.SetReadOnly(True)
-        # attr.SetAlignment(wx.RIGHT, -1)
+        attr.SetAlignment(wx.RIGHT, -1)
         self.SetColAttr(4, attr)
+        self.SetColAttr(5, attr)
+        if self.type == "CEILING":
+            self.SetColAttr(2, attr)
 
         self.SetRowLabelSize(80)
         self.SetMargins(0, 0)
@@ -1329,17 +1334,31 @@ class WallPanelTechCheckGrid(gridlib.Grid):
 
     def OnCellChange(self, evt):
         thickDic = {"F": '25', 'A': '50', 'G': '25', 'D': '50'}
+        ceilingLengthDic = {"TNF-C46":'600',"TNF-C55":'≤3000',"TNF-C64":'≤3000',"TNF-C65":'≤3000',"TNF-C68":'≤3000',"TNF-C70":'≤3000',
+                           "TNF-C71":'≤3000',"TNF-C72":'≤3000',"TNF-C73":'≤3000'}
+        # ceilingWidthDic = {"TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'50',"TNF-C70":'50',
+        #                    "TNF-C71":'50',"TNF-C72":'50',"TNF-C73":'50'}
         ceilingThickDic = {"TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'50',"TNF-C70":'50',
                            "TNF-C71":'50',"TNF-C72":'50',"TNF-C73":'50'}
         col = evt.GetCol()
         row = evt.GetRow()
-        if col == 0 and self.type=="WALL":
-            lastChar = self.GetCellValue(row, col)[-1]
-            self.SetCellValue(row, 4, thickDic[lastChar])
-            self.SetCellValue(row,5,"m2")
-        elif col == 0 and self.type=="CEILING":
-            self.SetCellValue(row,4,ceilingThickDic[self.GetCellValue(row, col)])
-            self.SetCellValue(row,5,"m2")
+        if self.type=="WALL":
+            if col == 0:
+                lastChar = self.GetCellValue(row, col)[-1]
+                self.SetCellValue(row, 4, thickDic[lastChar])
+                self.SetCellValue(row,5,"m2")
+        elif self.type=="CEILING":
+            if col == 0:
+                self.SetCellValue(row,2,ceilingLengthDic[self.GetCellValue(row, 0)])
+                self.SetCellValue(row,4,ceilingThickDic[self.GetCellValue(row, 0)])
+                self.SetCellValue(row,5,"m2")
+            if col == 3:
+                if self.GetCellValue(row,col) not in CellingEnableThicknessDict[self.GetCellValue(row,0)]:
+                    self.SetCellBackgroundColour(row,col,wx.RED)
+                    # self.SetCellValue(row,col,CellingEnableThicknessDict[self.GetCellValue(row,0)][0])
+                    wx.MessageBox("输入数据不合理，请重新输入","系统提示")
+                else:
+                    self.SetCellBackgroundColour(row,col,wx.WHITE)
         evt.Skip()
 
     def OnLeftDClick(self, evt):
@@ -1408,10 +1427,10 @@ class DraftCheckFrame(wx.Frame):
         # if self.character=="技术员":
         #     self.wallPanelCheckGrid = WallPanelTechCheckGrid(self.wallCheckPanel, self.log, type="WALL", id=self.id)
         #     hbox.Add(self.wallPanelCheckGrid, 1, wx.EXPAND)
-        if self.character == "采购员":
-            self.wallPanelCheckGrid = WallPanelOtherCheckGrid(self.wallCheckPanel, self.log, type="WALL", id=self.id,
-                                                              character="采购员")
-            hbox.Add(self.wallPanelCheckGrid, 1, wx.EXPAND)
+        # if self.character == "采购员":
+        #     self.wallPanelCheckGrid = WallPanelOtherCheckGrid(self.wallCheckPanel, self.log, type="WALL", id=self.id,
+        #                                                       character="采购员")
+        #     hbox.Add(self.wallPanelCheckGrid, 1, wx.EXPAND)
         self.wallCheckPanel.SetSizer(hbox)
         self.wallCheckPanel.Layout()
 
@@ -1652,7 +1671,7 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
             self.dataTypes = [
                 gridlib.GRID_VALUE_CHOICE + ':TNF-C46,TNF-C55,TNF-C64,TNF-C65,TNF-C68,TNF-C70,TNF-C71,TNF-C72,TNF-C73',
                 # gridlib.GRID_VALUE_CHOICE + ':B15',
-                gridlib.GRID_VALUE_CHOICE + ':PVC,S.S(304),PVC/G,S.S(304)/G,Painted/G',
+                gridlib.GRID_VALUE_CHOICE + ':PVC,S.S(304),PVC/G,S.S(304)/G',
                 gridlib.GRID_VALUE_CHOICE + ':≤3000,600',
                 gridlib.GRID_VALUE_CHOICE + ':600,300,275',
                 gridlib.GRID_VALUE_CHOICE + ':40,50,70,100',
@@ -1991,7 +2010,6 @@ class QuotationSheetDialog(wx.Dialog):
         self.log.WriteText("here1" + filename)
         dataWall = self.quotationSheetGrid.GetWallData()
         dataCeiling = self.quotationSheetGrid.GetCeilingData()
-
         # for record in self.quotationSheetGrid.dataWall:
         #     temp=list(record.values())
         #     temp=temp[1:-2]
@@ -2010,7 +2028,8 @@ class QuotationSheetDialog(wx.Dialog):
     def OnSaveExitBTN(self, event):
         sumupPrice = float(self.quotationSheetGrid.wallSumupPricesRMB) + float(self.quotationSheetGrid.ceilingSumupPricesRMB)
         if self.character in ["项目经理",'订单管理员','副总经理']:
-            UpdateDraftOrderInDB(self.log, WHICHDB, self.id, self.quotationSheetGrid.dataWall)
+            dicList = self.quotationSheetGrid.dataWall + self.quotationSheetGrid.dataCeiling
+            UpdateDraftOrderInDB(self.log, WHICHDB, self.id, dicList)
             UpdateOrderOperatorCheckStateByID(self.log, WHICHDB, self.id, 'Y', str(self.quotationDate),
                                               str(self.exchangeDate), self.currencyName, str(sumupPrice))
         else:
@@ -2055,11 +2074,12 @@ class QuotationSheetDialog(wx.Dialog):
             else:
                 break
         self.exchangeRate=None
-        for item in self.parent.master.exChangeRateDic:
-            if self.exchangeDate == item['日期']:
-                self.exchangeRateDic = item
-                self.exchangeRate = self.exchangeRateDic[self.currencyName]
-                break
+        if self.parent.master.exChangeRateDic:
+            for item in self.parent.master.exChangeRateDic:
+                if self.exchangeDate == item['日期']:
+                    self.exchangeRateDic = item
+                    self.exchangeRate = self.exchangeRateDic[self.currencyName]
+                    break
         if not self.exchangeRate:
             self.exchangeRateDic = self.parent.master.exChangeRateDic[-1]
             self.exchangeRate = self.exchangeRateDic[self.currencyName]
@@ -2247,9 +2267,13 @@ class QuotationSheetGrid(gridlib.Grid):
             error=True
             for i in range(6):
                 temp = self.GetCellValue(row,14+i)
-                temp = temp.split('-')
-                left = int(temp[0])
-                right = int(temp[1])
+                if temp:
+                    temp = temp.split('-')
+                    left = int(temp[0])
+                    right = int(temp[1])
+                else:
+                    left = 0
+                    right =0
                 if price>=left and price<=right:
                     error=False
                     break
@@ -2268,7 +2292,10 @@ class QuotationSheetGrid(gridlib.Grid):
                 self.wallSumupPrices = 0.0
                 self.wallSumupPricesRMB = 0.0
                 for i in range(len(self.dataWall)):
-                    price = float(self.GetCellValue(11 + i, 20))
+                    try:
+                        price = float(self.GetCellValue(11 + i, 20))
+                    except:
+                        price = 0.0
                     price = price * 1.3 if self.GetCellValue(11 + i, 10) == 'Y' else price
                     price = price + 15 if self.GetCellValue(11 + i, 8) == "Y" else price
                     price = price + 20 if self.GetCellValue(11 + i, 9) == "Y" else price
@@ -2284,9 +2311,56 @@ class QuotationSheetGrid(gridlib.Grid):
                     temp = float(temp) if temp else 0
                     self.dataWall[i]["总价"]=str(temp)
                     self.wallSumupPrices += temp
-                self.SetCellValue(11+len(self.dataWall),12,"%6.2f"%self.wallSumupPrices)
-        else:
-            self.SetCellValue(row,col,"")
+                self.SetCellValue(11+len(self.dataWall),12,format(self.wallSumupPrices,','))
+        elif row in self.ceilingRowNumList:
+            price = self.GetCellValue(row,col)
+            try:
+                price = int(price)
+            except:
+                price=0
+                self.SetCellValue(row,col,'')
+            error=True
+            for i in range(6):
+                temp = self.GetCellValue(row,14+i)
+                if temp:
+                    temp = temp.split('-')
+                    left = int(temp[0])
+                    right = int(temp[1])
+                else:
+                    left = 0
+                    right = 0
+                if price>=left and price<=right:
+                    error=False
+                    break
+            if error:
+                self.SetCellBackgroundColour(row,col,wx.Colour(200,100,0))
+            else:
+                self.SetCellBackgroundColour(row,col,wx.WHITE)
+            if self.GetCellValue(row,col):
+                unitPriceUS = price/self.exchangeRate*100
+                totalPriceUS = float(self.GetCellValue(row,6))*unitPriceUS
+                self.SetCellValue(row, 11, "%6.2f"%unitPriceUS)
+                self.SetCellValue(row, 12, "%6.2f"%totalPriceUS)
+                self.ceilingSumupPrices = 0.0
+                self.ceilingSumupPricesRMB = 0.0
+                for i in range(len(self.dataCeiling)):
+                    try:
+                        price = float(self.GetCellValue(11 + len(self.dataWall) + 6 + i, 20))
+                    except:
+                        price = 0.0
+                    totalPriceRMB = float(self.GetCellValue(11 + len(self.dataWall) + 6 + i, 6)) * price
+                    self.ceilingSumupPricesRMB += totalPriceRMB
+                    temp = self.GetCellValue(11 + len(self.dataWall) + 6 + i,20)
+                    temp = float(temp) if temp else 0
+                    self.dataCeiling[i]["实际报价"]=str(temp)
+                    temp = self.GetCellValue(11 + len(self.dataWall) + 6 + i,11)
+                    temp = float(temp) if temp else 0
+                    self.dataCeiling[i]["单价"]=str(temp)
+                    temp = self.GetCellValue(11 + len(self.dataWall) + 6 + i,12)
+                    temp = float(temp) if temp else 0
+                    self.dataCeiling[i]["总价"]=str(temp)
+                    self.ceilingSumupPrices += temp
+                self.SetCellValue(11+len(self.dataWall)+6+len(self.dataCeiling),12,format(self.ceilingSumupPrices,','))
         evt.Skip()
 
     def GetWallData(self):
@@ -2302,7 +2376,7 @@ class QuotationSheetGrid(gridlib.Grid):
         dataCeiling = []
         for row in range(len(self.dataCeiling) + 1):
             rowList = []
-            for col in range(11):
+            for col in range(13):
                 rowList.append(self.GetCellValue(row + 11 + len(self.dataWall) + 6, col))
             dataCeiling.append(rowList)
         return dataCeiling
@@ -2474,12 +2548,15 @@ class QuotationSheetGrid(gridlib.Grid):
             price = price+20 if wallDict["加强"]=="Y" else price
             unitPriceUS = price*100 / self.exchangeRate
             totalPriceUS = float(self.GetCellValue(11+i, 6)) * unitPriceUS
-            self.SetCellValue(i+11, 11, "%6.2f" % unitPriceUS)
-            self.SetCellValue(i+11, 12, "%6.2f" % totalPriceUS)
+            self.SetCellValue(i+11, 11, "%6.2f"%unitPriceUS)
+            self.SetCellValue(i+11, 12,"%6.2f"%totalPriceUS)
         sumupPriceUS = 0.0
         self.wallSumupPricesRMB = 0.0
         for i in range(len(self.dataWall)):
-            price = float(self.GetCellValue(11+i,20))
+            try:
+                price = float(self.GetCellValue(11+i,20))
+            except:
+                price = 0.0
             price = price * 1.3 if self.GetCellValue(11 + i, 10) == 'Y' else price
             price = price + 15 if self.GetCellValue(11 + i, 8) == "Y" else price
             price = price + 20 if self.GetCellValue(11 + i, 9) == "Y" else price
@@ -2495,99 +2572,15 @@ class QuotationSheetGrid(gridlib.Grid):
             temp = float(temp) if temp else 0
             self.dataWall[i]["总价"] = str(temp)
             sumupPriceUS += temp
-        self.SetCellValue(11 + len(self.dataWall), 6, '%.2f' % wallTotalAmount)
+        self.SetCellValue(11 + len(self.dataWall), 6, format(wallTotalAmount,','))
         self.SetCellValue(11 + len(self.dataWall), 7, 'm2')
-        self.SetCellValue(11 + len(self.dataWall), 12, "%6.2f" % sumupPriceUS)
-            # for item in self.allProductMeterialUnitPriceList:
-            #     if item["产品名称"] == wallDict['产品名称'] \
-            #             and item["产品表面材料"] == wallDict['产品表面材料'] and item["产品长度"] == wallDict['产品长度'] and item[
-            #         "产品宽度"] == wallDict['产品宽度']:
-            #         temp = item
-            #         break
+        temp = format(sumupPriceUS, ',')
+        self.SetCellValue(11 + len(self.dataWall), 12, temp)
 
-            # temp2 = self.allMeterialUnitPriceList[self.meterialIdX]
-            # if temp2['单位'] == 'm2':
-            #     self.meterialUnitPriceX = float(temp['X面材料系数']) * float(temp2['价格'])
-            # else:
-            #     self.meterialUnitPriceX = float(temp['X面厚度']) * float(temp2['密度']) * float(temp['X面材料系数']) * float(
-            #         temp2['价格']) / 1000
-            # if self.meterialFactorY != None:
-            #     # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdY)
-            #     temp2 = self.allMeterialUnitPriceList[self.meterialIdY]
-            #     if temp2['单位'] == 'm2':
-            #         self.meterialUnitPriceY = float(temp['Y面材料系数']) * float(temp2['价格'])
-            #     else:
-            #         self.meterialUnitPriceY = float(temp['Y面厚度']) * float(temp2['密度']) * float(temp['Y面材料系数']) * float(
-            #             temp2['价格']) / 1000
-            # else:
-            #     self.meterialUnitPriceY = 0.0
-            # if self.meterialFactorY != 0:
-            #     # _,temp2 = GetMeterialUnitPriceByIdInDB(self.log,WHICHDB,'2022-07-14',self.meterialIdGlue)
-            #     temp2 = self.allMeterialUnitPriceList[self.meterialIdGlue]
-            #     self.meterialUnitPriceGlue = float(temp['胶水系数']) * float(temp2['价格']) / 1000000.
-            # else:
-            #     self.meterialUnitPriceGlue = 0.0
-            # # _, temp2 = GetMeterialUnitPriceByIdInDB(self.log, WHICHDB, '2022-07-14', self.meterialIdRockWool)
-            # temp2 = self.allMeterialUnitPriceList[self.meterialIdRockWool]
-            # self.meterialUnitPriceRockWool = float(temp['SQM Per Piece']) * 150 * float(temp['产品厚度']) * float(
-            #     temp['岩棉系数']) * float(temp2['价格']) / 1000000.
-            # meterialUnitPrice = self.meterialUnitPriceX + self.meterialUnitPriceY + self.meterialUnitPriceGlue + self.meterialUnitPriceRockWool
-            # self.SetCellValue(11 + i, 12, '%.2f' % meterialUnitPrice)
-            #
-            # productLaborAmount = 0
-            # for dic in self.productLaborAmountList:
-            #     if wallDict['产品名称'] == dic['产品名称'] and wallDict['产品表面材料'] == dic['产品表面材料']:
-            #         productLaborAmount = float(dic['每平方所需工时'])
-            #         break
-            # productLaborUnitPrice = productLaborAmount * self.productLaborUnitPrice
-            # self.SetCellValue(11 + i, 13, '%.2f' % productLaborUnitPrice)
-            #
-            # scrapUnitPrice = meterialUnitPrice * (self.scrapRate + 1)
-            # self.SetCellValue(11 + i, 14, '%.2f' % scrapUnitPrice)
-            #
-            # overheadUnitPrice = (scrapUnitPrice + productLaborUnitPrice) * (1 + self.overheadRate)
-            # self.SetCellValue(11 + i, 15, '%.2f' % overheadUnitPrice)
-            #
-            # profitUnitPrice = overheadUnitPrice * (1 + self.profitRate)
-            # self.SetCellValue(11 + i, 16, '%.2f' % profitUnitPrice)
-            #
-            # marginNTUnitPrice = profitUnitPrice * (1 + self.marginNT)
-            # self.SetCellValue(11 + i, 17, '%.2f' % marginNTUnitPrice)
-            #
-            # marginDKUnitPrice = marginNTUnitPrice * (1 + self.marginDK)
-            # self.SetCellValue(11 + i, 18, '%.2f' % marginDKUnitPrice)
-            #
-            # agentUnitPrice = marginDKUnitPrice * (1 + self.agentRate)
-            # self.SetCellValue(11 + i, 19, '%.2f' % agentUnitPrice)
-            #
-            # salesUnitPrice = agentUnitPrice
-            # self.SetCellValue(11 + i, 20, '%.2f' % salesUnitPrice)
-            #
-            # salesUnitPriceUSD = salesUnitPrice / self.exchangeRate
-            # self.SetCellValue(11 + i, 21, '%.2f' % salesUnitPriceUSD)
-            # self.SetCellValue(11 + i, 9, '%.2f' % salesUnitPriceUSD)
-            #
-            # salesPriceUSD = salesUnitPriceUSD * wallAmount
-            # self.SetCellValue(11 + i, 10, '%.2f' % salesPriceUSD)
-            # wallTatalPriceUSD += salesPriceUSD
-
-
-        ##########################################################################################
         self.SetCellValue(8 + 6 + len(self.dataWall), 0, "2)TNF Ceiling Panel")
         self.SetCellSize(8 + 6 + len(self.dataWall), 0, 1, 2)
         self.SetCellSize(9 + 6 + len(self.dataWall), 0, 2, 1)
         self.SetCellSize(9 + 6 + len(self.dataWall), 7, 2, 1)
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 12, "5000平方米")
-        # self.SetCellSize(8 + 6 + len(self.dataWall), 12, 2, 1)
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 13, "8000平方米")
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 14, "10000平方米")
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 15, "2000平方米")
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 16, "3000平方米")
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 17, "4000平方米")
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 19, "Agent  rate")
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 20, "sales price")
-        # self.SetCellSize(8 + 7 + len(self.dataWall), 20, 2, 1)
-        # self.SetCellValue(8 + 7 + len(self.dataWall), 21, "Unit sales price")
 
         self.SetCellValue(9 + 6 + len(self.dataWall), 0, "型号" if self.currencyName=='人民币' else "Name")
         self.SetCellValue(9 + 6 + len(self.dataWall), 1, "产品" if self.currencyName=='人民币' else "Product")
@@ -2602,15 +2595,6 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(9 + 6 + len(self.dataWall), 10, "产品" if self.currencyName=='人民币' else "Product")
         self.SetCellValue(9 + 6 + len(self.dataWall), 8+3, "单价" if self.currencyName=='人民币' else "Unit Price")
         self.SetCellValue(9 + 6 + len(self.dataWall), 9+3, "总价" if self.currencyName=='人民币' else "Total Price")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 12, "Material")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 13, "Labor")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 14, "3.0%")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 15, "26.0%")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 16, "15.0%")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 17, "20.0%")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 18, "0.0%")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 19, "0.0%")
-        # self.SetCellValue(9 + 6 + len(self.dataWall), 21, "Inc. over head")
 
         self.SetCellValue(10 + 6 + len(self.dataWall), 1, "型号" if self.currencyName=='人民币' else "Name")
         self.SetCellValue(10 + 6 + len(self.dataWall), 2, "表材" if self.currencyName=='人民币' else "surface")
@@ -2633,7 +2617,9 @@ class QuotationSheetGrid(gridlib.Grid):
 
         ceilingTotalAmount = 0.0
         ceilingTatalPriceUSD = 0.0
+        self.ceilingRowNumList = []
         for i, ceilingDict in enumerate(self.dataCeiling):
+            self.ceilingRowNumList.append(11+4+len(self.dataWall)+2+i)
             ceilingAmount = float(ceilingDict['数量'])
             ceilingTotalAmount += ceilingAmount
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 0, str(i + 1))
@@ -2643,19 +2629,77 @@ class QuotationSheetGrid(gridlib.Grid):
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 3, ceilingDict['产品长度'])
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 4, ceilingDict['产品宽度'])
             self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 5, ceilingDict['产品厚度'])
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 6, ceilingDict['单位'])
-            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 7, ceilingDict['数量'])
-            # _,temp = GetProductMeterialUnitPriceInDB(self.log,WHICHDB,ceilingDict)
-            # for item in self.allProductMeterialUnitPriceList:
-            #     if item["产品名称"] == ceilingDict['产品名称'] \
-            #             and item["产品表面材料"] == ceilingDict['产品表面材料'] and item["产品长度"] == ceilingDict['产品长度'] and item[
-            #         "产品宽度"] == ceilingDict['产品宽度']:
-            #         temp = item
-            #         break
+            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 6, ceilingDict['数量'])
+            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 7, ceilingDict['单位'])
 
-        self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 6, '%.2f' % ceilingTotalAmount)
+            renderer = gridlib.GridCellNumberRenderer()
+            self.SetCellRenderer(11 + 4 + len(self.dataWall) + 2 + i, 20, renderer)
+            price = '' if not ceilingDict['实际报价'] else ceilingDict['实际报价']
+            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 20, price)
+            for item in self.priceDataDic:
+                if item["产品名称"] == ceilingDict['产品名称'] \
+                        and item["产品表面材料"] == ceilingDict['产品表面材料'] and item["产品长度"] == ceilingDict['产品长度'] \
+                        and item['产品宽度']== ceilingDict['产品宽度'] and item["报价类别"] == self.quotationRange:
+                    # if wallDict['产品宽度'] != "≤600":
+                    #     self.SetCellValue(11 + i, 10, "Y")
+                    # else:
+                    #     self.SetCellValue(11 + i, 10, "")
+                    self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 12 + 2, item['5000平方米'])
+                    self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 13 + 2, item['8000平方米'])
+                    self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 14 + 2, item['10000平方米'])
+                    self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 15 + 2, item['20000平方米'])
+                    self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 16 + 2, item['30000平方米'])
+                    self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 17 + 2, item['40000平方米'])
+                    break
+            error = True
+            try:
+                price = float(price)
+            except:
+                price = 0
+            for j in range(6):
+                temp = self.GetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 14 + j)
+                if temp == "":
+                    break
+                temp = temp.split('-')
+                left = int(temp[0])
+                right = int(temp[1])
+                if price >= left and price <= right:
+                    error = False
+                    break
+            if error:
+                self.SetCellBackgroundColour(11 + 4 + len(self.dataWall) + 2 + i, 20, wx.Colour(200, 100, 0))
+            else:
+                self.SetCellBackgroundColour(11 + 4 + len(self.dataWall) + 2 + i, 20, wx.WHITE)
+            unitPriceUS = price*100 / self.exchangeRate
+            totalPriceUS = float(self.GetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 6)) * unitPriceUS
+            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 11, "%6.2f"%unitPriceUS)
+            self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 12, "%6.2f"%totalPriceUS)
+        sumupPriceUS = 0.0
+        self.ceilingSumupPricesRMB = 0.0
+        for i in range(len(self.dataCeiling)):
+            try:
+                price = float(self.GetCellValue(11 + 4 + len(self.dataWall) + 2 + i,20))
+            except:
+                price = 0.0
+            totalPriceRMB = float(self.GetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 6)) * price
+            self.ceilingSumupPricesRMB += totalPriceRMB
+            temp = self.GetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 20)
+            temp = float(temp) if temp else 0
+            self.dataCeiling[i]["实际报价"] = str(temp)
+            temp = self.GetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 11)
+            temp = float(temp) if temp else 0
+            self.dataCeiling[i]["单价"] = str(temp)
+            temp = self.GetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 12)
+            temp = float(temp) if temp else 0
+            self.dataCeiling[i]["总价"] = str(temp)
+            sumupPriceUS += temp
+        self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 6, format(ceilingTotalAmount,','))
         self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, 'm2')
-        self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
+        self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 12, format(sumupPriceUS, ','))
+
+        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 6, '%.2f' % ceilingTotalAmount)
+        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, 'm2')
+        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
 
 
     def OnIdle(self, evt):

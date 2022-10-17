@@ -215,10 +215,13 @@ class FlatMenuFrame(wx.Frame):
         self.Bind(FM.EVT_FLAT_MENU_SELECTED, self.OnCheckOut, id=MENU_CHECK_OUT)
 
     def OnSetupProperty(self, event):
-        dlg = SetupPropertyDialog(self, self.mainPANEL.log)
-        dlg.CenterOnScreen()
-        dlg.ShowModal()
-        dlg.Destroy()
+        if self.operatorCharacter == '副总经理':
+            dlg = SetupPropertyDialog(self, self.mainPANEL.log)
+            dlg.CenterOnScreen()
+            dlg.ShowModal()
+            dlg.Destroy()
+        else:
+            wx.MessageBox("权限受限，无法完成此操作!","系统提示")
 
     def OnCheckOut(self, event):
         # self.mainPANEL.work_zone_Panel.orderManagementPanel.orderUpdateCheckThread.Stop()
