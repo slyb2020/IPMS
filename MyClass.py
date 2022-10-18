@@ -629,7 +629,7 @@ class MainPanel(wx.Panel):
             dlg.Destroy()
 
     def OnCreateNewOrderBTN(self, event):
-        dlg = CreateNewOrderDialog(self, self.log)
+        dlg = CreateNewOrderDialog(self, self.log, self.parent.operatorCharacter)
         dlg.CenterOnScreen()
         dlg.ShowModal()
         dlg.Destroy()

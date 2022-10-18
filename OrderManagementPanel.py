@@ -454,7 +454,7 @@ class OrderManagementPanel(wx.Panel):
         self.orderEditPanel.DestroyChildren()
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.draftOrderEditPanel = DraftOrderPanel(self.orderEditPanel, self, self.log, size=(600, 600), mode="EDIT",
-                                                   ID=self.data[1], character="订单管理员")
+                                                   ID=self.data[1], character=self.character)
         vbox.Add(self.draftOrderEditPanel, 1, wx.EXPAND)
         # line = wx.StaticLine(self.orderEditPanel, -1, size=(30, -1), style=wx.LI_HORIZONTAL)
         # sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
@@ -479,7 +479,7 @@ class OrderManagementPanel(wx.Panel):
         self.orderTechCheckPanel.DestroyChildren()
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.techCheckInfoPanel = DraftOrderPanel(self.orderTechCheckPanel, self, self.log, size=(300, 600), mode="USE",
-                                                  ID=self.data[1], character="技术员")
+                                                  ID=self.data[1], character=self.character)
         vbox.Add(self.techCheckInfoPanel, 1, wx.EXPAND)
         self.orderTechCheckPanel.SetSizer(vbox)
         self.orderTechCheckPanel.Layout()
@@ -488,7 +488,7 @@ class OrderManagementPanel(wx.Panel):
         self.orderPurchaseCheckPanel.DestroyChildren()
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.purchaseCheckInfoPanel = DraftOrderPanel(self.orderPurchaseCheckPanel, self, self.log, size=(300, 600),
-                                                      mode="USE", ID=self.data[1], character="采购员")
+                                                      mode="USE", ID=self.data[1], character=self.character)
         vbox.Add(self.purchaseCheckInfoPanel, 1, wx.EXPAND)
         self.orderPurchaseCheckPanel.SetSizer(vbox)
         self.orderPurchaseCheckPanel.Layout()
@@ -497,7 +497,7 @@ class OrderManagementPanel(wx.Panel):
         self.orderFinancialCheckPanel.DestroyChildren()
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.financialCheckInfoPanel = DraftOrderPanel(self.orderFinancialCheckPanel, self, self.log, size=(300, 600),
-                                                       mode="USE", ID=self.data[1], character="财务")
+                                                       mode="USE", ID=self.data[1], character=self.character)
         vbox.Add(self.financialCheckInfoPanel, 1, wx.EXPAND)
         self.orderFinancialCheckPanel.SetSizer(vbox)
         self.orderFinancialCheckPanel.Layout()
@@ -506,7 +506,7 @@ class OrderManagementPanel(wx.Panel):
         self.orderManagerCheckPanel.DestroyChildren()
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.managerCheckInfoPanel = DraftOrderPanel(self.orderManagerCheckPanel, self, self.log, size=(300, 600),
-                                                     mode="USE", ID=self.data[1], character="经理")
+                                                     mode="USE", ID=self.data[1], character=self.character)
         vbox.Add(self.managerCheckInfoPanel, 1, wx.EXPAND)
         self.orderManagerCheckPanel.SetSizer(vbox)
         self.orderManagerCheckPanel.Layout()
@@ -960,7 +960,7 @@ class DraftOrderPanel(wx.Panel):
                 but = wx.Button(panel, -1, "完成财务部审核", size=(-1, 35))
                 but.Bind(wx.EVT_BUTTON, self.OnFinishFinancialCheck)
                 rowsizer.Add(but, 1)
-            elif self.character == "经理":
+            elif self.character in ["经理","副总经理"]:
                 but = wx.Button(panel, -1, "开始经理审核", size=(-1, 35))
                 but.Bind(wx.EVT_BUTTON, self.OnStartManagerCheck)
                 # rowsizer.Add(but,1)
@@ -1100,7 +1100,7 @@ class DraftOrderPanel(wx.Panel):
         # self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
         while self.priceDataDic==[]:
             self.priceDataDic = self.master.priceDataDic
-        dlg = QuotationSheetDialog(self, self.master, self.log, self.ID, "订单管理员", name)
+        dlg = QuotationSheetDialog(self, self.master, self.log, self.ID, self.character, name)
         dlg.CenterOnScreen()
         del busy
         dlg.ShowModal()
@@ -1152,7 +1152,7 @@ class DraftOrderPanel(wx.Panel):
 
         self.priceDateLatest = GetPriceDateListFromDB(self.log, WHICHDB)[0]
         self.priceDataDic = GetPriceDicFromDB(self.log, WHICHDB, self.priceDateLatest)
-        dlg = QuotationSheetDialog(self, self.master, self.log, self.ID, "经理", name)
+        dlg = QuotationSheetDialog(self, self.master, self.log, self.ID, self.character, name)
         dlg.CenterOnScreen()
         del busy
         dlg.ShowModal()
@@ -1164,7 +1164,7 @@ class DraftOrderPanel(wx.Panel):
         pass
 
     def OnStartFinancialCheck(self, event):
-        self.draftCheckFrame = DraftCheckFrame(self, self.log, self.ID, character="财务")
+        self.draftCheckFrame = DraftCheckFrame(self, self.log, self.ID, character=self.character)
         self.draftCheckFrame.Show(True)
         self.draftCheckFrame.CenterOnScreen()
 
@@ -1172,7 +1172,7 @@ class DraftOrderPanel(wx.Panel):
         pass
 
     def OnStartPurchaseCheck(self, event):
-        self.draftCheckFrame = DraftCheckFrame(self, self.log, self.ID, character="采购员")
+        self.draftCheckFrame = DraftCheckFrame(self, self.log, self.ID, character=self.character)
         self.draftCheckFrame.Show(True)
         self.draftCheckFrame.CenterOnScreen()
 
@@ -1199,7 +1199,7 @@ class DraftOrderPanel(wx.Panel):
         busy = PBI.PyBusyInfo(message, parent=None, title="系统忙提示",
                               icon=images.Smiles.GetBitmap())
         wx.Yield()
-        self.techCheckDialog = TechCheckDialog(self.master, self.log, self.ID, character="技术员")
+        self.techCheckDialog = TechCheckDialog(self.master, self.log, self.ID, character=self.character)
         self.techCheckDialog.CenterOnScreen()
         del busy
         if self.techCheckDialog.ShowModal() == wx.ID_OK:
@@ -1282,7 +1282,8 @@ class WallPanelTechCheckGrid(gridlib.Grid):
         self.log = log
         self.type = type
         self.id = id
-        if self.type in ["WALL", 'CEILING']:
+        data=[]
+        if self.type in ["WALL", 'CEILING', "INTERIORDOOR"]:
             data = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, self.type)
         self.data = []
         for dic in data:
@@ -1311,7 +1312,8 @@ class WallPanelTechCheckGrid(gridlib.Grid):
         attr.SetReadOnly(True)
         attr.SetAlignment(wx.RIGHT, -1)
         self.SetColAttr(4, attr)
-        self.SetColAttr(5, attr)
+        if self.type in ["WALL","CEILING"]:
+            self.SetColAttr(5, attr)
         if self.type == "CEILING":
             self.SetColAttr(2, attr)
 
@@ -1338,8 +1340,12 @@ class WallPanelTechCheckGrid(gridlib.Grid):
                            "TNF-C71":'≤3000',"TNF-C72":'≤3000',"TNF-C73":'≤3000'}
         # ceilingWidthDic = {"TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'50',"TNF-C70":'50',
         #                    "TNF-C71":'50',"TNF-C72":'50',"TNF-C73":'50'}
-        ceilingThickDic = {"TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'50',"TNF-C70":'50',
-                           "TNF-C71":'50',"TNF-C72":'50',"TNF-C73":'50'}
+        interiorDoorHeightDic = {"TNF-A60ZF-S001":'2100',"TNF-A60BF-A60-01":'2100',"TNF-SA60BF-A60-01":'2200',
+                                 "TNF-B15BF-001":'2200',"TNF-SB15BF-S001":'2200',"TNF-B15ZF-HNR-01":'2000',
+                                 "TNF-B15ZF-01":'2100'}
+        interiorDoorWidthDic = {"TNF-A60ZF-S001":'1000',"TNF-A60BF-A60-01":'1000',"TNF-SA60BF-A60-01":'2100',
+                                 "TNF-B15BF-001":'1100',"TNF-SB15BF-S001":'2000',"TNF-B15ZF-HNR-01":'1000',
+                                 "TNF-B15ZF-01":'1050'}
         col = evt.GetCol()
         row = evt.GetRow()
         if self.type=="WALL":
@@ -1350,15 +1356,33 @@ class WallPanelTechCheckGrid(gridlib.Grid):
         elif self.type=="CEILING":
             if col == 0:
                 self.SetCellValue(row,2,ceilingLengthDic[self.GetCellValue(row, 0)])
-                self.SetCellValue(row,4,ceilingThickDic[self.GetCellValue(row, 0)])
+                self.SetCellValue(row,4,CellingEnableThickDict[self.GetCellValue(row, 0)])
                 self.SetCellValue(row,5,"m2")
-            if col == 3:
-                if self.GetCellValue(row,col) not in CellingEnableThicknessDict[self.GetCellValue(row,0)]:
-                    self.SetCellBackgroundColour(row,col,wx.RED)
-                    # self.SetCellValue(row,col,CellingEnableThicknessDict[self.GetCellValue(row,0)][0])
-                    wx.MessageBox("输入数据不合理，请重新输入","系统提示")
-                else:
-                    self.SetCellBackgroundColour(row,col,wx.WHITE)
+                self.table.SetTypeName(1,CellingEnableSurfaceDict[self.GetCellValue(row, 0)])
+                if self.GetCellValue(row,1) not in CellingEnableSurfaceDict[self.GetCellValue(row, 0)]:
+                    self.SetCellValue(row,1,CellingEnableSurfaceDict[self.GetCellValue(row, 0)][0])
+                self.table.SetTypeName(3,CellingEnableWidthDict[self.GetCellValue(row, 0)])
+                if self.GetCellValue(row,3) not in CellingEnableWidthDict[self.GetCellValue(row, 0)]:
+                    self.SetCellValue(row, 3, CellingEnableWidthDict[self.GetCellValue(row, 0)][0])
+            # if col == 3:
+            #     if self.GetCellValue(row,col) not in CellingEnableThicknessDict[self.GetCellValue(row,0)]:
+            #         self.SetCellBackgroundColour(row,col,wx.RED)
+            #         # self.SetCellValue(row,col,CellingEnableThicknessDict[self.GetCellValue(row,0)][0])
+            #         wx.MessageBox("输入数据不合理，请重新输入","系统提示")
+            #     else:
+            #         self.SetCellBackgroundColour(row,col,wx.WHITE)
+        elif self.type=="INTERIORDOOR":
+            if col == 0:
+                self.SetCellValue(row,2,interiorDoorHeightDic[self.GetCellValue(row, 0)])
+                self.SetCellValue(row,3,interiorDoorWidthDic[self.GetCellValue(row, 0)])
+                self.SetCellValue(row,4,"PCS")
+            # if col == 3:
+            #     if self.GetCellValue(row,col) not in CellingEnableThicknessDict[self.GetCellValue(row,0)]:
+            #         self.SetCellBackgroundColour(row,col,wx.RED)
+            #         # self.SetCellValue(row,col,CellingEnableThicknessDict[self.GetCellValue(row,0)][0])
+            #         wx.MessageBox("输入数据不合理，请重新输入","系统提示")
+            #     else:
+            #         self.SetCellBackgroundColour(row,col,wx.WHITE)
         evt.Skip()
 
     def OnLeftDClick(self, evt):
@@ -1416,8 +1440,6 @@ class DraftCheckFrame(wx.Frame):
         self.notebook.AddPage(self.ceilingCheckPanel, "TNF Ceiling Panel")
         self.interiorDoorCheckPanel = wx.Panel(self.notebook)
         self.notebook.AddPage(self.interiorDoorCheckPanel, "TNF Interior Door")
-        self.doorAccessoryCheckPanel = wx.Panel(self.notebook)
-        self.notebook.AddPage(self.doorAccessoryCheckPanel, "TNF Door Accessory")
         self.wetUnitCheckPanel = wx.Panel(self.notebook)
         self.notebook.AddPage(self.wetUnitCheckPanel, "TNF Wet Unit")
         self.Thaw()
@@ -1550,8 +1572,6 @@ class TechCheckDialog(wx.Dialog):
         self.notebook.AddPage(self.ceilingCheckPanel, "TNF Ceiling Panel")
         self.interiorDoorCheckPanel = wx.Panel(self.notebook)
         self.notebook.AddPage(self.interiorDoorCheckPanel, "TNF Interior Door")
-        self.doorAccessoryCheckPanel = wx.Panel(self.notebook)
-        self.notebook.AddPage(self.doorAccessoryCheckPanel, "TNF Door Accessory")
         self.wetUnitCheckPanel = wx.Panel(self.notebook)
         self.notebook.AddPage(self.wetUnitCheckPanel, "TNF Wet Unit")
         self.panel.Thaw()
@@ -1562,11 +1582,15 @@ class TechCheckDialog(wx.Dialog):
         self.wallCheckPanel.SetSizer(hbox)
         self.wallCheckPanel.Layout()
         hbox = wx.BoxSizer()
-        self.ceilingPanelCheckGrid = WallPanelTechCheckGrid(self.ceilingCheckPanel, self.log, type="CEILING",
-                                                            id=self.id)
+        self.ceilingPanelCheckGrid = WallPanelTechCheckGrid(self.ceilingCheckPanel, self.log, type="CEILING", id=self.id)
         hbox.Add(self.ceilingPanelCheckGrid, 1, wx.EXPAND)
         self.ceilingCheckPanel.SetSizer(hbox)
         self.ceilingCheckPanel.Layout()
+        hbox = wx.BoxSizer()
+        self.interiorDoorPanelCheckGrid = WallPanelTechCheckGrid(self.interiorDoorCheckPanel, self.log, type="INTERIORDOOR", id=self.id)
+        hbox.Add(self.interiorDoorPanelCheckGrid, 1, wx.EXPAND)
+        self.interiorDoorCheckPanel.SetSizer(hbox)
+        self.interiorDoorCheckPanel.Layout()
 
     def OnSaveExitBTN(self, evt):
         error = self.Save()
@@ -1681,6 +1705,20 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
                 gridlib.GRID_VALUE_FLOAT + ':6,2',
                 gridlib.GRID_VALUE_FLOAT + ':6,2',
             ]
+        elif self.type == 'INTERIORDOOR':
+            self.dataTypes = [
+                gridlib.GRID_VALUE_CHOICE + ':TNF-A60ZF-S001,TNF-A60BF-A60-01,TNF-SA60BF-A60-01,TNF-B15BF-001,TNF-SB15BF-S001,TNF-B15ZF-HNR-01,TNF-B15ZF-01',
+                # gridlib.GRID_VALUE_CHOICE + ':TNF-A60ZF-S001, TNF-A60BF-A60-01, TNF-B15BF-001',
+                gridlib.GRID_VALUE_CHOICE + ':painted/G,S.S(304)/G',
+                gridlib.GRID_VALUE_CHOICE + ':2000,2100,2200',
+                gridlib.GRID_VALUE_CHOICE + ':1000,1050,1100,2100',
+                gridlib.GRID_VALUE_CHOICE + ':PCS',
+                gridlib.GRID_VALUE_FLOAT + ':6,2',
+                gridlib.GRID_VALUE_CHOICE + ':40,50,70,100',
+                gridlib.GRID_VALUE_STRING,
+                gridlib.GRID_VALUE_FLOAT + ':6,2',
+                gridlib.GRID_VALUE_FLOAT + ':6,2',
+            ]
         self.data = data
 
     # --------------------------------------------------
@@ -1740,6 +1778,11 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
     def GetTypeName(self, row, col):
         return self.dataTypes[col]
 
+    def SetTypeName(self, col,list):
+        temp=':'
+        for item in list:
+            temp += '%s,'%item
+        self.dataTypes[col] = gridlib.GRID_VALUE_CHOICE + temp
     # Called to determine how the data can be fetched and stored by the
     # editor and renderer.  This allows you to enforce some type-safety
     # in the grid.
@@ -1755,17 +1798,18 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
 
 
 class CreateNewOrderDialog(wx.Dialog):
-    def __init__(self, parent, log, size=wx.DefaultSize, pos=wx.DefaultPosition,
+    def __init__(self, parent, log, charactor, size=wx.DefaultSize, pos=wx.DefaultPosition,
                  style=wx.DEFAULT_DIALOG_STYLE):
         wx.Dialog.__init__(self)
         self.parent = parent
         self.log = log
+        self.charactor = charactor
         # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
         self.Create(parent, -1, "新建订单对话框", pos, size, style)
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.propertyPanel = DraftOrderPanel(self, self.parent.work_zone_Panel.orderManagementPanel, self.log,
-                                             size=(600, 600), character="订单管理员")
+                                             size=(600, 600), character=self.charactor)
         sizer.Add(self.propertyPanel, 1, wx.EXPAND)
         line = wx.StaticLine(self, -1, size=(30, -1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
@@ -2007,7 +2051,7 @@ class QuotationSheetDialog(wx.Dialog):
 
     def OnCreateQuotationSheetBTN(self, event):
         filename = quotationSheetDir + '报价单%05d.pdf' % self.id
-        self.log.WriteText("here1" + filename)
+        # self.log.WriteText("here1" + filename)
         dataWall = self.quotationSheetGrid.GetWallData()
         dataCeiling = self.quotationSheetGrid.GetCeilingData()
         # for record in self.quotationSheetGrid.dataWall:
@@ -2018,7 +2062,7 @@ class QuotationSheetDialog(wx.Dialog):
         #     temp=list(record.values())
         #     temp=temp[1:-2]
         #     dataCeiling.append(temp)
-        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, log=self.log)
+        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, log=self.log, currencyName=self.currencyName)
         dlg = QuotationSheetViewDialog(self, self.log, filename)
         dlg.CenterOnScreen()
         dlg.ShowModal()
@@ -2172,6 +2216,7 @@ class QuotationSheetGrid(gridlib.Grid):
     def __init__(self, parent, master, log, id, priceDataDic, quotationDate, exchangeRateDate,quotationRange,name,currencyName='人民币',exchangeRate=100):
         gridlib.Grid.__init__(self, parent, -1)
         self.master = master
+        self.orderName = self.master.draftOrderEditPanel.orderName
         self.id = id
         self.log = log
         self.name = name
@@ -2400,15 +2445,15 @@ class QuotationSheetGrid(gridlib.Grid):
         # self.SetCellValue(1, 14+2, "Over-head by NT	")
         # self.SetCellSize(1, 14+2, 1, 2)
         #
-        self.SetCellValue(2, 0, "Project No.:")
-        self.SetCellValue(2, 2, "Senta 123")
+        self.SetCellValue(2, 0, "Project Name.:")
+        self.SetCellValue(2, 2, "%s"%self.orderName)
         # self.SetCellValue(2, 12+2, "crap rate")
         # self.SetCellValue(2, 13+2, "3%")
         # self.SetCellValue(2, 14+2, "All")
         # self.SetCellSize(2, 14+2, 1, 2)
         #
         self.SetCellValue(3, 0, "Inexa Quotation No.: ")
-        self.SetCellValue(3, 2, "Senta 123")
+        self.SetCellValue(3, 2, "%06d"%self.id)
         # self.SetCellValue(3, 12+2, "Profile")
         # self.SetCellValue(3, 13+2, "15%")
         # self.SetCellValue(3, 14+2, "All")

@@ -122,7 +122,10 @@ class FlatMenuFrame(wx.Frame):
     def UpdateMainUI(self):
         self.Freeze()
         self._mb.Destroy()
-        self.mainPANEL.Destroy()
+        try:
+            self.mainPANEL.Destroy()
+        except:
+            pass
         self.CreateMenu()
         if self.check_in_flag:
             self.mainPANEL = MainPanel(self, wx.ID_ANY)

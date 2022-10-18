@@ -1092,7 +1092,7 @@ def MakeFormingScheduleTemplate(filename,data=[]):
     DrawFormingSchedule(myCanvas)
     myCanvas.save()
 
-def DrawQuotationSheet(c,record):
+def DrawQuotationSheet(c,record,currencyName):
     styles = getSampleStyleSheet()
     # # Modify the Normal Style
     # styles["Normal"].fontSize = 12
@@ -1124,8 +1124,8 @@ def DrawQuotationSheet(c,record):
     Title29 = Paragraph('<font name="Times"></font>',style = styles['Center'])
     Title30 = Paragraph('<font name="Times"></font>',style = styles['Center'])
     Title31 = Paragraph('<font name="Times"></font>',style = styles['Center'])
-    Title32 = Paragraph('<font name="Times">In USD</font>',style = styles['Center'])
-    Title33 = Paragraph('<font name="Times">In USD</font>',style = styles['Center'])
+    Title32 = Paragraph('<font name="Times">In %s</font>'%CURRENCYDICT[currencyName],style = styles['Center'])
+    Title33 = Paragraph('<font name="Times">In %s</font>'%CURRENCYDICT[currencyName],style = styles['Center'])
     data = [
         [Title1, Title2, Title3, Title4, Title5, Title6, Title7, Title8, Title9, Title10, Title11, Title12, Title13],
         [Title21, Title22, Title23, Title24, Title25, Title26, Title27, Title28, Title29, Title30, Title31, Title32,Title33,],]
@@ -1165,7 +1165,7 @@ def DrawQuotationSheet(c,record):
     t.wrapOn(c, 186.5 * mm, 800 * mm)
     t.drawOn(c, 15 * mm, startY * mm)
 
-def DrawQuotationSheetCeiling(c,record):
+def DrawQuotationSheetCeiling(c,record,currencyName):
     styles = getSampleStyleSheet()
     # # Modify the Normal Style
     # styles["Normal"].fontSize = 12
@@ -1197,8 +1197,8 @@ def DrawQuotationSheetCeiling(c,record):
     # Title29 = Paragraph('<font name="Times"></font>',style = styles['Center'])
     # Title30 = Paragraph('<font name="Times"></font>',style = styles['Center'])
     # Title31 = Paragraph('<font name="Times"></font>',style = styles['Center'])
-    Title32 = Paragraph('<font name="Times">In USD</font>',style = styles['Center'])
-    Title33 = Paragraph('<font name="Times">In USD</font>',style = styles['Center'])
+    Title32 = Paragraph('<font name="Times">In %s</font>'%CURRENCYDICT[currencyName],style = styles['Center'])
+    Title33 = Paragraph('<font name="Times">In %s</font>'%CURRENCYDICT[currencyName],style = styles['Center'])
     data = [
         [Title1,  Title2,  Title3,  Title4,  Title5,  Title6,  Title7,  Title8,  Title12,Title13],
         [Title21, Title22, Title23, Title24, Title25, Title26, Title27, Title28, Title32,Title33,],]
@@ -1214,8 +1214,8 @@ def DrawQuotationSheetCeiling(c,record):
                            ('BACKGROUND', (8, 2), (9, -1), colors.lavender),
                            ('SPAN',(0,0),(0,1)),
                            ('SPAN',(7,0),(7,1)),
-                           ('SPAN',(8,0),(8,1)),
-                           ('SPAN',(9,0),(9,1)),
+                           # ('SPAN',(8,0),(8,1)),
+                           # ('SPAN',(9,0),(9,1)),
                            # ('SPAN',(10,0),(10,1)),
                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                            ('LINEABOVE', (0, 2), (-1, 2), 1, colors.black),
@@ -1239,7 +1239,7 @@ def DrawQuotationSheetCeiling(c,record):
     t.wrapOn(c, 186.5 * mm, 800 * mm)
     t.drawOn(c, 15 * mm, startY * mm)
 
-def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log=None):
+def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=61,log=None, currencyName='人民币'):
     annotationList=[
         "备注：",
         "1. 汇率为实时更新汇率。",
@@ -1285,7 +1285,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
         myCanvas.drawString(40,450, text="1) TNF Wall Panel")
-        DrawQuotationSheet(myCanvas,dataWall[pageNum*20:(pageNum+1)*20])#A1代表非尾页，A3代表尾页
+        DrawQuotationSheet(myCanvas,dataWall[pageNum*20:(pageNum+1)*20],currencyName)#A1代表非尾页，A3代表尾页
         # simple_table_with_style(filename)
         # if len(dataWall)<=19:
         #     DrawQuotationSheet(myCanvas,dataWall,type='A13')#A1代表首页，A2代表墙板中间页，A3代表墙板尾页，A13代表即使墙板首页又是
@@ -1319,7 +1319,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],expiry=30,log
         myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
         myCanvas.drawString(40,450, text="2) TNF Ceiling Panel")
-        DrawQuotationSheetCeiling(myCanvas,dataCeiling[pageNum*20:(pageNum+1)*19])
+        DrawQuotationSheetCeiling(myCanvas,dataCeiling[pageNum*20:(pageNum+1)*19],currencyName)
         # # simple_table_with_style(filename)
         # if len(dataWall)<=19:
         #     DrawQuotationSheet(myCanvas,dataWall,type='A13')#A1代表首页，A2代表墙板中间页，A3代表墙板尾页，A13代表即使墙板首页又是

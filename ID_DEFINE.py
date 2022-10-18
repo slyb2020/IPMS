@@ -68,6 +68,9 @@ CheckTitleDict = {
              'Product \r\nWet','Product \r\nStrengthen'],
     "CEILING": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
              'Product \r\nNo.Wdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
+             ],
+    "INTERIORDOOR": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
+             'Product \r\nNo.Wdith (mm)', 'Unit', 'Total \r\nQuantity',
              ]
     }
 # CheckTitleDict = {
@@ -96,13 +99,23 @@ OtherCheckTitleDict = {
 #     }
 CheckColWidthDict = {
     'WALL': [125, 125, 160, 150, 150, 80, 150, 150, 155],
-    'CEILING': [125, 125, 160, 150, 150, 80, 150, 150, 155],
+    'CEILING': [150, 150, 160, 150, 150, 100, 150, 150, 155],
+    'INTERIORDOOR': [160, 160, 160, 160, 160, 160, 150, 150, 155],
     }
 OtherCheckColWidthDict = {
     'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 80, 80, 155],
     'CEILING': [125, 125, 160, 150, 150, 150, 80, 150, 80, 80, 155],
     }
-CellingEnableThicknessDict = {
+CellingEnableThickDict = {
+    "TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'50',
+    "TNF-C70":'50',"TNF-C71":'50',"TNF-C72":'50',"TNF-C73":'50',
+    }
+CellingEnableSurfaceDict = {
+    "TNF-C46":["PVC",'S.S(304)'],"TNF-C55":["PVC",'S.S(304)'],"TNF-C64":["PVC/G",'S.S(304)/G'],
+    "TNF-C65":["PVC/G",'S.S(304)/G'],"TNF-C68":["PVC/G",'S.S(304)/G'],"TNF-C70":["PVC/G",'S.S(304)/G'],
+    "TNF-C71":["PVC/G",'S.S(304)/G'],"TNF-C72":["PVC/G",'S.S(304)/G'],"TNF-C73":["PVC/G",'S.S(304)/G'],
+    }
+CellingEnableWidthDict = {
     "TNF-C46":["600"],"TNF-C55":['300'],"TNF-C64":["600"],"TNF-C65":["300"],"TNF-C68":["600","300"],
     "TNF-C70":["600","300"],"TNF-C71":["600","300"],"TNF-C72":["600","300"],"TNF-C73":["275"],
     }
