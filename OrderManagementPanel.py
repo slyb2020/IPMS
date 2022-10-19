@@ -2079,15 +2079,8 @@ class QuotationSheetDialog(wx.Dialog):
         # self.log.WriteText("here1" + filename)
         dataWall = self.quotationSheetGrid.GetWallData()
         dataCeiling = self.quotationSheetGrid.GetCeilingData()
-        # for record in self.quotationSheetGrid.dataWall:
-        #     temp=list(record.values())
-        #     temp=temp[1:-2]
-        #     dataWall.append(temp)
-        # for record in self.quotationSheetGrid.dataCeiling:
-        #     temp=list(record.values())
-        #     temp=temp[1:-2]
-        #     dataCeiling.append(temp)
-        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, log=self.log, currencyName=self.currencyName)
+        dataInteriorDoor = self.quotationSheetGrid.GetInteriorDoorData()
+        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, dataInteriorDoor, log=self.log, currencyName=self.currencyName)
         dlg = QuotationSheetViewDialog(self, self.log, filename)
         dlg.CenterOnScreen()
         dlg.ShowModal()
@@ -2510,6 +2503,20 @@ class QuotationSheetGrid(gridlib.Grid):
                 rowList.append(self.GetCellValue(row + 11 + len(self.dataWall) + 6, col))
             dataCeiling.append(rowList)
         return dataCeiling
+
+    def GetInteriorDoorData(self):
+        dataInteriorDoor = []
+        for row in self.interiorDoorRowNumList:
+            rowList = []
+            for col in range(13):
+                rowList.append(self.GetCellValue(row, col))
+            dataInteriorDoor.append(rowList)
+        #下面的代码是把合计那一行也取出来
+        rowList = []
+        for col in range(13):
+            rowList.append(self.GetCellValue(self.interiorDoorRowNumList[-1]+1, col))
+        dataInteriorDoor.append(rowList)
+        return dataInteriorDoor
 
     def ReCreate(self):
         # _, self.allProductMeterialUnitPriceList = GetAllProductMeterialUnitPriceInDB(self.log, WHICHDB)
