@@ -2080,7 +2080,8 @@ class QuotationSheetDialog(wx.Dialog):
         dataWall = self.quotationSheetGrid.GetWallData()
         dataCeiling = self.quotationSheetGrid.GetCeilingData()
         dataInteriorDoor = self.quotationSheetGrid.GetInteriorDoorData()
-        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, dataInteriorDoor, log=self.log, currencyName=self.currencyName)
+        dataNoteText = self.quotationSheetGrid.GetNoteText()
+        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, dataInteriorDoor,dataNoteText,log=self.log, currencyName=self.currencyName)
         dlg = QuotationSheetViewDialog(self, self.log, filename)
         dlg.CenterOnScreen()
         dlg.ShowModal()
@@ -2518,6 +2519,17 @@ class QuotationSheetGrid(gridlib.Grid):
         dataInteriorDoor.append(rowList)
         return dataInteriorDoor
 
+    def GetNoteText(self):
+        dataNoteText = []
+        for i in range(3):
+            if not self.GetCellValue(27 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor)+i,1):
+                break
+            rowList = "%s, "%(i+10)+self.GetCellValue(27 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor)+i,1)
+            dataNoteText.append(rowList)
+        #下面的代码是把合计那一行也取出来
+        dataNoteText.append(rowList)
+        return dataNoteText
+
     def ReCreate(self):
         # _, self.allProductMeterialUnitPriceList = GetAllProductMeterialUnitPriceInDB(self.log, WHICHDB)
         quotationDate = str(self.quotationDate)
@@ -2952,7 +2964,21 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 4 + 2 + len(self.dataInteriorDoor), 7, 'PCS')
         self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 4 + 2 + len(self.dataInteriorDoor), 12, format(sumupPriceUS, ','))
 
-
+        attr = gridlib.GridCellAttr()
+        # attr.SetFont(font)
+        # attr.SetBackgroundColour(wx.LIGHT_GREY)
+        attr.SetReadOnly(False)
+        attr.SetAlignment(wx.CENTER, -1)
+        self.SetCellValue(30 - 4 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '备注：')
+        self.SetCellValue(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '10')
+        self.SetCellValue(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '11.')
+        self.SetCellValue(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '12.')
+        self.SetAttr(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
+        self.SetAttr(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
+        self.SetAttr(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
+        self.SetCellSize(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
+        self.SetCellSize(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
+        self.SetCellSize(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
 
         # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 6, '%.2f' % ceilingTotalAmount)
         # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, 'm2')
