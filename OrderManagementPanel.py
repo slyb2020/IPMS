@@ -215,15 +215,25 @@ class OrderGrid(gridlib.Grid):
             self.SetColLabelValue(i, title)
         for i, width in enumerate(self.master.colWidthList):
             self.SetColSize(i, width)
-        for i, order in enumerate(self.master.dataArray[:, :7]):
+        for i, order in enumerate(self.master.dataArray):
+            print("order=",order)
             self.SetRowSize(i, 25)
-            for j, item in enumerate(order):
+            for j, item in enumerate(order[:-3]):  # z最后一列位子订单列表，不再grid上显示
+                # self.SetCellBackgroundColour(i,j,wx.Colour(250, 250, 250))
                 self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
                 self.SetCellValue(i, j, str(item))
-                if int(order[0]) < 2:
-                    self.SetCellBackgroundColour(i, j, wx.RED)
-                elif int(order[0]) < 5:
-                    self.SetCellBackgroundColour(i, j, wx.YELLOW)
+                if j == 0:
+                    if int(order[0]) < 2:
+                        self.SetCellBackgroundColour(i, j, wx.RED)
+                    elif int(order[0]) < 5:
+                        self.SetCellBackgroundColour(i, j, wx.YELLOW)
+                elif j >= 9:
+                    if item == "未审核":
+                        self.SetCellBackgroundColour(i, j, wx.Colour(250, 180, 180))
+                    elif item == "审核通过":
+                        self.SetCellBackgroundColour(i, j, wx.GREEN)
+                    else:
+                        self.SetCellBackgroundColour(i, j, wx.YELLOW)
 
     def OnIdle(self, evt):
         if self.moveTo is not None:
@@ -254,9 +264,13 @@ class OrderUpdateCheckThread(threading.Thread):
                 self.dataList = dataList
                 self.parent.dataList = dataList
                 try:
-                    wx.CallAfter(self.parent.ReCreate)
+                    self.parent.orderGrid.ReCreate()
                 except:
                     pass
+                # try:
+                #     wx.CallAfter(self.parent.ReCreate)
+                # except:
+                #     pass
             _, staffInfo = GetStaffInfo(self.log, WHICHDB)
             if self.staffInfo != staffInfo:
                 self.staffInfo = staffInfo
@@ -2156,6 +2170,20 @@ class QuotationSheetDialog(wx.Dialog):
         self.quotationRangeCtrl = wx.ComboBox(self.controlPanel,value=self.quotationRange,size=(135, -1),choices=['国内报价','国外报价'])
         self.quotationRangeCtrl.Bind(wx.EVT_COMBOBOX,self.OnQuotationRangeChanged)
         hhbox.Add(self.quotationRangeCtrl, 0, wx.TOP, 10)
+        hhbox.Add((10, -1))
+        hhbox.Add(wx.StaticLine(self.controlPanel, style=wx.VERTICAL), 0, wx.EXPAND)
+        hhbox.Add((10, -1))
+        self.addNoteButton1 = wx.Button(self.controlPanel,label="添加备注1",size=(135,30))
+        self.addNoteButton1.Bind(wx.EVT_BUTTON, self.OnAddNoteButton1)
+        hhbox.Add(self.addNoteButton1,0, wx.TOP, 10)
+        hhbox.Add((10, -1))
+        self.addNoteButton2 = wx.Button(self.controlPanel,label="添加备注2",size=(135,30))
+        self.addNoteButton2.Bind(wx.EVT_BUTTON, self.OnAddNoteButton2)
+        hhbox.Add(self.addNoteButton2,0, wx.TOP, 10)
+        hhbox.Add((10, -1))
+        self.addNoteButton3 = wx.Button(self.controlPanel,label="添加备注3",size=(135,30))
+        self.addNoteButton3.Bind(wx.EVT_BUTTON, self.OnAddNoteButton3)
+        hhbox.Add(self.addNoteButton3,0, wx.TOP, 10)
         vbox.Add(hhbox, 1, wx.EXPAND)
         self.controlPanel.SetSizer(vbox)
         self.quotationDateCtrl.Bind(wx.adv.EVT_DATE_CHANGED, self.OnQuotationDateChanged)
@@ -2163,6 +2191,33 @@ class QuotationSheetDialog(wx.Dialog):
         if self.name == "生成报价单":
             self.quotationDateCtrl.Enable(False)
             self.exchangeDateCtrl.Enable(False)
+
+    def OnAddNoteButton1(self,event):
+        dlg = wx.TextEntryDialog(
+            self, '请输入备注的中/英文信息',
+            '信息输入', '')
+        if dlg.ShowModal() == wx.ID_OK:
+            if dlg.GetValue():
+                self.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+        dlg.Destroy()
+
+    def OnAddNoteButton2(self,event):
+        dlg = wx.TextEntryDialog(
+            self, '请输入备注的中/英文信息',
+            '信息输入', '')
+        if dlg.ShowModal() == wx.ID_OK:
+            if dlg.GetValue():
+                self.quotationSheetGrid.SetNoteValue(1,dlg.GetValue())
+        dlg.Destroy()
+
+    def OnAddNoteButton3(self,event):
+        dlg = wx.TextEntryDialog(
+            self, '请输入备注的中/英文信息',
+            '信息输入', '')
+        if dlg.ShowModal() == wx.ID_OK:
+            if dlg.GetValue():
+                self.quotationSheetGrid.SetNoteValue(2,dlg.GetValue())
+        dlg.Destroy()
 
     def OnCurrencyNameChanged(self,event):
         if self.currencyName != self.currencyNameCOMBO.GetValue():
@@ -2176,7 +2231,6 @@ class QuotationSheetDialog(wx.Dialog):
             self.quotationSheetGrid.exchangeRate = self.exchangeRate
             self.quotationSheetGrid.currencyName = self.currencyName
             self.quotationSheetGrid.ReCreate()
-
 
     def OnExchangeRatDateChanged(self, event):
         if event.GetDate() != self.exchangeDate:
@@ -2328,6 +2382,8 @@ class QuotationSheetGrid(gridlib.Grid):
         self.Thaw()
         self.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.OnCellChanged)
 
+    def SetNoteValue(self,number, info):
+        self.SetCellValue(30 - 3 + number + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, info)
 
     def OnCellChanged(self, evt):
         col = evt.GetCol()
@@ -2973,13 +3029,15 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '10')
         self.SetCellValue(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '11.')
         self.SetCellValue(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '12.')
-        self.SetAttr(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
-        self.SetAttr(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
-        self.SetAttr(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
+        # self.SetAttr(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
+        # self.SetAttr(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
+        # self.SetAttr(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
         self.SetCellSize(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
         self.SetCellSize(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
         self.SetCellSize(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
-
+        self.SetCellAlignment(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1,wx.LEFT,wx.CENTER)
+        self.SetCellAlignment(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1,wx.LEFT,wx.CENTER)
+        self.SetCellAlignment(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1,wx.LEFT,wx.CENTER)
         # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 6, '%.2f' % ceilingTotalAmount)
         # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, 'm2')
         # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
