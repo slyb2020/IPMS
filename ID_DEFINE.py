@@ -47,6 +47,8 @@ orderWorkingStateList = ['接单', '排产', '下料', '加工', '打包', '发�
 WallCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '潮湿', '加强']
 CeilingCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量']
 InteriorDoorCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '单位', '数量']
+FireDoorCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量']
+WetUnitCheckEnableSectionList = ['产品名称', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量']
 # WallCheckEnableSectionDic = {
 #     "技术员": ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '潮湿', '加强'],
 #     "采购员": ['产品名称', '产品型号', '产品表面材料', '产品长度', '产品宽度', '产品厚度', '单位', '数量', '单价', '总价', '潮湿', '加强'],
@@ -65,14 +67,20 @@ BIDMETHOD = ['离岸价', '到岸价']
 
 CheckTitleDict = {
     "WALL": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
-             'Product \r\nNo.Wdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
+             'Product \r\nWdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
              'Product \r\nWet','Product \r\nStrengthen'],
     "CEILING": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
-             'Product \r\nNo.Wdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
+             'Product \r\nWdith (mm)', 'Procuct \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
              ],
     "INTERIORDOOR": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
-             'Product \r\nNo.Wdith (mm)', 'Unit', 'Total \r\nQuantity',
-             ]
+             'Product \r\nWdith (mm)', 'Unit', 'Total \r\nQuantity',
+             ],
+    "FIREDOOR": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
+             'Product \r\nWdith (mm)','Product \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
+             ],
+    "WETUNIT": ['Product \r\nNo.', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
+             'Product \r\nWdith (mm)','Product \r\nThickness (mm)', 'Unit', 'Total \r\nQuantity',
+             ],
     }
 # CheckTitleDict = {
 #     "WALL": ['Product \r\nNo.', 'Product \r\nType', 'Product \r\nSurface', 'Product \r\nHeight/Length (mm)',
@@ -102,6 +110,8 @@ CheckColWidthDict = {
     'WALL': [125, 125, 160, 150, 150, 80, 150, 150, 155],
     'CEILING': [150, 150, 160, 150, 150, 100, 150, 150, 155],
     'INTERIORDOOR': [160, 160, 160, 160, 160, 160, 150, 150, 155],
+    'FIREDOOR': [160, 160, 160, 160, 160, 160, 150, 150, 155],
+    'WETUNIT': [160, 160, 160, 160, 160, 160, 150, 150, 155],
     }
 OtherCheckColWidthDict = {
     'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 80, 80, 155],
@@ -120,6 +130,12 @@ CellingEnableWidthDict = {
     "TNF-C46":["600"],"TNF-C55":['300'],"TNF-C64":["600"],"TNF-C65":["300"],"TNF-C68":["600","300"],
     "TNF-C70":["600","300"],"TNF-C71":["600","300"],"TNF-C72":["600","300"],"TNF-C73":["275"],
     }
+FireDoorEnableHeightDict = {
+    "检修口(Hatch)": ['≤300', '400-600', '>600'],
+    "检修门(HB6 Inspection Door)": ['≤1800'],
+    }
+FireDoorEnableWidthDict = {"检修口(Hatch)": ['≤300', '400-600', '>600'], "检修门(HB6 Inspection Door)": ['≤800'], }
+
 # CheckColWidthDict = {
 #     'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 155],
 #     'CEILING': [125, 125, 160, 150, 150, 150, 80, 150, 155],
