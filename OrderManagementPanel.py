@@ -15,7 +15,7 @@ from DBOperation import GetAllOrderAllInfo, GetAllOrderList, GetOrderDetailRecor
     UpdatePurchchaseCheckStateByID, UpdateFinancingCheckStateByID, UpdateManagerCheckStateByID, UpdateOrderSquareByID, \
     GetExchagneRateInDB, \
     UpdateOrderOperatorCheckStateByID, GetStaffInfo, GetDraftOrderDetail, \
-    GetPriceDateListFromDB, GetPriceDicFromDB, UpdateDraftOrderInDB
+    GetPriceDateListFromDB, GetPriceDicFromDB, UpdateDraftOrderInDB,UpdateOrderAnnotation,GetOrderAnnotation
 from DateTimeConvert import *
 from MakePdfReport import *
 from OrderDetailTree import OrderDetailTree
@@ -1860,7 +1860,7 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
             ]
         elif self.type == 'WETUNIT':
             self.dataTypes = [
-                gridlib.GRID_VALUE_CHOICE + ':TYPE-1-L/1-R)',
+                gridlib.GRID_VALUE_CHOICE + ':TYPE-1-L/1-R',
                 # gridlib.GRID_VALUE_CHOICE + ':TNF-A60ZF-S001, TNF-A60BF-A60-01, TNF-B15BF-001',
                 gridlib.GRID_VALUE_CHOICE + ':PVC,S.S(304)',
                 gridlib.GRID_VALUE_CHOICE + ':≤300,400-600,>600,MAX 18000',
@@ -2204,14 +2204,17 @@ class QuotationSheetDialog(wx.Dialog):
         # self.ReCreateGrid()
 
     def OnCreateQuotationSheetBTN(self, event):
+        annotation = self.quotationSheetGrid.GetAnnotation()
+        UpdateOrderAnnotation(self.log, WHICHDB, self.id, annotation)
         filename = quotationSheetDir + '报价单%05d.pdf' % self.id
         # self.log.WriteText("here1" + filename)
         dataWall = self.quotationSheetGrid.GetWallData()
         dataCeiling = self.quotationSheetGrid.GetCeilingData()
         dataInteriorDoor = self.quotationSheetGrid.GetInteriorDoorData()
         dataFireDoor = self.quotationSheetGrid.GetFireDoorData()
+        dataWetUnit = self.quotationSheetGrid.GetWetUnitData()
         dataNoteText = self.quotationSheetGrid.GetNoteText()
-        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, dataInteriorDoor,dataFireDoor,dataNoteText,log=self.log, currencyName=self.currencyName)
+        MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, dataInteriorDoor,dataFireDoor,dataWetUnit,dataNoteText,log=self.log, currencyName=self.currencyName)
         dlg = QuotationSheetViewDialog(self, self.log, filename)
         dlg.CenterOnScreen()
         dlg.ShowModal()
@@ -2219,10 +2222,20 @@ class QuotationSheetDialog(wx.Dialog):
         self.Close()
 
     def OnSaveExitBTN(self, event):
-        sumupPrice = float(self.quotationSheetGrid.wallSumupPricesRMB) + float(self.quotationSheetGrid.ceilingSumupPricesRMB)+float(self.quotationSheetGrid.interiorDoorSumupPricesRMB)+float(self.quotationSheetGrid.fireDoorSumupPricesRMB)
+        sumupPrice = float(self.quotationSheetGrid.wallSumupPricesRMB) + float(self.quotationSheetGrid.ceilingSumupPricesRMB)\
+                     + float(self.quotationSheetGrid.interiorDoorSumupPricesRMB)+float(self.quotationSheetGrid.fireDoorSumupPricesRMB)\
+                     + float(self.quotationSheetGrid.wetUnitSumupPricesRMB)
+        annotation = self.quotationSheetGrid.GetAnnotation()
         if self.character in ["项目经理",'订单管理员','副总经理']:
-            dicList = self.quotationSheetGrid.dataWall + self.quotationSheetGrid.dataCeiling + self.quotationSheetGrid.dataInteriorDoor + self.quotationSheetGrid.dataFireDoor
-            UpdateDraftOrderInDB(self.log, WHICHDB, self.id, dicList)
+            dicList = self.quotationSheetGrid.dataWall + self.quotationSheetGrid.dataCeiling + self.quotationSheetGrid.dataInteriorDoor\
+                      + self.quotationSheetGrid.dataFireDoor + self.quotationSheetGrid.dataWetUnit
+            UpdateDraftOrderInDB(self.log, WHICHDB, self.id, dicList,annotation)
+            UpdateOrderAnnotation(self.log,WHICHDB,self.id,annotation)
+            # temp = GetOrderAnnotation(self.log,WHICHDB,self.id)
+            # ann=["","",""]
+            # for i,item in enumerate(temp[:3]):
+            #     ann[i]=item
+            # print(ann)
             if self.character in ["项目经理",'订单管理员']:
                 UpdateOrderOperatorCheckStateByID(self.log, WHICHDB, self.id, 'Y', str(self.quotationDate),
                                                   str(self.exchangeDate), self.currencyName, str(sumupPrice))
@@ -2289,15 +2302,15 @@ class QuotationSheetDialog(wx.Dialog):
         hhbox.Add((10, -1))
         hhbox.Add(wx.StaticLine(self.controlPanel, style=wx.VERTICAL), 0, wx.EXPAND)
         hhbox.Add((10, -1))
-        self.addNoteButton1 = wx.Button(self.controlPanel,label="添加备注1",size=(135,30))
+        self.addNoteButton1 = wx.Button(self.controlPanel,label="编辑备注1",size=(135,30))
         self.addNoteButton1.Bind(wx.EVT_BUTTON, self.OnAddNoteButton1)
         hhbox.Add(self.addNoteButton1,0, wx.TOP, 10)
         hhbox.Add((10, -1))
-        self.addNoteButton2 = wx.Button(self.controlPanel,label="添加备注2",size=(135,30))
+        self.addNoteButton2 = wx.Button(self.controlPanel,label="编辑备注2",size=(135,30))
         self.addNoteButton2.Bind(wx.EVT_BUTTON, self.OnAddNoteButton2)
         hhbox.Add(self.addNoteButton2,0, wx.TOP, 10)
         hhbox.Add((10, -1))
-        self.addNoteButton3 = wx.Button(self.controlPanel,label="添加备注3",size=(135,30))
+        self.addNoteButton3 = wx.Button(self.controlPanel,label="编辑备注3",size=(135,30))
         self.addNoteButton3.Bind(wx.EVT_BUTTON, self.OnAddNoteButton3)
         hhbox.Add(self.addNoteButton3,0, wx.TOP, 10)
         vbox.Add(hhbox, 1, wx.EXPAND)
@@ -2312,27 +2325,27 @@ class QuotationSheetDialog(wx.Dialog):
         dlg = wx.TextEntryDialog(
             self, '请输入备注的中/英文信息',
             '信息输入', '')
+        dlg.SetValue(self.quotationSheetGrid.annotationList[0])
         if dlg.ShowModal() == wx.ID_OK:
-            if dlg.GetValue():
-                self.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+            self.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
         dlg.Destroy()
 
     def OnAddNoteButton2(self,event):
         dlg = wx.TextEntryDialog(
             self, '请输入备注的中/英文信息',
             '信息输入', '')
+        dlg.SetValue(self.quotationSheetGrid.annotationList[1])
         if dlg.ShowModal() == wx.ID_OK:
-            if dlg.GetValue():
-                self.quotationSheetGrid.SetNoteValue(1,dlg.GetValue())
+            self.quotationSheetGrid.SetNoteValue(1,dlg.GetValue())
         dlg.Destroy()
 
     def OnAddNoteButton3(self,event):
         dlg = wx.TextEntryDialog(
             self, '请输入备注的中/英文信息',
             '信息输入', '')
+        dlg.SetValue(self.quotationSheetGrid.annotationList[2])
         if dlg.ShowModal() == wx.ID_OK:
-            if dlg.GetValue():
-                self.quotationSheetGrid.SetNoteValue(2,dlg.GetValue())
+            self.quotationSheetGrid.SetNoteValue(2,dlg.GetValue())
         dlg.Destroy()
 
     def OnCurrencyNameChanged(self,event):
@@ -2417,10 +2430,15 @@ class QuotationSheetGrid(gridlib.Grid):
         self.quotationRange = quotationRange
         self.currencyName = currencyName
         self.Bind(wx.EVT_IDLE, self.OnIdle)
+        temp = GetOrderAnnotation(self.log, WHICHDB, self.id)
+        self.annotationList = ["", "", ""]
+        for i, item in enumerate(temp[:3]):
+            self.annotationList[i] = item
         self.dataWall = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "WALL")
         self.dataCeiling = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "CEILING")
         self.dataInteriorDoor = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "INTERIORDOOR")
         self.dataFireDoor = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "FIREDOOR")
+        self.dataWetUnit = GetDraftComponentInfoByID(self.log, WHICHDB, self.id, "WETUNIT")
         self.wallUnitPrice = [0] * len(self.dataWall)
         self.wallTotalPrice = [0] * len(self.dataWall)
         self.exchangeRate = exchangeRate
@@ -2432,6 +2450,8 @@ class QuotationSheetGrid(gridlib.Grid):
         self.interiorDoorSumupPricesRMB = 0.0
         self.fireDoorRowNumList=[]
         self.fireDoorSumupPricesRMB = 0.0
+        self.wetUnitRowNumList=[]
+        self.wetUnitSumupPricesRMB = 0.0
         for i, dic in enumerate(self.dataWall):
             if dic['单价'] != None:
                 self.wallUnitPrice[i] = float(dic['单价'])
@@ -2466,8 +2486,17 @@ class QuotationSheetGrid(gridlib.Grid):
                 self.fireDoorTotalPrice[i] = self.fireDoorUnitPrice[i] * float(dic['数量'])
             else:
                 self.fireDoorTotalPrice[i] = float(dic['总价'])
+        self.wetUnitUnitPrice = [0] * len(self.dataWetUnit)
+        self.wetUnitTotalPrice = [0] * len(self.dataWetUnit)
+        for i, dic in enumerate(self.dataWetUnit):
+            if dic['单价'] != None:
+                self.wetUnitUnitPrice[i] = float(dic['单价'])
+            if dic['总价'] == None:
+                self.wetUnitTotalPrice[i] = self.fireDoorUnitPrice[i] * float(dic['数量'])
+            else:
+                self.wetUnitTotalPrice[i] = float(dic['总价'])
         self.Freeze()
-        self.CreateGrid(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 22)  # , gridlib.Grid.SelectRows)
+        self.CreateGrid(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6, 22)  # , gridlib.Grid.SelectRows)
         self.EnableEditing(True)
         self.SetRowLabelSize(50)
         self.SetColLabelSize(25)
@@ -2486,18 +2515,18 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetColSize(13, 40)
         self.SetColSize(14, 105)
         self.SetColSize(21, 105)
-        for i in range(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6):
+        for i in range(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6):
             for j in range(22):
                 self.SetCellAlignment(i, j, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
         self.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE_VERTICAL)
 
-        self.productLaborUnitPrice = 20.11
-        self.scrapRate = 0.03
-        self.overheadRate = 0.26
-        self.profitRate = 0.15
-        self.marginNT = 0.2
-        self.marginDK = 0
-        self.agentRate = 0
+        # self.productLaborUnitPrice = 20.11
+        # self.scrapRate = 0.03
+        # self.overheadRate = 0.26
+        # self.profitRate = 0.15
+        # self.marginNT = 0.2
+        # self.marginDK = 0
+        # self.agentRate = 0
         # exchangeRate = self.master.exchangeRate
         colNum = 21 if self.name=='生成报价单' else 20
         for i in range(colNum):
@@ -2513,8 +2542,21 @@ class QuotationSheetGrid(gridlib.Grid):
         self.Thaw()
         self.Bind(gridlib.EVT_GRID_CELL_CHANGED, self.OnCellChanged)
 
+    def GetAnnotation(self):
+        value=[]
+        for i in range(3):
+            temp = self.GetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3 + i,1)
+            if len(temp)>0:
+                value.append(temp)
+        return value
+
+    # def GetNoteValue(self,number):
+    #     value = self.GetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3 + number, 1)
+    #     return value
+    #
     def SetNoteValue(self,number, info):
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 3 + number, 1, info)
+        self.annotationList[number]=info
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3 + number, 1, info)
 
     def OnCellChanged(self, evt):
         col = evt.GetCol()
@@ -2721,6 +2763,55 @@ class QuotationSheetGrid(gridlib.Grid):
                     self.dataFireDoor[i]["总价"]=str(temp)
                     self.fireDoorSumupPrices += temp
                 self.SetCellValue(11 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor) + len(self.dataFireDoor) + 18,12,format(self.fireDoorSumupPrices,','))
+        elif row in self.wetUnitRowNumList:
+            price = self.GetCellValue(row,col)
+            try:
+                price = int(price)
+            except:
+                price=0
+                self.SetCellValue(row,col,'')
+            error=True
+            for i in range(6):
+                temp = self.GetCellValue(row,14+i)
+                if temp:
+                    temp = temp.split('-')
+                    left = int(temp[0])
+                    right = int(temp[1])
+                else:
+                    left = 0
+                    right = 0
+                if price>=left and price<=right:
+                    error=False
+                    break
+            if error:
+                self.SetCellBackgroundColour(row,col,wx.Colour(200,100,0))
+            else:
+                self.SetCellBackgroundColour(row,col,wx.WHITE)
+            if self.GetCellValue(row,col):
+                unitPriceUS = price/self.exchangeRate*100
+                totalPriceUS = float(self.GetCellValue(row,6))*unitPriceUS
+                self.SetCellValue(row, 11, "%6.2f"%unitPriceUS)
+                self.SetCellValue(row, 12, "%6.2f"%totalPriceUS)
+                self.wetUnitSumupPrices = 0.0
+                self.wetUnitSumupPricesRMB = 0.0
+                for i in range(len(self.dataWetUnit)):
+                    try:
+                        price = float(self.GetCellValue(11  + len(self.dataWall) + 6 + len(self.dataCeiling) +6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 20))
+                    except:
+                        price = 0.0
+                    totalPriceRMB = float(self.GetCellValue(11  + len(self.dataWall) + 6 + len(self.dataCeiling) +6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 6)) * price
+                    self.wetUnitSumupPricesRMB += totalPriceRMB
+                    temp = self.GetCellValue(11  + len(self.dataWall) + 6 + len(self.dataCeiling) +6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i,20)
+                    temp = float(temp) if temp else 0
+                    self.dataWetUnit[i]["实际报价"]=str(temp)
+                    temp = self.GetCellValue(11  + len(self.dataWall) + 6 + len(self.dataCeiling) +6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i,11)
+                    temp = float(temp) if temp else 0
+                    self.dataWetUnit[i]["单价"]=str(temp)
+                    temp = self.GetCellValue(11  + len(self.dataWall) + 6 + len(self.dataCeiling) +6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i,12)
+                    temp = float(temp) if temp else 0
+                    self.dataWetUnit[i]["总价"]=str(temp)
+                    self.wetUnitSumupPrices += temp
+                self.SetCellValue(11  + len(self.dataWall) + 6 + len(self.dataCeiling) +6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit),12,format(self.wetUnitSumupPrices,','))
         evt.Skip()
 
     def GetWallData(self):
@@ -2773,13 +2864,30 @@ class QuotationSheetGrid(gridlib.Grid):
             dataFireDoor.append(rowList)
         return dataFireDoor
 
+    def GetWetUnitData(self):
+        dataWetUnit = []
+        if len(self.dataWetUnit)>0:
+            for row in self.wetUnitRowNumList:
+                rowList = []
+                for col in range(13):
+                    rowList.append(self.GetCellValue(row, col))
+                dataWetUnit.append(rowList)
+            #下面的代码是把合计那一行也取出来
+            rowList = []
+            for col in range(13):
+                rowList.append(self.GetCellValue(self.wetUnitRowNumList[-1]+1, col))
+            dataWetUnit.append(rowList)
+        return dataWetUnit
+
     def GetNoteText(self):
         dataNoteText = []
+        number=0
         for i in range(3):
-            if not self.GetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 3 + i,1):
-                break
-            rowList = "%s, "%(i+10)+self.GetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 3 + i,1)
-            dataNoteText.append(rowList)
+            temp = self.GetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3 + i,1)
+            if len(temp)>0:
+                rowList = "%s, "%str(number+10)+temp
+                number += 1
+                dataNoteText.append(rowList)
         #下面的代码是把合计那一行也取出来
         return dataNoteText
 
@@ -2838,8 +2946,8 @@ class QuotationSheetGrid(gridlib.Grid):
         # self.SetCellValue(7, 14+2, "Export")
         self.SetCellSize(7, 14+2, 1, 2)
 
+        # #####################################     Wall Panel  ########################################################
         self.SetCellValue(8, 0, "1)TNF Wall Panel")
-
         self.SetCellValue(9, 0, "编号" if self.currencyName=='人民币' else "Item")
         self.SetCellValue(9, 1, "产品" if self.currencyName=='人民币' else "Product")
         self.SetCellValue(9, 2, "产品" if self.currencyName=='人民币' else "Product")
@@ -3217,31 +3325,7 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor), 7, 'PCS')
         self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor), 12, format(sumupPriceUS, ','))
 
-        # attr = gridlib.GridCellAttr()
-        # # attr.SetFont(font)
-        # # attr.SetBackgroundColour(wx.LIGHT_GREY)
-        # attr.SetReadOnly(False)
-        # attr.SetAlignment(wx.CENTER, -1)
-        # self.SetCellValue(30 - 4 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '备注：')
-        # self.SetCellValue(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '10')
-        # self.SetCellValue(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '11.')
-        # self.SetCellValue(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 0, '12.')
-        # # self.SetAttr(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
-        # # self.SetAttr(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
-        # # self.SetAttr(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
-        # self.SetCellSize(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
-        # self.SetCellSize(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
-        # self.SetCellSize(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, 1,12)
-        # self.SetCellAlignment(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1,wx.LEFT,wx.CENTER)
-        # self.SetCellAlignment(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1,wx.LEFT,wx.CENTER)
-        # self.SetCellAlignment(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1,wx.LEFT,wx.CENTER)
-
-
-        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 6, '%.2f' % ceilingTotalAmount)
-        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, 'm2')
-        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
-
-        # #####################################    Fire Door   #######################################################
+        # #####################################     Fire Door  #########################################################
         self.SetCellValue(8 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6, 0, "4)TNF Fire Door")
         self.SetCellSize(8 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6, 0, 1, 2)
         self.SetCellSize(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6, 0, 2, 1)
@@ -3358,27 +3442,143 @@ class QuotationSheetGrid(gridlib.Grid):
         self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 4 + 2 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor), 7, 'PCS')
         self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 4 + 2 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor), 12, format(sumupPriceUS, ','))
 
+        # #####################################      Wet Unit    #######################################################
+        self.SetCellValue(8 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 0, "5)TNF Wet Unit")
+        self.SetCellSize(8 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 0, 1, 2)
+        self.SetCellSize(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 0, 2, 1)
+        self.SetCellSize(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 7, 2, 1)
+
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 0, "编号" if self.currencyName=='人民币' else "Name")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 1, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 2, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 3, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 4, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 5, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 7, "单位" if self.currencyName=='人民币' else "Unit")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 6, "总计" if self.currencyName=='人民币' else"Total")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 8, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 9, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 10, "产品" if self.currencyName=='人民币' else "Product")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 8+3, "单价" if self.currencyName=='人民币' else "Unit Price")
+        self.SetCellValue(9 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 9+3, "总价" if self.currencyName=='人民币' else "Total Price")
+
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 1, "型号" if self.currencyName=='人民币' else "Name")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 2, "表材" if self.currencyName=='人民币' else "surface")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 3, "高度/长度 (mm)" if self.currencyName=='人民币' else "height/length (mm)")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 4, "宽度 (mm)" if self.currencyName=='人民币' else "width (mm)")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 5, "厚度" if self.currencyName=='人民币' else "thickness (mm)")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 6, "数量" if self.currencyName=='人民币' else "Quantity")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 8, "潮湿" if self.currencyName=='人民币' else "Wet")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 9, "加强" if self.currencyName=='人民币' else "Strengthen")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 10, "超宽" if self.currencyName=='人民币' else "OverWidth")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 8+3, "元" if self.currencyName=='人民币' else "In %s"%CURRENCYDICT[self.currencyName])
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 9+3, "元" if self.currencyName=='人民币' else "In %s"%CURRENCYDICT[self.currencyName])
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 12+2, "5000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 13+2, "8000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 14+2, "10000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 15+2, "20000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 16+2, "30000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 17+2, "40000平方米")
+        self.SetCellValue(10 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6, 18+2, "实际报价")
+        #
+        wetUnitTotalAmount = 0.0
+        wetUnitTatalPriceUSD = 0.0
+        self.wetUnitRowNumList = []
+        for i, wetUnitDict in enumerate(self.dataWetUnit):
+            self.wetUnitRowNumList.append(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i)
+            wetUnitAmount = float(wetUnitDict['数量'])
+            wetUnitTotalAmount += wetUnitAmount
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 0, str(i + 1))
+            self.SetCellValue(11  + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 1, wetUnitDict['产品名称'])
+            # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + i, 2, ceilingDict['产品型号'])
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 2, wetUnitDict['产品表面材料'])
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 3, wetUnitDict['产品长度'])
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 4, wetUnitDict['产品宽度'])
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 5, wetUnitDict['产品厚度'])
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 6, wetUnitDict['数量'])
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 7, wetUnitDict['单位'])
+
+            renderer = gridlib.GridCellNumberRenderer()
+            self.SetCellRenderer(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 20, renderer)
+            price = '' if not wetUnitDict['实际报价'] else wetUnitDict['实际报价']
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 20, price)
+            for item in self.priceDataDic:
+                if item["产品名称"] == wetUnitDict['产品名称'] and item["报价类别"] == self.quotationRange:
+                    self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 12 + 2, item['5000平方米'])
+                    self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 13 + 2, item['8000平方米'])
+                    self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 14 + 2, item['10000平方米'])
+                    self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 15 + 2, item['20000平方米'])
+                    self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 16 + 2, item['30000平方米'])
+                    self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 17 + 2, item['40000平方米'])
+                    break
+            error = True
+            try:
+                price = float(price)
+            except:
+                price = 0
+            for j in range(6):
+                temp = self.GetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 14 + j)
+                if temp == "":
+                    break
+                temp = temp.split('-')
+                left = int(temp[0])
+                right = int(temp[1])
+                if price >= left and price <= right:
+                    error = False
+                    break
+            if error:
+                self.SetCellBackgroundColour(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 20, wx.Colour(200, 100, 0))
+            else:
+                self.SetCellBackgroundColour(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 20, wx.WHITE)
+            unitPriceUS = price*100 / self.exchangeRate
+            totalPriceUS = float(self.GetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 6)) * unitPriceUS
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 11, "%6.2f"%unitPriceUS)
+            self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 12, "%6.2f"%totalPriceUS)
+        sumupPriceUS = 0.0
+        self.wetUnitSumupPricesRMB = 0.0
+        for i in range(len(self.dataWetUnit)):
+            try:
+                price = float(self.GetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i,20))
+            except:
+                price = 0.0
+            totalPriceRMB = float(self.GetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 6)) * price
+            self.wetUnitSumupPricesRMB += totalPriceRMB
+            temp = self.GetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 20)
+            temp = float(temp) if temp else 0
+            self.dataWetUnit[i]["实际报价"] = str(temp)
+            temp = self.GetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 11)
+            temp = float(temp) if temp else 0
+            self.dataWetUnit[i]["单价"] = str(temp)
+            temp = self.GetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + i, 12)
+            temp = float(temp) if temp else 0
+            self.dataWetUnit[i]["总价"] = str(temp)
+            sumupPriceUS += temp
+        self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit), 6, format(wetUnitTotalAmount,','))
+        self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit), 7, 'PCS')
+        self.SetCellValue(11 + 6 + len(self.dataWall) + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit), 12, format(sumupPriceUS, ','))
+
+        #######################################    备注    ##############################################################
         attr = gridlib.GridCellAttr()
         # attr.SetFont(font)
         # attr.SetBackgroundColour(wx.LIGHT_GREY)
         attr.SetReadOnly(False)
         attr.SetAlignment(wx.CENTER, -1)
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 4, 0, '备注：')
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 3, 0, '10')
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 2, 0, '11.')
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 1, 0, '12.')
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6- 4, 0, '备注：')
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 0, '10')
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 0, '11.')
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 0, '12.')
         # self.SetAttr(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
         # self.SetAttr(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
         # self.SetAttr(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
-        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 3, 1, 1,12)
-        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 2, 1, 1,12)
-        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 1, 1, 1,12)
-        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 3, 1,wx.LEFT,wx.CENTER)
-        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 2, 1,wx.LEFT,wx.CENTER)
-        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 - 1, 1,wx.LEFT,wx.CENTER)
-        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 6, '%.2f' % ceilingTotalAmount)
-        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 7, 'm2')
-        # self.SetCellValue(11 + 4 + len(self.dataWall) + 2 + len(self.dataCeiling), 9+3, '%.2f' % ceilingTatalPriceUSD)
+        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1, 1,12)
+        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1, 1,12)
+        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1, 1,12)
+        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1,wx.LEFT,wx.CENTER)
+        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1,wx.LEFT,wx.CENTER)
+        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1,wx.LEFT,wx.CENTER)
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1, self.annotationList[0])
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1, self.annotationList[1])
+        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1, self.annotationList[2])
 
 
     def OnIdle(self, evt):

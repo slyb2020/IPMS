@@ -1352,6 +1352,10 @@ def DrawQuotationSheetFireDoor(c,record,currencyName):
         [Title21, Title22, Title23, Title24, Title25, Title26, Title27, Title28, Title32,Title33,],]
     for item in record:
         temp = item[0:8]+item[11:]
+        if "检修门" in temp[1]:
+            temp[1]="HB6 Inspection Door"
+        if "检修口" in temp[1]:
+            temp[1]="Hatch"
         data.append(temp)
     tableStyle =[
                            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),       #   类别，(起始列，起始行）,(结束列，结束行)，线宽，颜色  #GRID是内外都有线   #BOX是只有外框，内部没线
@@ -1387,8 +1391,81 @@ def DrawQuotationSheetFireDoor(c,record,currencyName):
     t.wrapOn(c, 186.5 * mm, 800 * mm)
     t.drawOn(c, 15 * mm, startY * mm)
 
-def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorDoor=[],dataFireDoor=[],dataNoteText=[],expiry=61,log=None, currencyName='人民币'):
-    print("dataNoteText=",dataNoteText)
+def DrawQuotationSheetWetUnit(c,record,currencyName):
+    styles = getSampleStyleSheet()
+    # # Modify the Normal Style
+    # styles["Normal"].fontSize = 12
+    # styles["Normal"].leading = 14
+
+    # Create a Justify style
+    styles.add(ParagraphStyle(name='Center', alignment=1))
+    Title1 = Paragraph('<font name="Times">Item</font>',style = styles['Center'])
+    Title2 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title3 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title4 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title5 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title6 = Paragraph('<font name="Times">Product</font>',style = styles['Center'])
+    Title7 = Paragraph('<font name="Times">Total</font>',style = styles['Center'])
+    Title8 = Paragraph('<font name="Times">Unit</font>',style = styles['Center'])
+    # Title9 = Paragraph('<font name="Times">Wet</font>',style = styles['Center'])
+    # Title10 = Paragraph('<font name="Times">Strengthen</font>',style = styles['Center'])
+    # Title11 = Paragraph('<font name="Times">OverWidth</font>',style = styles['Center'])
+    Title12 = Paragraph('<font name="Times">Unit Price</font>',style = styles['Center'])
+    Title13 = Paragraph('<font name="Times">Total Price</font>',style = styles['Center'])
+    Title21 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    Title22 = Paragraph('<font name="Times">Type</font>',style = styles['Center'])
+    Title23 = Paragraph('<font name="Times">Surface</font>',style = styles['Center'])
+    Title24 = Paragraph('<font name="Times">Height/Length(mm)</font>',style = styles['Center'])
+    Title25 = Paragraph('<font name="Times">Width(mm)</font>',style = styles['Center'])
+    Title26 = Paragraph('<font name="Times">Thickness(mm)</font>',style = styles['Center'])
+    Title27 = Paragraph('<font name="Times">Quantity</font>',style = styles['Center'])
+    Title28 = Paragraph('<font name="Times">Unit</font>',style = styles['Center'])
+    # Title29 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    # Title30 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    # Title31 = Paragraph('<font name="Times"></font>',style = styles['Center'])
+    Title32 = Paragraph('<font name="Times">In %s</font>'%CURRENCYDICT[currencyName],style = styles['Center'])
+    Title33 = Paragraph('<font name="Times">In %s</font>'%CURRENCYDICT[currencyName],style = styles['Center'])
+    data = [
+        [Title1,  Title2,  Title3,  Title4, Title5, Title6, Title7,  Title8,  Title12,Title13],
+        [Title21, Title22, Title23, Title24, Title25, Title26, Title27, Title28, Title32,Title33,],]
+    for item in record:
+        temp = item[0:8]+item[11:]
+        data.append(temp)
+    tableStyle =[
+                           ('GRID', (0, 0), (-1, -1), 0.5, colors.black),       #   类别，(起始列，起始行）,(结束列，结束行)，线宽，颜色  #GRID是内外都有线   #BOX是只有外框，内部没线
+                           ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                           ('BACKGROUND', (0, 0), (-1, 1), colors.khaki),
+                           ('BACKGROUND', (6, 2), (7, -1), colors.beige),
+                           # ('BACKGROUND', (6, 2), (7, -1), colors.pink),
+                           ('BACKGROUND', (8, 2), (9, -1), colors.lavender),
+                           ('SPAN',(0,0),(0,1)),
+                           ('SPAN',(7,0),(7,1)),
+                           # ('SPAN',(8,0),(8,1)),
+                           # ('SPAN',(9,0),(9,1)),
+                           # ('SPAN',(10,0),(10,1)),
+                           ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                           ('LINEABOVE', (0, 2), (-1, 2), 1, colors.black),
+                           # ('LINEBEFORE', (2, 1), (2, -2), 1, colors.pink),
+                           # ('BACKGROUND', (2, 2), (2, 3), colors.orange),
+                           # ('BOX', (0, 0), (-1, -1), 2, colors.black),
+                           # ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                           ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                           # # ('ALIGN', (0, 3), (0, 3), 'CENTER'),
+                           # ('BACKGROUND', (3, 0), (3, 0), colors.limegreen),
+                           # ('BACKGROUND', (3, 1), (3, 1), colors.khaki),
+                           # # ('ALIGN', (3, 1), (3, 1), 'CENTER'),
+                           # ('BACKGROUND', (3, 2), (3, 2), colors.beige),
+                           # # ('ALIGN', (3, 2), (3, 2), 'LEFT'),
+                           ]
+    tableColWidths = [12*mm,45.0*mm,22.0*mm,34.0*mm,22.0*mm,28*mm,20.0*mm,20*mm,35*mm,35*mm]
+
+    t = Table(data, style=tableStyle,colWidths=tableColWidths)
+    startY = 8 + (23 - len(data)) * 6.3
+    t = Table(data, style=tableStyle,colWidths=tableColWidths)
+    t.wrapOn(c, 186.5 * mm, 800 * mm)
+    t.drawOn(c, 15 * mm, startY * mm)
+
+def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorDoor=[],dataFireDoor=[],dataWetUnit=[],dataNoteText=[],expiry=61,log=None, currencyName='人民币'):
     annotationList=[
         "备注：",
         "1, 报价的有效期为60天",
@@ -1402,26 +1479,35 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
         "9，货运方式：工厂出厂价或者含运费价格或者到港口费用",
     ]
     annotationList+=dataNoteText
-    lastPageName="WALL"
     gap = 6.3
     num = 31
     width, height =  (297 * mm, 210 * mm)
     pagesize = (297 * mm, 210 * mm)
     myCanvas = canvas.Canvas(filename, pagesize=pagesize)
+    indexNum=1
+    wallIndexNum=indexNum
     pageWall=int(np.ceil(len(dataWall)/20.))
-    print("pageWall=",pageWall)
+    lastPageName="WALL"
     pageCeiling = int(np.ceil(len(dataCeiling)/20.))
-    print("pageCeiling=",pageCeiling)
     if pageCeiling>0:
+        indexNum+=1
         lastPageName = "CEILING"
+    ceilingIndexNum = indexNum
     pageInteriorDoor = int(np.ceil(len(dataInteriorDoor)/20.))
     if pageInteriorDoor>0:
+        indexNum+=1
         lastPageName = "INTERIORDOOR"
-    print("pageInteriorDoor=",pageInteriorDoor)
+    interiorDoorIndexNum = indexNum
     pageFireDoor = int(np.ceil(len(dataFireDoor)/20.))
     if pageFireDoor>0:
+        indexNum+=1
         lastPageName = "FIREDOOR"
-    print("pageFireDoor=",pageFireDoor)
+    fireDoorIndexNum=indexNum
+    pageWetUnit = int(np.ceil(len(dataWetUnit)/20.))
+    if pageWetUnit>0:
+        indexNum+=1
+        lastPageName = "WETUNIT"
+    wetUnitIndexNum=indexNum
     # 这里的5是备注的那5行文字
     if lastPageName == "WALL":
         leftRows = 20 * pageWall - len(dataWall)
@@ -1431,12 +1517,12 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
         leftRows = 20 * pageInteriorDoor - len(dataInteriorDoor)
     if lastPageName == "FIREDOOR":
         leftRows = 20 * pageFireDoor - len(dataFireDoor)
-    print("leftRows=",leftRows)
+    if lastPageName == "WETUNIT":
+        leftRows = 20 * pageWetUnit - len(dataWetUnit)
     if leftRows>=len(annotationList):
-        pageTotal = pageWall + pageCeiling + pageInteriorDoor + pageFireDoor
+        pageTotal = pageWall + pageCeiling + pageInteriorDoor + pageFireDoor + pageWetUnit
     else:
-        pageTotal = pageWall + pageCeiling + pageInteriorDoor + pageFireDoor + 1
-    print("pageTotal=",pageTotal)
+        pageTotal = pageWall + pageCeiling + pageInteriorDoor + pageFireDoor + pageWetUnit + 1
     for pageNum in range(pageWall):
         myCanvas.setFont("SimSun", 18)
         myCanvas.drawCentredString(width/2,550, text="伊纳克赛(南通)精致内饰材料有限公司产品报价单")
@@ -1462,7 +1548,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
         myCanvas.drawString(40,470, text="Re:")
         myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
-        myCanvas.drawString(40,450, text="1) TNF Wall Panel")
+        myCanvas.drawString(40,450, text="%s) TNF Wall Panel"%wallIndexNum)
         DrawQuotationSheet(myCanvas,dataWall[pageNum*20:(pageNum+1)*20],currencyName)#A1代表非尾页，A3代表尾页
         if lastPageName == "WALL" and pageNum == (pageWall-1):
             myCanvas.setFont("SimSun", 8)
@@ -1500,7 +1586,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
         myCanvas.drawString(40,470, text="Re:")
         myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
-        myCanvas.drawString(40,450, text="2) TNF Ceiling Panel")
+        myCanvas.drawString(40,450, text="%s) TNF Ceiling Panel"%ceilingIndexNum)
         DrawQuotationSheetCeiling(myCanvas,dataCeiling[pageNum*20:(pageNum+1)*20],currencyName)#A1代表非尾页，A3代表尾页
         if lastPageName == "CEILING" and pageNum == (pageCeiling-1):
             myCanvas.setFont("SimSun", 8)
@@ -1532,7 +1618,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
         myCanvas.drawString(40,470, text="Re:")
         myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
-        myCanvas.drawString(40,450, text="3) TNF Interior Door")
+        myCanvas.drawString(40,450, text="%s) TNF Interior Door"%interiorDoorIndexNum)
         DrawQuotationSheetInteriorDoor(myCanvas,dataInteriorDoor[pageNum*20:(pageNum+1)*19],currencyName)
         if lastPageName == "INTERIORDOOR" and pageNum == (pageInteriorDoor-1):
             myCanvas.setFont("SimSun", 8)
@@ -1544,7 +1630,6 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
                 myCanvas.drawString(40, 25+(leftRows-i-1)*18, text=annotationList[i])
         myCanvas.setFont("SimSun", 8)
         myCanvas.drawRightString(width - 50, 15, '页码(Page)：%s/%s' % (pageNum+1+pageWall+pageCeiling, pageTotal))
-        print("pageNum=",pageNum,"pageCeiling=",pageCeiling)
         myCanvas.showPage()  # 这句话相当于分页，显示页面即完成当前页面，开始新页面
     for pageNum in range(pageFireDoor):
         myCanvas.setFont("SimSun", 18)
@@ -1565,7 +1650,7 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
         myCanvas.drawString(40,470, text="Re:")
         myCanvas.setFont("Times", 12)
         myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
-        myCanvas.drawString(40,450, text="3) TNF Fire Door")
+        myCanvas.drawString(40,450, text="%s) TNF Fire Door"%fireDoorIndexNum)
         DrawQuotationSheetFireDoor(myCanvas,dataFireDoor[pageNum*20:(pageNum+1)*19],currencyName)
         if lastPageName == "FIREDOOR" and pageNum == (pageFireDoor-1):
             myCanvas.setFont("SimSun", 8)
@@ -1577,6 +1662,38 @@ def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorD
                 myCanvas.drawString(40, 25+(leftRows-i-1)*18, text=annotationList[i])
         myCanvas.setFont("SimSun", 8)
         myCanvas.drawRightString(width - 50, 15, '页码(Page)：%s/%s' % (pageNum+1+pageWall+pageCeiling+pageInteriorDoor, pageTotal))
+        myCanvas.showPage()  # 这句话相当于分页，显示页面即完成当前页面，开始新页面
+    for pageNum in range(pageWetUnit):
+        myCanvas.setFont("SimSun", 18)
+        myCanvas.drawCentredString(width/2,550, text="伊纳克赛(南通)精致内饰材料有限公司产品报价单")
+        myCanvas.drawImage("D:/IPMS/dist/bitmaps/logo.jpg", 30, 530,
+                            width=40, height=40)
+        # tempCode = 'O' + '%05d' % int(87) + '-' + '%s' % str(datetime.datetime.today())
+        # # BarCodeGenerator(tempCode,dirName+"tempBarcode.png",log)
+        # myCanvas.drawImage(dirName+"tempBarcode.png", width-100, height-40,
+        #                     width=100, height=40)
+        myCanvas.setFont("Times", 18)
+        myCanvas.drawCentredString(width/2,530, text="Inexa (NanTong) Interiors Co.Ltd Quotation Sheet")
+        DrawLine(myCanvas,1,*coord(10, 28, height, mm),*coord(287, 28, height, mm))
+        myCanvas.setFont("SimSun", 12)
+        myCanvas.drawString(40,500, text="报价单号(Quotation Sheet No.):%s"%filename[-9:-4])
+        myCanvas.drawRightString(width-50, 500, '出单日期(Issue  Date):%s'%(datetime.date.today()))
+        myCanvas.drawRightString(width-50, 480, '有效日期(Expiry Date):%s'%(datetime.date.today()+datetime.timedelta(expiry)))
+        myCanvas.drawString(40,470, text="Re:")
+        myCanvas.setFont("Times", 12)
+        myCanvas.drawCentredString(width/2,470, text="TNF accommodation system")
+        myCanvas.drawString(40,450, text="%s) TNF Wet Unit"%wetUnitIndexNum)
+        DrawQuotationSheetWetUnit(myCanvas,dataWetUnit[pageNum*20:(pageNum+1)*19],currencyName)
+        if lastPageName == "WETUNIT" and pageNum == (pageWetUnit-1):
+            myCanvas.setFont("SimSun", 8)
+            if leftRows>len(annotationList):
+                temp = len(annotationList)
+            else:
+                temp = leftRows
+            for i in range(temp):
+                myCanvas.drawString(40, 25+(leftRows-i-1)*18, text=annotationList[i])
+        myCanvas.setFont("SimSun", 8)
+        myCanvas.drawRightString(width - 50, 15, '页码(Page)：%s/%s' % (pageNum+1+pageWall+pageCeiling+pageInteriorDoor+pageFireDoor, pageTotal))
         myCanvas.showPage()  # 这句话相当于分页，显示页面即完成当前页面，开始新页面
     # if leftRows<12:
     #     myCanvas.setFont("SimSun", 18)
