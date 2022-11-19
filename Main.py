@@ -294,7 +294,7 @@ class MySplashScreen(SplashScreen):
         wx.Yield()
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         global  enterpriseName
-        _, enterpriseName = GetEnterpriseInfo(None, 1)
+        _, enterpriseName = GetEnterpriseInfo(None, WHICHDB)
         self.fc = wx.CallLater(10, self.ShowMain)   #self.fc是由wx.CallLater建立起来的10毫秒定时器
 
     def OnClose(self, evt):

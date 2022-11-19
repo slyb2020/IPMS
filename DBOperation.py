@@ -32,7 +32,7 @@ def GetAllPasswords(log, whichDB):
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
                              passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
     except:
-        wx.MessageBox("无法连接%s!" % dbName[whichDB], "错误信息")
+        wx.MessageBox("无法连接%s!" %(dbName[whichDB]), "错误信息")
         if log:
             log.WriteText("无法连接%s!" % dbName[whichDB], colour=wx.RED)
         return -1, []
@@ -2125,6 +2125,7 @@ def UpdateOrderSquareByID(log,whichDB,id,square):
 
 
 def UpdateDraftCheckInfoByID(log, whichDB, id, dicList):
+    print(dicList)
     id = int(id)
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],

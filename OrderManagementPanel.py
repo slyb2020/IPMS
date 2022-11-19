@@ -1393,7 +1393,7 @@ class WallPanelTechCheckGrid(gridlib.Grid):
                 self.SetCellValue(row,2,interiorDoorHeightDic[self.GetCellValue(row, 0)])
                 self.SetCellValue(row,3,interiorDoorWidthDic[self.GetCellValue(row, 0)])
                 self.SetCellValue(row,4,"PCS")
-                self.table.SetTypeName(1, CellingEnableSurfaceDict[self.GetCellValue(row, 0)])
+                # self.table.SetTypeName(1, interiorDoorEnableSurfaceDict[self.GetCellValue(row, 0)])
             # if col == 3:
             #     if self.GetCellValue(row,col) not in CellingEnableThicknessDict[self.GetCellValue(row,0)]:
             #         self.SetCellBackgroundColour(row,col,wx.RED)
@@ -1666,19 +1666,24 @@ class TechCheckDialog(wx.Dialog):
                     res = 'Y' if res else 'N'
                 temp.append(res)
             data.append(temp)
-        self.wallDataDicList = self.MakeDicListData(data, "WALL")
-        for row, dics in enumerate(self.wallDataDicList):
-            for col, section in enumerate(WallCheckEnableSectionList):
-                if dics[section] == '':  # 这说明有字段输入值为空
-                    if section != "产品描述":  # 如果为空的字段不是产品描述的话
-                        self.notebook.SetSelection(0)  # 调到墙板页面，因为这是检查的是墙板数据
-                        self.wallPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+        self.wallDataDicList = []
+        wallDataDicList = self.MakeDicListData(data, "WALL")
+        for row, dics in enumerate(wallDataDicList):
+            if dics['数量'] != 0:
+                for col, section in enumerate(WallCheckEnableSectionList):
+                    if dics[section] == '':  # 这说明有字段输入值为空
+                        if section == '单位':
+                            dics[col]=='m2'
+                        elif section != "产品描述":  # 如果为空的字段不是产品描述的话
+                            self.notebook.SetSelection(0)  # 调到墙板页面，因为这是检查的是墙板数据
+                            self.wallPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+                            self.wallPanelCheckGrid.Refresh()
+                            wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
+                            return True
+                    else:
+                        self.wallPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
                         self.wallPanelCheckGrid.Refresh()
-                        wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
-                        return True
-                else:
-                    self.wallPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
-                    self.wallPanelCheckGrid.Refresh()
+                self.wallDataDicList.append(dics)
 
         rowNum = self.ceilingPanelCheckGrid.table.GetNumberRows()
         colNum = self.ceilingPanelCheckGrid.table.GetNumberCols()
@@ -1689,19 +1694,22 @@ class TechCheckDialog(wx.Dialog):
             for j in range(colNum):
                 temp.append(self.ceilingPanelCheckGrid.table.GetValue(i, j))
             data.append(temp)
-        self.ceilingDataDicList = self.MakeDicListData(data, "CEILING")
-        for row, dics in enumerate(self.ceilingDataDicList):
-            for col, section in enumerate(CeilingCheckEnableSectionList):
-                if dics[section] == '':
-                    if section != "产品描述":
-                        self.notebook.SetSelection(1)
-                        self.ceilingPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+        self.ceilingDataDicList = []
+        ceilingDataDicList = self.MakeDicListData(data, "CEILING")
+        for row, dics in enumerate(ceilingDataDicList):
+            if dics["数量"]!=0:
+                for col, section in enumerate(CeilingCheckEnableSectionList):
+                    if dics[section] == '':
+                        if section != "产品描述":
+                            self.notebook.SetSelection(1)
+                            self.ceilingPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+                            self.ceilingPanelCheckGrid.Refresh()
+                            wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
+                            return True
+                    else:
+                        self.ceilingPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
                         self.ceilingPanelCheckGrid.Refresh()
-                        wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
-                        return True
-                else:
-                    self.ceilingPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
-                    self.ceilingPanelCheckGrid.Refresh()
+                self.ceilingDataDicList.append(dics)
 
         rowNum = self.interiorDoorCheckGrid.table.GetNumberRows()
         colNum = self.interiorDoorCheckGrid.table.GetNumberCols()
@@ -1712,19 +1720,24 @@ class TechCheckDialog(wx.Dialog):
             for j in range(colNum):
                 temp.append(self.interiorDoorCheckGrid.table.GetValue(i, j))
             data.append(temp)
-        self.interiorDoorDataDicList = self.MakeDicListData(data, "INTERIORDOOR")
-        for row, dics in enumerate(self.interiorDoorDataDicList):
-            for col, section in enumerate(InteriorDoorCheckEnableSectionList):
-                if dics[section] == '':
-                    if section != "产品描述":
-                        self.notebook.SetSelection(2)
-                        self.interiorDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+        self.interiorDoorDataDicList = []
+        interiorDoorDataDicList = self.MakeDicListData(data, "INTERIORDOOR")
+        for row, dics in enumerate(interiorDoorDataDicList):
+            if dics['数量']!=0:
+                for col, section in enumerate(InteriorDoorCheckEnableSectionList):
+                    if dics[section] == '':
+                        if section == '单位':
+                            dics[col]='PCS'
+                        elif section != "产品描述":
+                            self.notebook.SetSelection(2)
+                            self.interiorDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+                            self.interiorDoorCheckGrid.Refresh()
+                            wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
+                            return True
+                    else:
+                        self.interiorDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
                         self.interiorDoorCheckGrid.Refresh()
-                        wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
-                        return True
-                else:
-                    self.interiorDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
-                    self.interiorDoorCheckGrid.Refresh()
+                self.interiorDoorDataDicList.append(dics)
 
         rowNum = self.fireDoorCheckGrid.table.GetNumberRows()
         colNum = self.fireDoorCheckGrid.table.GetNumberCols()
@@ -1735,19 +1748,22 @@ class TechCheckDialog(wx.Dialog):
             for j in range(colNum):
                 temp.append(self.fireDoorCheckGrid.table.GetValue(i, j))
             data.append(temp)
-        self.fireDoorDataDicList = self.MakeDicListData(data, "FIREDOOR")
-        for row, dics in enumerate(self.fireDoorDataDicList):
-            for col, section in enumerate(FireDoorCheckEnableSectionList):
-                if dics[section] == '':
-                    if section != "产品描述" and section!="产品厚度":
-                        self.notebook.SetSelection(3)
-                        self.fireDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+        self.fireDoorDataDicList = []
+        fireDoorDataDicList = self.MakeDicListData(data, "FIREDOOR")
+        for row, dics in enumerate(fireDoorDataDicList):
+            if dics['数量']!=0:
+                for col, section in enumerate(FireDoorCheckEnableSectionList):
+                    if dics[section] == '':
+                        if section != "产品描述" and section!="产品厚度":
+                            self.notebook.SetSelection(3)
+                            self.fireDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+                            self.fireDoorCheckGrid.Refresh()
+                            wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
+                            return True
+                    else:
+                        self.fireDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
                         self.fireDoorCheckGrid.Refresh()
-                        wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
-                        return True
-                else:
-                    self.fireDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
-                    self.fireDoorCheckGrid.Refresh()
+                self.fireDoorDataDicList.append(dics)
 
         rowNum = self.wetUnitCheckGrid.table.GetNumberRows()
         colNum = self.wetUnitCheckGrid.table.GetNumberCols()
@@ -1758,19 +1774,22 @@ class TechCheckDialog(wx.Dialog):
             for j in range(colNum):
                 temp.append(self.wetUnitCheckGrid.table.GetValue(i, j))
             data.append(temp)
-        self.wetUnitDataDicList = self.MakeDicListData(data, "WETUNIT")
-        for row, dics in enumerate(self.wetUnitDataDicList):
-            for col, section in enumerate(WetUnitCheckEnableSectionList):
-                if dics[section] == '':
-                    if section != "产品描述" and section!="产品表面材料" and section!="产品长度" and section!="产品宽度" and section!="产品厚度":
-                        self.notebook.SetSelection(4)
-                        self.wetUnitCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+        self.wetUnitDataDicList = []
+        wetUnitDataDicList = self.MakeDicListData(data, "WETUNIT")
+        for row, dics in enumerate(wetUnitDataDicList):
+            if dics["数量"]!=0:
+                for col, section in enumerate(WetUnitCheckEnableSectionList):
+                    if dics[section] == '':
+                        if section != "产品描述" and section!="产品表面材料" and section!="产品长度" and section!="产品宽度" and section!="产品厚度":
+                            self.notebook.SetSelection(4)
+                            self.wetUnitCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
+                            self.wetUnitCheckGrid.Refresh()
+                            wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
+                            return True
+                    else:
+                        self.wetUnitCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
                         self.wetUnitCheckGrid.Refresh()
-                        wx.MessageBox("'%s'字段不能为空！" % section, "信息提示")
-                        return True
-                else:
-                    self.wetUnitCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 255, 255))
-                    self.wetUnitCheckGrid.Refresh()
+                self.wetUnitDataDicList.append(dics)
         self.wallDataDicList = self.wallDataDicList + self.ceilingDataDicList + self.interiorDoorDataDicList + self.fireDoorDataDicList + self.wetUnitDataDicList
         UpdateDraftCheckInfoByID(self.log, WHICHDB, self.id, self.wallDataDicList)
         UpdateOrderSquareByID(self.log, WHICHDB, self.id, square)
@@ -1831,6 +1850,11 @@ class WallPanelCheckDataTable(gridlib.GridTableBase):
                 gridlib.GRID_VALUE_FLOAT + ':6,2',
             ]
         elif self.type == 'INTERIORDOOR':
+            temp = []
+            for row in data:
+                row = row[:4]+row[5:]
+                temp.append(row)
+            data=temp
             self.dataTypes = [
                 gridlib.GRID_VALUE_CHOICE + ':TNF-A60ZF-S001,TNF-A60BF-A60-01,TNF-SA60BF-A60-01,TNF-B15BF-001,TNF-SB15BF-S001,TNF-B15ZF-HNR-01,TNF-B15ZF-01',
                 # gridlib.GRID_VALUE_CHOICE + ':TNF-A60ZF-S001, TNF-A60BF-A60-01, TNF-B15BF-001',
@@ -2302,15 +2326,20 @@ class QuotationSheetDialog(wx.Dialog):
         hhbox.Add((10, -1))
         hhbox.Add(wx.StaticLine(self.controlPanel, style=wx.VERTICAL), 0, wx.EXPAND)
         hhbox.Add((10, -1))
-        self.addNoteButton1 = wx.Button(self.controlPanel,label="编辑备注1",size=(135,30))
+        self.addNoteButton = wx.Button(self.controlPanel,label="编辑格式备注",size=(135,30))
+        self.addNoteButton.SetBackgroundColour(wx.Colour(100,255,100))
+        self.addNoteButton.Bind(wx.EVT_BUTTON, self.OnAddNoteButton)
+        hhbox.Add(self.addNoteButton,0, wx.TOP, 10)
+        hhbox.Add((10, -1))
+        self.addNoteButton1 = wx.Button(self.controlPanel,label="编辑自定义备注1",size=(135,30))
         self.addNoteButton1.Bind(wx.EVT_BUTTON, self.OnAddNoteButton1)
         hhbox.Add(self.addNoteButton1,0, wx.TOP, 10)
         hhbox.Add((10, -1))
-        self.addNoteButton2 = wx.Button(self.controlPanel,label="编辑备注2",size=(135,30))
+        self.addNoteButton2 = wx.Button(self.controlPanel,label="编辑自定义备注2",size=(135,30))
         self.addNoteButton2.Bind(wx.EVT_BUTTON, self.OnAddNoteButton2)
         hhbox.Add(self.addNoteButton2,0, wx.TOP, 10)
         hhbox.Add((10, -1))
-        self.addNoteButton3 = wx.Button(self.controlPanel,label="编辑备注3",size=(135,30))
+        self.addNoteButton3 = wx.Button(self.controlPanel,label="编辑自定义备注3",size=(135,30))
         self.addNoteButton3.Bind(wx.EVT_BUTTON, self.OnAddNoteButton3)
         hhbox.Add(self.addNoteButton3,0, wx.TOP, 10)
         vbox.Add(hhbox, 1, wx.EXPAND)
@@ -2320,6 +2349,14 @@ class QuotationSheetDialog(wx.Dialog):
         if self.name == "生成报价单":
             self.quotationDateCtrl.Enable(False)
             self.exchangeDateCtrl.Enable(False)
+
+    def OnAddNoteButton(self,event):
+        # TODO:
+        dlg = EditAnnotationDialog(self,self.log,self.id)
+        dlg.CenterOnScreen()
+        if dlg.ShowModal() == wx.ID_OK:
+            pass
+        dlg.Destroy()
 
     def OnAddNoteButton1(self,event):
         dlg = wx.TextEntryDialog(
@@ -4110,3 +4147,18 @@ class QuotationSheetViewDialog(wx.Dialog):
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.viewer.LoadFile(filename)
+
+class EditAnnotationDialog(wx.Dialog):
+    def __init__(self, parent, log, id):
+        wx.Dialog.__init__(self)
+        self.parent = parent
+        self.log = log
+        self.id = id
+        # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
+        self.SetExtraStyle(wx.DIALOG_EX_METAL)
+        self.Create(parent, -1, "草稿订单 %06d 注释编辑窗口"%self.id, pos=wx.DefaultPosition, size=(1400, 1200))
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.panel = wx.Panel(self, size=(800, 600))
+        sizer.Add(self.panel, 1, wx.EXPAND)
+        self.SetSizer(sizer)
+        sizer.Fit(self)

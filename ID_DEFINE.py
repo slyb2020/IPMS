@@ -18,7 +18,7 @@ import wx
 # scheduleDir = 'D:\\IPMS\\dist\\工单\\'
 # bluePrintDir = 'D:\\IPMS\\dist\\Stena 生产图纸\\'
 # quotationSheetDir = 'D:\\IPMS\\dist\\报价单\\'
-dirName = os.path.dirname(os.path.abspath(__file__))
+# dirName = os.path.dirname(os.path.abspath(__file__))
 bitmapDir = "D:/IPMS/dist/bitmaps"
 # scheduleDir = os.path.join(dirName, '工单/')
 # bluePrintDir = os.path.join(dirName, 'Stena 生产图纸/')
@@ -28,16 +28,16 @@ bluePrintDir = "D:/IPMS/dist/Stena 生产图纸/"
 quotationSheetDir = "D:/IPMS/dist/报价单/"
 # sys.path.append(os.path.split(dirName)[0])
 
-WHICHDB = 3
+WHICHDB = 2
 
 
-dbHostName = ["127.0.0.1", '127.0.0.1', '192.168.1.108','123.60.44.240']
-dbUserName = ['root', 'root', 'slyb','root']
-dbPassword = ['', '', 'Freescalejm60','mysql123']
-dbName = ['智能生产管理系统', '智能生产管理系统_调试', '智能生产管理系统_调试', '智能生产管理系统_调试']
-orderDBName = ['订单数据库', '订单数据库_调试', '订单数据库_调试', '订单数据库_调试']
-packageDBName = ['货盘数据库', '货盘数据库_调试', '货盘数据库_调试', '货盘数据库_调试']
-orderCheckDBName = ['订单审核数据库', '订单审核数据库_调试', '订单审核数据库_调试', '订单审核数据库_调试']
+dbHostName = ["127.0.0.1", '127.0.0.1', '123.60.44.240','123.60.44.240']
+dbUserName = ['root', 'root', 'root','root']
+dbPassword = ['', '', 'mysql123','mysql123']
+dbName = ['智能生产管理系统', '智能生产管理系统_调试', '智能生产管理系统_调试', '智能生产管理系统']
+orderDBName = ['订单数据库', '订单数据库_调试', '订单数据库_调试', '订单数据库']
+packageDBName = ['货盘数据库', '货盘数据库_调试', '货盘数据库_调试', '货盘数据库']
+orderCheckDBName = ['订单审核数据库', '订单审核数据库_调试', '订单审核数据库_调试', '订单审核数据库']
 orderDetailLabelList = ['Index', '订单号', '子订单', '甲板', '区域', '房间', '图纸', '面板代码', 'X面颜色', 'Y面颜色', '高度', '宽度', '厚度', '数量',
                         'Z面颜色', 'V面颜色', '胶水单号']
 orderDetailColSizeList = [30, 40, 50, 35, 35, 50, 70, 80, 60, 60, 40, 40, 40, 40, 50, 50, 70, 70]
@@ -126,6 +126,11 @@ CellingEnableSurfaceDict = {
     "TNF-C65":["PVC/G",'S.S(304)/G'],"TNF-C68":["PVC/G",'S.S(304)/G'],"TNF-C70":["PVC/G",'S.S(304)/G'],
     "TNF-C71":["PVC/G",'S.S(304)/G'],"TNF-C72":["PVC/G",'S.S(304)/G'],"TNF-C73":["PVC/G",'S.S(304)/G'],
     }
+# interiorDoorEnableSurfaceDict = {
+#     "TNF-C46":["PVC",'S.S(304)'],"TNF-C55":["PVC",'S.S(304)'],"TNF-C64":["PVC/G",'S.S(304)/G'],
+#     "TNF-C65":["PVC/G",'S.S(304)/G'],"TNF-C68":["PVC/G",'S.S(304)/G'],"TNF-C70":["PVC/G",'S.S(304)/G'],
+#     "TNF-C71":["PVC/G",'S.S(304)/G'],"TNF-C72":["PVC/G",'S.S(304)/G'],"TNF-C73":["PVC/G",'S.S(304)/G'],
+#     }
 CellingEnableWidthDict = {
     "TNF-C46":["600"],"TNF-C55":['300'],"TNF-C64":["600"],"TNF-C65":["300"],"TNF-C68":["600","300"],
     "TNF-C70":["600","300"],"TNF-C71":["600","300"],"TNF-C72":["600","300"],"TNF-C73":["275"],
