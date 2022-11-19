@@ -4156,9 +4156,66 @@ class EditAnnotationDialog(wx.Dialog):
         self.id = id
         # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
-        self.Create(parent, -1, "草稿订单 %06d 注释编辑窗口"%self.id, pos=wx.DefaultPosition, size=(1400, 1200))
+        self.Create(parent, -1, "草稿订单 %06d 注释编辑窗口"%self.id, pos=wx.DefaultPosition, size=(1280,700))
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.panel = wx.Panel(self, size=(800, 600))
+        self.panel = wx.Panel(self, size=(1280, 700))
         sizer.Add(self.panel, 1, wx.EXPAND)
         self.SetSizer(sizer)
+        self.ReCreatePanel()
         sizer.Fit(self)
+
+    def ReCreatePanel(self,language='中文'):
+        self.panel.Freeze()
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.fileName = "D:\\IPMS\\dist\\config\\%s备注.txt"%language
+        with open(self.fileName,'r',encoding='utf=8') as file:
+            data = file.readlines()
+        self.annotationList= []
+        for item in data:
+            # item = item.strip('\n')
+            self.annotationList.append(item)
+        self.trigerList=[(1,60),(1,0),(1,0),(1,0),(1,0),(1,0),(1,0),(1,0),(1,0)]
+        self.content=""
+        index = 0
+        for i,(triger, value) in enumerate(self.trigerList):
+            content=""
+            if triger == 1:
+                index += 1
+                content = "%i. "%index+self.annotationList[i]
+                content = content.replace('xx',str(value))
+                print("content=",content)
+                self.content+=content
+        print(self.content)
+        self.annotationTXT = wx.TextCtrl(self.panel,-1,value=self.content,size=(500,260),style=wx.TE_MULTILINE|wx.TE_READONLY)
+        self.controlPanel = wx.Panel(self.panel,-1,size=(500,340))
+        vbox.Add(self.annotationTXT,0,wx.EXPAND|wx.ALL,2)
+        vbox.Add(self.controlPanel,0,wx.EXPAND)
+        self.panel.SetSizer(vbox)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add((-1,20))
+        tranportMethodList = ["不负责运输","负责运输","运输到港口"]
+        for i,(triger,value) in enumerate(self.trigerList):
+            print("before:",self.annotationList[i])
+            annotation =  self.annotationList[i].split('xx')[0]
+            print("after:",annotation)
+            trigerCheck = wx.CheckBox(self.controlPanel,-1,label=annotation,name="Trigger%d"%i)
+            trigerCheck.SetValue(True if triger==1 else False)
+            hbox = wx.BoxSizer()
+            hbox.Add((20,-1))
+            if i==0:
+                hbox.Add(trigerCheck, 0, wx.TOP, 3)
+                self.expireDayCombo=wx.ComboBox(self.controlPanel,-1,value=str(value),choices=['30','60','90'],size=(60,-1))
+                hbox.Add(self.expireDayCombo,0,0)
+                hbox.Add((5,-1))
+                hbox.Add(wx.StaticText(self.controlPanel,-1,"天;"),0,wx.TOP,3)
+            elif i==8:
+                hbox.Add(trigerCheck, 0, wx.TOP, 3)
+                self.transportMethodCombo=wx.ComboBox(self.controlPanel,-1,value=tranportMethodList[value],choices=tranportMethodList,size=(100,-1))
+                hbox.Add(self.transportMethodCombo,0,0)
+                hbox.Add((5,-1))
+                hbox.Add(wx.StaticText(self.controlPanel,-1,";"),0,wx.TOP,3)
+            else:
+                hbox.Add(trigerCheck, 0, 0)
+            vbox.Add(hbox)
+        self.controlPanel.SetSizer(vbox)
+        self.panel.Thaw()
