@@ -26,7 +26,8 @@ from DBOperation import GetAllPasswords
 from ID_DEFINE import *
 import time
 
-VERSION_STRING = "20220313A7"
+# VERSION_STRING = "20220313A7"
+VERSION_STRING = "221120"
 
 
 def switchRGBtoBGR(colour):
@@ -83,7 +84,7 @@ class FlatMenuFrame(wx.Frame):
         wx.Frame.__init__(self, parent, size=(1800, 1000), style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
         self.SetIcon(images.Mondrian.GetIcon())
         self.enterpriseName = enterpriseName
-        self.SetTitle("%s智能生产管理系统   Version——0.%s" % (self.enterpriseName, VERSION_STRING))
+        self.SetTitle("%s智能生产管理系统   Version——1.%s" % (self.enterpriseName, VERSION_STRING))
         self.check_in_flag = False
         self.timer_count = 0
         # self.mouse_position = wx.Point()

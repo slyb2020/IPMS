@@ -1466,19 +1466,7 @@ def DrawQuotationSheetWetUnit(c,record,currencyName):
     t.drawOn(c, 15 * mm, startY * mm)
 
 def MakeQuotationSheetTemplate(filename,dataWall=[],dataCeiling=[],dataInteriorDoor=[],dataFireDoor=[],dataWetUnit=[],dataNoteText=[],expiry=61,log=None, currencyName='人民币'):
-    annotationList=[
-        "备注：",
-        "1, 报价的有效期为60天",
-        "2，提供DNV证书",
-        "3, 粉末和PVC的厂家均来自中国。以上报价的价格为两种表面材料颜色的价格。如果客户需要增加颜色，那么需要额外收取费用。",
-        "4, 这是GIS PVC，这个价格为GIS PVC海运的价格，如果需要空运，那么将额外收取费用。",
-        "5，这是两种GIS PVC颜色的价格，如果客户需要增加颜色，那么需要额外增加费用",
-        "6，我们报价的价格仅包含标准板子，如果客户需要特殊的版型，比如宽度不是标准的，额外需要加强的，需要开孔的等等，那么需要额外收取费用",
-        "7，如果原材料价格上涨超过5 %，那么需要重新议价。",
-        "8，如果汇率变化超过5 %，那么需要重新议价。",
-        "9，货运方式：工厂出厂价或者含运费价格或者到港口费用",
-    ]
-    annotationList+=dataNoteText
+    annotationList=dataNoteText
     gap = 6.3
     num = 31
     width, height =  (297 * mm, 210 * mm)

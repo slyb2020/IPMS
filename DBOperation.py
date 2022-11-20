@@ -1963,7 +1963,7 @@ def GetOrderAnnotation(log,whichDB,id):
         result = json.loads(record)
     return result
 
-def UpdateOrderAnnotation(log,whichDB,id,annotation):
+def UpdateOrderAnnotation(log,whichDB,id,annotation): #here
     id = int(id)
     result = 1
     try:
@@ -2441,3 +2441,48 @@ def UpdateDraftOrderInDB(log, whichDB, id, dicList, annotation=[]):
             print("here error")
             db.rollback()
     db.close()
+
+def UpdateOrderAnnotationTriggerList(log, whichDB, triggerList, id):
+    id = int(id)
+    result = 1
+    try:
+        db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                             passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+    except:
+        wx.MessageBox("无法连接%s!" % packageDBName[whichDB], "错误信息")
+        if log:
+            log.WriteText("无法连接%s!" % packageDBName[whichDB], colour=wx.RED)
+        return -1, []
+    cursor = db.cursor()
+    sql = "UPDATE `订单信息` SET `设计审核意见`= '%s' where `Index`= %s " % (json.dumps(triggerList,ensure_ascii=False),id)
+    try:
+        cursor.execute(sql)
+        db.commit()  # 必须有，没有的话插入语句不会执行
+    except:
+        print("修改订单备注出错！")
+        db.rollback()
+        result = -1
+    db.close()
+    return result
+
+def GetOrderAnnotationTriggerList(log, whichDB, id):
+    id = int(id)
+    result = 1
+    try:
+        db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],
+                             passwd='%s' % dbPassword[whichDB], db='%s' % dbName[whichDB], charset='utf8')
+    except:
+        wx.MessageBox("无法连接%s!" % packageDBName[whichDB], "错误信息")
+        if log:
+            log.WriteText("无法连接%s!" % packageDBName[whichDB], colour=wx.RED)
+        return -1, []
+    cursor = db.cursor()
+    sql ="SELECT `设计审核意见` FROM `订单信息` where `Index`= %s "%(id)
+    cursor.execute(sql)
+    result = cursor.fetchone()
+    db.close()
+    if result[0]:
+        result = json.loads(result[0])
+    else:
+        result = [[1, 60], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+    return result

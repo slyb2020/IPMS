@@ -13,7 +13,7 @@ from DBOperation import GetAllOrderAllInfo, GetAllOrderList, GetOrderDetailRecor
     UpdateDraftOrderInfoByID, GetTechDrawingDataByID, UpdateTechCheckStateByID, GetDraftComponentInfoByID, \
     UpdateDraftCheckInfoByID, UpdateDraftOrderStateInDB, \
     UpdatePurchchaseCheckStateByID, UpdateFinancingCheckStateByID, UpdateManagerCheckStateByID, UpdateOrderSquareByID, \
-    GetExchagneRateInDB, \
+    GetExchagneRateInDB, UpdateOrderAnnotationTriggerList, GetOrderAnnotationTriggerList,\
     UpdateOrderOperatorCheckStateByID, GetStaffInfo, GetDraftOrderDetail, \
     GetPriceDateListFromDB, GetPriceDicFromDB, UpdateDraftOrderInDB,UpdateOrderAnnotation,GetOrderAnnotation
 from DateTimeConvert import *
@@ -2224,12 +2224,14 @@ class QuotationSheetDialog(wx.Dialog):
         self.SetSizer(sizer)
         sizer.Fit(self)
         self.CreateControlPanel()
+        self.editAnnotationdlg = EditAnnotationDialog(self,self.log,self.id)
+        self.editAnnotationdlg.CenterOnScreen()
         self.CreateGrid()
         # self.ReCreateGrid()
 
     def OnCreateQuotationSheetBTN(self, event):
         annotation = self.quotationSheetGrid.GetAnnotation()
-        UpdateOrderAnnotation(self.log, WHICHDB, self.id, annotation)
+        # UpdateOrderAnnotation(self.log, WHICHDB, self.id, annotation)
         filename = quotationSheetDir + '报价单%05d.pdf' % self.id
         # self.log.WriteText("here1" + filename)
         dataWall = self.quotationSheetGrid.GetWallData()
@@ -2237,7 +2239,9 @@ class QuotationSheetDialog(wx.Dialog):
         dataInteriorDoor = self.quotationSheetGrid.GetInteriorDoorData()
         dataFireDoor = self.quotationSheetGrid.GetFireDoorData()
         dataWetUnit = self.quotationSheetGrid.GetWetUnitData()
-        dataNoteText = self.quotationSheetGrid.GetNoteText()
+        # dataNoteText = self.quotationSheetGrid.GetNoteText()
+        # print(dataNoteText)
+        dataNoteText = annotation
         MakeQuotationSheetTemplate(filename, dataWall, dataCeiling, dataInteriorDoor,dataFireDoor,dataWetUnit,dataNoteText,log=self.log, currencyName=self.currencyName)
         dlg = QuotationSheetViewDialog(self, self.log, filename)
         dlg.CenterOnScreen()
@@ -2249,12 +2253,12 @@ class QuotationSheetDialog(wx.Dialog):
         sumupPrice = float(self.quotationSheetGrid.wallSumupPricesRMB) + float(self.quotationSheetGrid.ceilingSumupPricesRMB)\
                      + float(self.quotationSheetGrid.interiorDoorSumupPricesRMB)+float(self.quotationSheetGrid.fireDoorSumupPricesRMB)\
                      + float(self.quotationSheetGrid.wetUnitSumupPricesRMB)
-        annotation = self.quotationSheetGrid.GetAnnotation()
+        # annotation = self.quotationSheetGrid.GetAnnotation()
         if self.character in ["项目经理",'订单管理员','副总经理']:
             dicList = self.quotationSheetGrid.dataWall + self.quotationSheetGrid.dataCeiling + self.quotationSheetGrid.dataInteriorDoor\
                       + self.quotationSheetGrid.dataFireDoor + self.quotationSheetGrid.dataWetUnit
             UpdateDraftOrderInDB(self.log, WHICHDB, self.id, dicList,annotation)
-            UpdateOrderAnnotation(self.log,WHICHDB,self.id,annotation)
+            # UpdateOrderAnnotation(self.log,WHICHDB,self.id,annotation)
             # temp = GetOrderAnnotation(self.log,WHICHDB,self.id)
             # ann=["","",""]
             # for i,item in enumerate(temp[:3]):
@@ -2330,18 +2334,18 @@ class QuotationSheetDialog(wx.Dialog):
         self.addNoteButton.SetBackgroundColour(wx.Colour(100,255,100))
         self.addNoteButton.Bind(wx.EVT_BUTTON, self.OnAddNoteButton)
         hhbox.Add(self.addNoteButton,0, wx.TOP, 10)
-        hhbox.Add((10, -1))
-        self.addNoteButton1 = wx.Button(self.controlPanel,label="编辑自定义备注1",size=(135,30))
-        self.addNoteButton1.Bind(wx.EVT_BUTTON, self.OnAddNoteButton1)
-        hhbox.Add(self.addNoteButton1,0, wx.TOP, 10)
-        hhbox.Add((10, -1))
-        self.addNoteButton2 = wx.Button(self.controlPanel,label="编辑自定义备注2",size=(135,30))
-        self.addNoteButton2.Bind(wx.EVT_BUTTON, self.OnAddNoteButton2)
-        hhbox.Add(self.addNoteButton2,0, wx.TOP, 10)
-        hhbox.Add((10, -1))
-        self.addNoteButton3 = wx.Button(self.controlPanel,label="编辑自定义备注3",size=(135,30))
-        self.addNoteButton3.Bind(wx.EVT_BUTTON, self.OnAddNoteButton3)
-        hhbox.Add(self.addNoteButton3,0, wx.TOP, 10)
+        # hhbox.Add((10, -1))
+        # self.addNoteButton1 = wx.Button(self.controlPanel,label="编辑自定义备注1",size=(135,30))
+        # self.addNoteButton1.Bind(wx.EVT_BUTTON, self.OnAddNoteButton1)
+        # hhbox.Add(self.addNoteButton1,0, wx.TOP, 10)
+        # hhbox.Add((10, -1))
+        # self.addNoteButton2 = wx.Button(self.controlPanel,label="编辑自定义备注2",size=(135,30))
+        # self.addNoteButton2.Bind(wx.EVT_BUTTON, self.OnAddNoteButton2)
+        # hhbox.Add(self.addNoteButton2,0, wx.TOP, 10)
+        # hhbox.Add((10, -1))
+        # self.addNoteButton3 = wx.Button(self.controlPanel,label="编辑自定义备注3",size=(135,30))
+        # self.addNoteButton3.Bind(wx.EVT_BUTTON, self.OnAddNoteButton3)
+        # hhbox.Add(self.addNoteButton3,0, wx.TOP, 10)
         vbox.Add(hhbox, 1, wx.EXPAND)
         self.controlPanel.SetSizer(vbox)
         self.quotationDateCtrl.Bind(wx.adv.EVT_DATE_CHANGED, self.OnQuotationDateChanged)
@@ -2352,11 +2356,9 @@ class QuotationSheetDialog(wx.Dialog):
 
     def OnAddNoteButton(self,event):
         # TODO:
-        dlg = EditAnnotationDialog(self,self.log,self.id)
-        dlg.CenterOnScreen()
-        if dlg.ShowModal() == wx.ID_OK:
-            pass
-        dlg.Destroy()
+        if self.editAnnotationdlg.ShowModal() == wx.ID_OK:
+            self.quotationSheetGrid.RefreshAnnotation()
+        self.editAnnotationdlg.Close()
 
     def OnAddNoteButton1(self,event):
         dlg = wx.TextEntryDialog(
@@ -2433,7 +2435,7 @@ class QuotationSheetDialog(wx.Dialog):
         self.gridPanel.DestroyChildren()
         self.quotationRange = self.quotationRangeCtrl.GetValue()
         hbox = wx.BoxSizer()
-        self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.master, self.log, self.id, self.priceDataDic, self.quotationDate,
+        self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.master, self.editAnnotationdlg, self.log, self.id, self.priceDataDic, self.quotationDate,
                                                      self.exchangeDate,self.quotationRange, self.name, self.currencyName, self.exchangeRate, self.orderName)
         hbox.Add(self.quotationSheetGrid, 1, wx.EXPAND)
         self.gridPanel.SetSizer(hbox)
@@ -2444,7 +2446,7 @@ class QuotationSheetDialog(wx.Dialog):
         self.gridPanel.Freeze()
         self.quotationRange = self.quotationRangeCtrl.GetValue()
         hbox = wx.BoxSizer()
-        self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.master, self.log, self.id, self.priceDataDic, self.quotationDate,
+        self.quotationSheetGrid = QuotationSheetGrid(self.gridPanel, self.master, self.editAnnotationdlg, self.log, self.id, self.priceDataDic, self.quotationDate,
                                                      self.exchangeDate,self.quotationRange, self.name, self.currencyName, self.exchangeRate, self.orderName)
         hbox.Add(self.quotationSheetGrid, 1, wx.EXPAND)
         self.gridPanel.SetSizer(hbox)
@@ -2453,11 +2455,12 @@ class QuotationSheetDialog(wx.Dialog):
 
 
 class QuotationSheetGrid(gridlib.Grid):
-    def __init__(self, parent, master, log, id, priceDataDic, quotationDate, exchangeRateDate,quotationRange,name,currencyName='人民币',exchangeRate=100,orderName=''):
+    def __init__(self, parent, master,annotationDlg, log, id, priceDataDic, quotationDate, exchangeRateDate,quotationRange,name,currencyName='人民币',exchangeRate=100,orderName=''):
         gridlib.Grid.__init__(self, parent, -1)
         self.master = master
         self.orderName = orderName
         self.id = id
+        self.annotationDlg = annotationDlg
         self.log = log
         self.name = name
         self.moveTo = None
@@ -2533,7 +2536,7 @@ class QuotationSheetGrid(gridlib.Grid):
             else:
                 self.wetUnitTotalPrice[i] = float(dic['总价'])
         self.Freeze()
-        self.CreateGrid(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6, 22)  # , gridlib.Grid.SelectRows)
+        self.CreateGrid(8+12 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6, 22)  # , gridlib.Grid.SelectRows)
         self.EnableEditing(True)
         self.SetRowLabelSize(50)
         self.SetColLabelSize(25)
@@ -2581,8 +2584,8 @@ class QuotationSheetGrid(gridlib.Grid):
 
     def GetAnnotation(self):
         value=[]
-        for i in range(3):
-            temp = self.GetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3 + i,1)
+        for i in range(12):
+            temp = self.GetCellValue(8 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 + i,1)
             if len(temp)>0:
                 value.append(temp)
         return value
@@ -3601,22 +3604,35 @@ class QuotationSheetGrid(gridlib.Grid):
         attr.SetReadOnly(False)
         attr.SetAlignment(wx.CENTER, -1)
         self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6- 4, 0, '备注：')
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 0, '10')
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 0, '11.')
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 0, '12.')
+        # self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 0, '10')
+        # self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 0, '11.')
+        # self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 0, '12.')
         # self.SetAttr(30 - 3 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
         # self.SetAttr(30 - 2 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
         # self.SetAttr(30 - 1 + len(self.dataWall) + len(self.dataCeiling) + len(self.dataInteriorDoor), 1, attr)
-        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1, 1,12)
-        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1, 1,12)
-        self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1, 1,12)
-        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1,wx.LEFT,wx.CENTER)
-        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1,wx.LEFT,wx.CENTER)
-        self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1,wx.LEFT,wx.CENTER)
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1, self.annotationList[0])
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1, self.annotationList[1])
-        self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1, self.annotationList[2])
+        for i in range(12):
+            self.SetCellSize(8 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 + i, 1, 1,12)
+            self.SetCellAlignment(
+                8 + len(self.dataWall) + 6 + len(self.dataCeiling) + 6 + len(self.dataInteriorDoor) + 6 + len(
+                    self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 + i, 1, wx.LEFT, wx.CENTER)
 
+        # self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1, 1,12)
+        # self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1, 1,12)
+        # self.SetCellSize(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1, 1,12)
+        # self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1,wx.LEFT,wx.CENTER)
+        # self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1,wx.LEFT,wx.CENTER)
+        # self.SetCellAlignment(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1,wx.LEFT,wx.CENTER)
+        # self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 3, 1, self.annotationList[0])
+        # self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 2, 1, self.annotationList[1])
+        # self.SetCellValue(11 + len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 - 1, 1, self.annotationList[2])
+        self.RefreshAnnotation()
+
+    def RefreshAnnotation(self):
+        for i in range(12):
+            self.SetCellValue(8+len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 + i, 1 , "")
+        annotationList = self.annotationDlg.content.split('\n')[:12]
+        for i, annotation in enumerate(annotationList):
+            self.SetCellValue(8+len(self.dataWall)+6 + len(self.dataCeiling)+6 + len(self.dataInteriorDoor) + 6 + len(self.dataFireDoor) + 6 + len(self.dataWetUnit) + 6 + i, 1 , annotation)
 
     def OnIdle(self, evt):
         if self.moveTo is not None:
@@ -4157,8 +4173,13 @@ class EditAnnotationDialog(wx.Dialog):
         self.lauguage = "中文"
         self.lauguageList = ["中文","英文"]
         # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
+        temp = GetOrderAnnotation(self.log, WHICHDB, self.id)
+        self.annotationAdditonList = ["", "", ""]
+        for i, item in enumerate(temp[:3]):
+            self.annotationAdditonList[i] = item
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
-        self.trigerList=[[1,60],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0]]
+        # self.triggerList=[[1, 60], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]]
+        self.triggerList = GetOrderAnnotationTriggerList(self.log ,WHICHDB, self.id)
         self.Create(parent, -1, "草稿订单 %06d 备注编辑窗口"%self.id, pos=wx.DefaultPosition, size=(1280,700))
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.panel = wx.Panel(self, size=(1280, 600))
@@ -4174,6 +4195,7 @@ class EditAnnotationDialog(wx.Dialog):
         self.customerAnnotationBTN3.Bind(wx.EVT_BUTTON,self.OnAddNoteButton3)
         self.languageCombo = wx.ComboBox(self,-1,value=self.lauguage,choices=self.lauguageList,size=(100,40))
         self.okButton = wx.Button(self, wx.ID_OK,label = "确认",size=(100,40))
+        self.okButton.Bind(wx.EVT_BUTTON, self.OnOk)
         self.cancelButton = wx.Button(self, wx.ID_CANCEL,label = "取消", size=(100,40))
         hbox.Add(self.languageCombo,0,wx.TOP,7)
         hbox.Add((30,-1),0)
@@ -4204,7 +4226,7 @@ class EditAnnotationDialog(wx.Dialog):
         self.panel.SetSizer(vbox)
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add((-1,20))
-        for i,(triger,value) in enumerate(self.trigerList):
+        for i,(triger,value) in enumerate(self.triggerList):
             annotation =  self.annotationList[i].split('xx')[0]
             trigerCheck = wx.CheckBox(self.controlPanel,-1,label=annotation,name="Trigger%d"%i)
             trigerCheck.SetValue(True if triger==1 else False)
@@ -4219,7 +4241,7 @@ class EditAnnotationDialog(wx.Dialog):
                 hbox.Add(wx.StaticText(self.controlPanel,-1,"天;"),0,wx.TOP,3)
             elif i==8:
                 hbox.Add(trigerCheck, 0, wx.TOP, 3)
-                self.deliverCombo=wx.ComboBox(self.controlPanel, -1, value=TranportMethodList[value], choices=TranportMethodList, size=(100, -1))
+                self.deliverCombo=wx.ComboBox(self.controlPanel, -1, value=DeliverList[value], choices=DeliverList, size=(130, -1))
                 self.deliverCombo.Bind(wx.EVT_COMBOBOX, self.OnDeliverChanged)
                 hbox.Add(self.deliverCombo, 0, 0)
                 hbox.Add((5,-1))
@@ -4240,7 +4262,7 @@ class EditAnnotationDialog(wx.Dialog):
             self.annotationList.append(item)
         self.content=""
         index = 0
-        for i,(triger, value) in enumerate(self.trigerList):
+        for i,(triger, value) in enumerate(self.triggerList):
             content=""
             if triger == 1:
                 index += 1
@@ -4248,7 +4270,13 @@ class EditAnnotationDialog(wx.Dialog):
                 if i == 0:
                     content = content.replace('xx',str(value))
                 if i== 8:
-                    content = content.replace('xx', TranportMethodList[value])
+                    content = content.replace('xx', DeliverList[value])
+                self.content+=content
+        for annotation in self.annotationAdditonList:
+            content = ""
+            if annotation:
+                index += 1
+                content = content = "%i. "%index+annotation+';\n'
                 self.content+=content
         self.annotationTXT.SetValue(self.content)
 
@@ -4256,7 +4284,7 @@ class EditAnnotationDialog(wx.Dialog):
         obj = event.GetEventObject()
         name = obj.GetName()
         index = int(name[-1])
-        self.trigerList[index][0] = 1 if obj.GetValue() else 0
+        self.triggerList[index][0] = 1 if obj.GetValue() else 0
         self.RefreshAnnotation()
         if index == 0:
             self.expireDayCombo.Enable(obj.GetValue())
@@ -4264,36 +4292,45 @@ class EditAnnotationDialog(wx.Dialog):
             self.deliverCombo.Enable(obj.GetValue())
 
     def OnExpireDayChanged(self, event):
-        self.trigerList[0][1] = int(self.expireDayCombo.GetValue())
+        self.triggerList[0][1] = int(self.expireDayCombo.GetValue())
         self.RefreshAnnotation()
 
     def OnDeliverChanged(self,event):
-        self.trigerList[8][1] = int(self.deliverCombo.GetSelection())
+        self.triggerList[8][1] = int(self.deliverCombo.GetSelection())
         self.RefreshAnnotation()
 
     def OnAddNoteButton1(self,event):
         dlg = wx.TextEntryDialog(
             self, '请输入备注的中/英文信息',
             '信息输入', '')
-        dlg.SetValue(self.parent.quotationSheetGrid.annotationList[0])
+        dlg.SetValue(self.annotationAdditonList[0])
         if dlg.ShowModal() == wx.ID_OK:
-            self.parent.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+            self.annotationAdditonList[0]=dlg.GetValue()
         dlg.Destroy()
+        self.RefreshAnnotation()
+
 
     def OnAddNoteButton2(self,event):
         dlg = wx.TextEntryDialog(
             self, '请输入备注的中/英文信息',
             '信息输入', '')
-        dlg.SetValue(self.parent.quotationSheetGrid.annotationList[1])
+        dlg.SetValue(self.annotationAdditonList[1])
         if dlg.ShowModal() == wx.ID_OK:
-            self.parent.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+            self.annotationAdditonList[1]=dlg.GetValue()
         dlg.Destroy()
+        self.RefreshAnnotation()
 
     def OnAddNoteButton3(self,event):
         dlg = wx.TextEntryDialog(
             self, '请输入备注的中/英文信息',
             '信息输入', '')
-        dlg.SetValue(self.parent.quotationSheetGrid.annotationList[2])
+        dlg.SetValue(self.annotationAdditonList[2])
         if dlg.ShowModal() == wx.ID_OK:
-            self.parent.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+            self.annotationAdditonList[2]=dlg.GetValue()
         dlg.Destroy()
+        self.RefreshAnnotation()
+
+    def OnOk(self,event):
+        UpdateOrderAnnotationTriggerList(self.log, WHICHDB, self.triggerList, self.id)
+        UpdateOrderAnnotation(self.log, WHICHDB, self.id, self.annotationAdditonList)
+        event.Skip()
