@@ -4154,50 +4154,58 @@ class EditAnnotationDialog(wx.Dialog):
         self.parent = parent
         self.log = log
         self.id = id
+        self.lauguage = "中文"
+        self.lauguageList = ["中文","英文"]
         # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
-        self.Create(parent, -1, "草稿订单 %06d 注释编辑窗口"%self.id, pos=wx.DefaultPosition, size=(1280,700))
+        self.trigerList=[[1,60],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0]]
+        self.Create(parent, -1, "草稿订单 %06d 备注编辑窗口"%self.id, pos=wx.DefaultPosition, size=(1280,700))
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.panel = wx.Panel(self, size=(1280, 700))
+        self.panel = wx.Panel(self, size=(1280, 600))
         sizer.Add(self.panel, 1, wx.EXPAND)
+        sizer.Add(wx.StaticLine(self,size=(60,-1),style=wx.HORIZONTAL),0,wx.EXPAND)
+        hbox = wx.BoxSizer()
+        hbox.Add((50,-1),0)
+        self.customerAnnotationBTN1 = wx.Button(self,-1,label="编辑自定义备注1",size=(100,40))
+        self.customerAnnotationBTN1.Bind(wx.EVT_BUTTON,self.OnAddNoteButton1)
+        self.customerAnnotationBTN2 = wx.Button(self,-1,label="编辑自定义备注2",size=(100,40))
+        self.customerAnnotationBTN2.Bind(wx.EVT_BUTTON,self.OnAddNoteButton2)
+        self.customerAnnotationBTN3 = wx.Button(self,-1,label="编辑自定义备注3",size=(100,40))
+        self.customerAnnotationBTN3.Bind(wx.EVT_BUTTON,self.OnAddNoteButton3)
+        self.languageCombo = wx.ComboBox(self,-1,value=self.lauguage,choices=self.lauguageList,size=(100,40))
+        self.okButton = wx.Button(self, wx.ID_OK,label = "确认",size=(100,40))
+        self.cancelButton = wx.Button(self, wx.ID_CANCEL,label = "取消", size=(100,40))
+        hbox.Add(self.languageCombo,0,wx.TOP,7)
+        hbox.Add((30,-1),0)
+        hbox.Add(self.customerAnnotationBTN1,1)
+        hbox.Add((30,-1),0)
+        hbox.Add(self.customerAnnotationBTN2,1)
+        hbox.Add((30,-1),0)
+        hbox.Add(self.customerAnnotationBTN3,1)
+        hbox.Add((30,-1),0)
+        hbox.Add(self.okButton,1)
+        hbox.Add((30,-1),0)
+        hbox.Add(self.cancelButton,1)
+        hbox.Add((50,-1),0)
+        sizer.Add(hbox,0,wx.EXPAND|wx.TOP|wx.BOTTOM,10)
         self.SetSizer(sizer)
-        self.ReCreatePanel()
+        self.CreatePanel()
+        self.Bind(wx.EVT_CHECKBOX, self.OnCheckChanged)
         sizer.Fit(self)
 
-    def ReCreatePanel(self,language='中文'):
+    def CreatePanel(self):
         self.panel.Freeze()
         vbox = wx.BoxSizer(wx.VERTICAL)
-        self.fileName = "D:\\IPMS\\dist\\config\\%s备注.txt"%language
-        with open(self.fileName,'r',encoding='utf=8') as file:
-            data = file.readlines()
-        self.annotationList= []
-        for item in data:
-            # item = item.strip('\n')
-            self.annotationList.append(item)
-        self.trigerList=[(1,60),(1,0),(1,0),(1,0),(1,0),(1,0),(1,0),(1,0),(1,0)]
-        self.content=""
-        index = 0
-        for i,(triger, value) in enumerate(self.trigerList):
-            content=""
-            if triger == 1:
-                index += 1
-                content = "%i. "%index+self.annotationList[i]
-                content = content.replace('xx',str(value))
-                print("content=",content)
-                self.content+=content
-        print(self.content)
-        self.annotationTXT = wx.TextCtrl(self.panel,-1,value=self.content,size=(500,260),style=wx.TE_MULTILINE|wx.TE_READONLY)
+        self.annotationTXT = wx.TextCtrl(self.panel,-1,value="",size=(500,260),style=wx.TE_MULTILINE|wx.TE_READONLY)
+        self.RefreshAnnotation()
         self.controlPanel = wx.Panel(self.panel,-1,size=(500,340))
         vbox.Add(self.annotationTXT,0,wx.EXPAND|wx.ALL,2)
         vbox.Add(self.controlPanel,0,wx.EXPAND)
         self.panel.SetSizer(vbox)
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add((-1,20))
-        tranportMethodList = ["不负责运输","负责运输","运输到港口"]
         for i,(triger,value) in enumerate(self.trigerList):
-            print("before:",self.annotationList[i])
             annotation =  self.annotationList[i].split('xx')[0]
-            print("after:",annotation)
             trigerCheck = wx.CheckBox(self.controlPanel,-1,label=annotation,name="Trigger%d"%i)
             trigerCheck.SetValue(True if triger==1 else False)
             hbox = wx.BoxSizer()
@@ -4205,13 +4213,15 @@ class EditAnnotationDialog(wx.Dialog):
             if i==0:
                 hbox.Add(trigerCheck, 0, wx.TOP, 3)
                 self.expireDayCombo=wx.ComboBox(self.controlPanel,-1,value=str(value),choices=['30','60','90'],size=(60,-1))
+                self.expireDayCombo.Bind(wx.EVT_COMBOBOX, self.OnExpireDayChanged)
                 hbox.Add(self.expireDayCombo,0,0)
                 hbox.Add((5,-1))
                 hbox.Add(wx.StaticText(self.controlPanel,-1,"天;"),0,wx.TOP,3)
             elif i==8:
                 hbox.Add(trigerCheck, 0, wx.TOP, 3)
-                self.transportMethodCombo=wx.ComboBox(self.controlPanel,-1,value=tranportMethodList[value],choices=tranportMethodList,size=(100,-1))
-                hbox.Add(self.transportMethodCombo,0,0)
+                self.deliverCombo=wx.ComboBox(self.controlPanel, -1, value=TranportMethodList[value], choices=TranportMethodList, size=(100, -1))
+                self.deliverCombo.Bind(wx.EVT_COMBOBOX, self.OnDeliverChanged)
+                hbox.Add(self.deliverCombo, 0, 0)
                 hbox.Add((5,-1))
                 hbox.Add(wx.StaticText(self.controlPanel,-1,";"),0,wx.TOP,3)
             else:
@@ -4219,3 +4229,71 @@ class EditAnnotationDialog(wx.Dialog):
             vbox.Add(hbox)
         self.controlPanel.SetSizer(vbox)
         self.panel.Thaw()
+
+    def RefreshAnnotation(self, language='中文'):
+        self.fileName = "D:\\IPMS\\dist\\config\\%s备注.txt"%language
+        with open(self.fileName,'r',encoding='utf=8') as file:
+            data = file.readlines()
+        self.annotationList= []
+        for item in data:
+            # item = item.strip('\n')
+            self.annotationList.append(item)
+        self.content=""
+        index = 0
+        for i,(triger, value) in enumerate(self.trigerList):
+            content=""
+            if triger == 1:
+                index += 1
+                content = "%i. "%index+self.annotationList[i]
+                if i == 0:
+                    content = content.replace('xx',str(value))
+                if i== 8:
+                    content = content.replace('xx', TranportMethodList[value])
+                self.content+=content
+        self.annotationTXT.SetValue(self.content)
+
+    def OnCheckChanged(self, event):
+        obj = event.GetEventObject()
+        name = obj.GetName()
+        index = int(name[-1])
+        self.trigerList[index][0] = 1 if obj.GetValue() else 0
+        self.RefreshAnnotation()
+        if index == 0:
+            self.expireDayCombo.Enable(obj.GetValue())
+        if index == 8:
+            self.deliverCombo.Enable(obj.GetValue())
+
+    def OnExpireDayChanged(self, event):
+        self.trigerList[0][1] = int(self.expireDayCombo.GetValue())
+        self.RefreshAnnotation()
+
+    def OnDeliverChanged(self,event):
+        self.trigerList[8][1] = int(self.deliverCombo.GetSelection())
+        self.RefreshAnnotation()
+
+    def OnAddNoteButton1(self,event):
+        dlg = wx.TextEntryDialog(
+            self, '请输入备注的中/英文信息',
+            '信息输入', '')
+        dlg.SetValue(self.parent.quotationSheetGrid.annotationList[0])
+        if dlg.ShowModal() == wx.ID_OK:
+            self.parent.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+        dlg.Destroy()
+
+    def OnAddNoteButton2(self,event):
+        dlg = wx.TextEntryDialog(
+            self, '请输入备注的中/英文信息',
+            '信息输入', '')
+        dlg.SetValue(self.parent.quotationSheetGrid.annotationList[1])
+        if dlg.ShowModal() == wx.ID_OK:
+            self.parent.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+        dlg.Destroy()
+
+    def OnAddNoteButton3(self,event):
+        dlg = wx.TextEntryDialog(
+            self, '请输入备注的中/英文信息',
+            '信息输入', '')
+        dlg.SetValue(self.parent.quotationSheetGrid.annotationList[2])
+        if dlg.ShowModal() == wx.ID_OK:
+            self.parent.quotationSheetGrid.SetNoteValue(0,dlg.GetValue())
+        dlg.Destroy()
