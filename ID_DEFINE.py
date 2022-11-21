@@ -140,7 +140,6 @@ FireDoorEnableHeightDict = {
     "检修门(HB6 Inspection Door)": ['≤1800'],
     }
 FireDoorEnableWidthDict = {"检修口(Hatch)": ['≤300', '400-600', '>600'], "检修门(HB6 Inspection Door)": ['≤800'], }
-DeliverList = ["不包含运费", "包含运费", "包含到港口的运费"]
 
 # CheckColWidthDict = {
 #     'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 155],

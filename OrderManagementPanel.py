@@ -4197,6 +4197,14 @@ class EditAnnotationDialog(wx.Dialog):
         self.id = id
         self.language = "中文"
         self.languageList = ["中文", "英文"]
+        self.DeliverList = ["不包含运费", "包含运费", "包含到港口的运费"] if self.language == '中文' else ["EX", "DAP", "CIF"]
+        fileName = "D:\\IPMS\\dist\\config\\中文备注.txt"
+        with open(fileName,'r',encoding='utf=8') as file:
+            data = file.readlines()
+        self.annotationListHZ = []
+        for item in data:
+            # item = item.strip('\n')
+            self.annotationListHZ.append(item)
         # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
         temp = GetOrderAnnotation(self.log, WHICHDB, self.id)
         self.annotationAdditonList = ["", "", ""]
@@ -4254,7 +4262,7 @@ class EditAnnotationDialog(wx.Dialog):
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add((-1,20))
         for i,(triger,value) in enumerate(self.triggerList):
-            annotation =  self.annotationList[i].split('xx')[0]
+            annotation =  self.annotationListHZ[i].split('xx')[0]
             trigerCheck = wx.CheckBox(self.controlPanel,-1,label=annotation,name="Trigger%d"%i)
             trigerCheck.SetValue(True if triger==1 else False)
             hbox = wx.BoxSizer()
@@ -4268,7 +4276,7 @@ class EditAnnotationDialog(wx.Dialog):
                 hbox.Add(wx.StaticText(self.controlPanel,-1,"天;"),0,wx.TOP,3)
             elif i==8:
                 hbox.Add(trigerCheck, 0, wx.TOP, 3)
-                self.deliverCombo=wx.ComboBox(self.controlPanel, -1, value=DeliverList[value], choices=DeliverList, size=(130, -1))
+                self.deliverCombo=wx.ComboBox(self.controlPanel, -1, value=self.DeliverList[value], choices=self.DeliverList, size=(130, -1))
                 self.deliverCombo.Bind(wx.EVT_COMBOBOX, self.OnDeliverChanged)
                 hbox.Add(self.deliverCombo, 0, 0)
                 hbox.Add((5,-1))
@@ -4297,7 +4305,7 @@ class EditAnnotationDialog(wx.Dialog):
                 if i == 0:
                     content = content.replace('xx',str(value))
                 if i== 8:
-                    content = content.replace('xx', DeliverList[value])
+                    content = content.replace('xx', self.DeliverList[value])
                 self.content+=content
         for annotation in self.annotationAdditonList:
             content = ""
@@ -4366,5 +4374,7 @@ class EditAnnotationDialog(wx.Dialog):
 
     def OnLanguageChanged(self,event):
         self.language = self.languageCombo.GetValue()
+        self.DeliverList = ["不包含运费", "包含运费", "包含到港口的运费"] if self.language == '中文' else ["EX", "DAP", "CIF"]
+        self.deliverCombo.Items=self.DeliverList
+        self.deliverCombo.SetValue(self.DeliverList[self.triggerList[8][1]])
         self.RefreshAnnotation()
-
