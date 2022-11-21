@@ -4197,7 +4197,6 @@ class EditAnnotationDialog(wx.Dialog):
         self.id = id
         self.language = "中文"
         self.languageList = ["中文", "英文"]
-        self.DeliverList = ["不包含运费", "包含运费", "包含到港口的运费"] if self.language == '中文' else ["EX", "DAP", "CIF"]
         fileName = "D:\\IPMS\\dist\\config\\中文备注.txt"
         with open(fileName,'r',encoding='utf=8') as file:
             data = file.readlines()
@@ -4211,6 +4210,7 @@ class EditAnnotationDialog(wx.Dialog):
         self.language = temp[3]
         for i, item in enumerate(temp[:3]):
             self.annotationAdditonList[i] = item
+        self.DeliverList = ["不包含运费", "包含运费", "包含到港口的运费"] if self.language == '中文' else ["EX", "DAP", "CIF"]
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
         # self.triggerList=[[1, 60], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]]
         self.triggerList = GetOrderAnnotationTriggerList(self.log ,WHICHDB, self.id)
