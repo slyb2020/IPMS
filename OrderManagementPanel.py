@@ -2,6 +2,8 @@ import copy
 import threading
 from operator import itemgetter
 import json
+import numpy as np
+import pandas as pd
 
 import wx
 import wx.grid as gridlib
@@ -2234,8 +2236,24 @@ class QuotationSheetDialog(wx.Dialog):
         self.CreateGrid()
         # self.ReCreateGrid()
     def OnCreateExcelQuotationSheetBTN(self, event):
-        filename = quotationSheetDir + '报价单%05d.pdf' % self.id
-
+        filename = quotationSheetDir + '报价单%05d.xlsx' % self.id
+        totalRowNumber = 8+12 + len(self.quotationSheetGrid.dataWall)+6 + len(self.quotationSheetGrid.dataCeiling)+6\
+                     + len(self.quotationSheetGrid.dataInteriorDoor) + 6 + len(self.quotationSheetGrid.dataFireDoor)\
+                     + 6 + len(self.quotationSheetGrid.dataWetUnit) + 6
+        dataExcel = []
+        for row in range(totalRowNumber):
+            rowData = []
+            for col in range(13):
+                rowData.append(self.quotationSheetGrid.GetCellValue(row,col))
+            dataExcel.append(rowData)
+        dataExcel = np.array(dataExcel)
+        data_df = pd.DataFrame(dataExcel)
+        data_df.columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J','K','L','M']
+        data_df.index = [i+1 for i in range(totalRowNumber)]
+        writer = pd.ExcelWriter(filename)
+        data_df.to_excel(writer)
+        writer.save()
+        wx.MessageBox("Excel格式报价单：%s已生成，\r\n您可以使用Excel进行查看和编辑."%filename,"信息提示窗口")
 
     def OnCreatePdfQuotationSheetBTN(self, event):
         annotation = self.quotationSheetGrid.GetAnnotation()
