@@ -27,7 +27,7 @@ from ID_DEFINE import *
 import time
 
 # VERSION_STRING = "20220313A7"
-VERSION_STRING = "221120"
+VERSION_STRING = "221121"
 
 
 def switchRGBtoBGR(colour):

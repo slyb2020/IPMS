@@ -2196,15 +2196,20 @@ class QuotationSheetDialog(wx.Dialog):
         sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 5)
 
         btnsizer = wx.BoxSizer()
-        # bitmap1 = wx.Bitmap("D:/IPMS/dist/bitmaps/ok3.png", wx.BITMAP_TYPE_PNG)
-        # bitmap2 = wx.Bitmap("D:/IPMS/dist/bitmaps/cancel1.png", wx.BITMAP_TYPE_PNG)
+        bitmap1 = wx.Bitmap("D:/IPMS/dist/bitmaps/pdf.png", wx.BITMAP_TYPE_PNG)
+        bitmap2 = wx.Bitmap("D:/IPMS/dist/bitmaps/excel.png", wx.BITMAP_TYPE_PNG)
         # bitmap3 = wx.Bitmap("D:/IPMS/dist/bitmaps/33.png", wx.BITMAP_TYPE_PNG)
         if self.character in ["项目经理",'订单管理员'] and self.name == "生成报价单":
-            createQuotationSheetBTN = wx.Button(self, -1, "生成报价单", size=(200, 50))
-            # createQuotationSheetBTN.SetBitmap(bitmap3, wx.LEFT)
-            createQuotationSheetBTN.Bind(wx.EVT_BUTTON, self.OnCreateQuotationSheetBTN)
+            createPdfQuotationSheetBTN = wx.Button(self, -1, "生成pdf报价单", size=(200, 50))
+            createPdfQuotationSheetBTN.SetBitmap(bitmap1, wx.LEFT)
+            createPdfQuotationSheetBTN.Bind(wx.EVT_BUTTON, self.OnCreatePdfQuotationSheetBTN)
             btnsizer.Add((40, -1), 0)
-            btnsizer.Add(createQuotationSheetBTN, 0)
+            btnsizer.Add(createPdfQuotationSheetBTN, 0)
+            createExcelQuotationSheetBTN = wx.Button(self, -1, "生成Excel报价单", size=(200, 50))
+            createExcelQuotationSheetBTN.SetBitmap(bitmap2, wx.LEFT)
+            createExcelQuotationSheetBTN.Bind(wx.EVT_BUTTON, self.OnCreateExcelQuotationSheetBTN)
+            btnsizer.Add((40, -1), 0)
+            btnsizer.Add(createExcelQuotationSheetBTN, 0)
         if self.character in ["项目经理",'订单管理员']:
             label = "完成订单部审核并退出"
         else:
@@ -2214,7 +2219,7 @@ class QuotationSheetDialog(wx.Dialog):
             btnSaveAndExit.Show(False)
         btnSaveAndExit.Bind(wx.EVT_BUTTON, self.OnSaveExitBTN)
         # btnSaveAndExit.SetBitmap(bitmap1, wx.LEFT)
-        btnCancel = wx.Button(self, wx.ID_CANCEL, "取  消", size=(200, 50))
+        btnCancel = wx.Button(self, wx.ID_CANCEL, "返  回", size=(200, 50))
         # btnCancel.SetBitmap(bitmap2, wx.LEFT)
         btnsizer.Add((40, -1), 0)
         btnsizer.Add(btnSaveAndExit, 0)
@@ -2228,8 +2233,11 @@ class QuotationSheetDialog(wx.Dialog):
         self.editAnnotationdlg.CenterOnScreen()
         self.CreateGrid()
         # self.ReCreateGrid()
+    def OnCreateExcelQuotationSheetBTN(self, event):
+        filename = quotationSheetDir + '报价单%05d.pdf' % self.id
 
-    def OnCreateQuotationSheetBTN(self, event):
+
+    def OnCreatePdfQuotationSheetBTN(self, event):
         annotation = self.quotationSheetGrid.GetAnnotation()
         # UpdateOrderAnnotation(self.log, WHICHDB, self.id, annotation)
         filename = quotationSheetDir + '报价单%05d.pdf' % self.id
@@ -2247,7 +2255,7 @@ class QuotationSheetDialog(wx.Dialog):
         dlg.CenterOnScreen()
         dlg.ShowModal()
         dlg.Close()
-        self.Close()
+        # self.Close()
 
     def OnSaveExitBTN(self, event):
         sumupPrice = float(self.quotationSheetGrid.wallSumupPricesRMB) + float(self.quotationSheetGrid.ceilingSumupPricesRMB)\
@@ -2257,7 +2265,7 @@ class QuotationSheetDialog(wx.Dialog):
         if self.character in ["项目经理",'订单管理员','副总经理']:
             dicList = self.quotationSheetGrid.dataWall + self.quotationSheetGrid.dataCeiling + self.quotationSheetGrid.dataInteriorDoor\
                       + self.quotationSheetGrid.dataFireDoor + self.quotationSheetGrid.dataWetUnit
-            UpdateDraftOrderInDB(self.log, WHICHDB, self.id, dicList,annotation)
+            UpdateDraftOrderInDB(self.log, WHICHDB, self.id, dicList)
             # UpdateOrderAnnotation(self.log,WHICHDB,self.id,annotation)
             # temp = GetOrderAnnotation(self.log,WHICHDB,self.id)
             # ann=["","",""]
@@ -2355,7 +2363,6 @@ class QuotationSheetDialog(wx.Dialog):
             self.exchangeDateCtrl.Enable(False)
 
     def OnAddNoteButton(self,event):
-        # TODO:
         if self.editAnnotationdlg.ShowModal() == wx.ID_OK:
             self.quotationSheetGrid.RefreshAnnotation()
         self.editAnnotationdlg.Close()
@@ -4170,11 +4177,12 @@ class EditAnnotationDialog(wx.Dialog):
         self.parent = parent
         self.log = log
         self.id = id
-        self.lauguage = "中文"
-        self.lauguageList = ["中文","英文"]
+        self.language = "中文"
+        self.languageList = ["中文", "英文"]
         # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
         temp = GetOrderAnnotation(self.log, WHICHDB, self.id)
         self.annotationAdditonList = ["", "", ""]
+        self.language = temp[3]
         for i, item in enumerate(temp[:3]):
             self.annotationAdditonList[i] = item
         self.SetExtraStyle(wx.DIALOG_EX_METAL)
@@ -4193,7 +4201,8 @@ class EditAnnotationDialog(wx.Dialog):
         self.customerAnnotationBTN2.Bind(wx.EVT_BUTTON,self.OnAddNoteButton2)
         self.customerAnnotationBTN3 = wx.Button(self,-1,label="编辑自定义备注3",size=(100,40))
         self.customerAnnotationBTN3.Bind(wx.EVT_BUTTON,self.OnAddNoteButton3)
-        self.languageCombo = wx.ComboBox(self,-1,value=self.lauguage,choices=self.lauguageList,size=(100,40))
+        self.languageCombo = wx.ComboBox(self, -1, value=self.language, choices=self.languageList, size=(100, 40))
+        self.languageCombo.Bind(wx.EVT_COMBOBOX, self.OnLanguageChanged)
         self.okButton = wx.Button(self, wx.ID_OK,label = "确认",size=(100,40))
         self.okButton.Bind(wx.EVT_BUTTON, self.OnOk)
         self.cancelButton = wx.Button(self, wx.ID_CANCEL,label = "取消", size=(100,40))
@@ -4252,8 +4261,8 @@ class EditAnnotationDialog(wx.Dialog):
         self.controlPanel.SetSizer(vbox)
         self.panel.Thaw()
 
-    def RefreshAnnotation(self, language='中文'):
-        self.fileName = "D:\\IPMS\\dist\\config\\%s备注.txt"%language
+    def RefreshAnnotation(self):
+        self.fileName = "D:\\IPMS\\dist\\config\\%s备注.txt"%self.language
         with open(self.fileName,'r',encoding='utf=8') as file:
             data = file.readlines()
         self.annotationList= []
@@ -4332,5 +4341,12 @@ class EditAnnotationDialog(wx.Dialog):
 
     def OnOk(self,event):
         UpdateOrderAnnotationTriggerList(self.log, WHICHDB, self.triggerList, self.id)
-        UpdateOrderAnnotation(self.log, WHICHDB, self.id, self.annotationAdditonList)
+        temp = copy.deepcopy(self.annotationAdditonList)
+        temp.append(self.language)
+        UpdateOrderAnnotation(self.log, WHICHDB, self.id, temp)
         event.Skip()
+
+    def OnLanguageChanged(self,event):
+        self.language = self.languageCombo.GetValue()
+        self.RefreshAnnotation()
+
