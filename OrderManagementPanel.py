@@ -4207,7 +4207,7 @@ class EditAnnotationDialog(wx.Dialog):
         # self.log.WriteText("操作员：'%s' 开始执行库存参数设置操作。。。\r\n"%(self.parent.operator_name))
         temp = GetOrderAnnotation(self.log, WHICHDB, self.id)
         if not temp:
-            temp=["","","",""]
+            temp=["","","","中文"]
         self.annotationAdditonList = ["", "", ""]
         self.language = temp[3]
         for i, item in enumerate(temp[:3]):
