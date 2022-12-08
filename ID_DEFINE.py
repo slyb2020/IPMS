@@ -113,12 +113,22 @@ CheckColWidthDict = {
     'FIREDOOR': [160, 160, 160, 160, 160, 160, 150, 150, 155],
     'WETUNIT': [160, 160, 160, 160, 160, 160, 150, 150, 155],
     }
+WallSurfaceDict = {
+    'TNF-4SF':["CP/G","GP/G",'S.S/G'],
+    'TNF-3SF':["CP/G","GP/G",'S.S/G'],
+    'TNF-4SA':['CP/G','GP/G','S.S/G','CP/CP','GP/GP','S.S/S.S'],
+    'TNF-3SA':['CP/G','GP/G','S.S/G','CP/CP','GP/GP','S.S/S.S'],
+    'TNF-2SF':['CP/G','GP/G','S.S/G'],
+    'TNF-2SA':['CP/G','CP/CP','GP/G','GP/GP','S.S/G','S.S/S.S'],
+    'TNF-2SG':['CP/G','GP/G','S.S/G'],
+    'TNF-2SD':['CP/G','CP/CP','GP/G','GP/GP','S.S/G','S.S/S.S'],
+}
 OtherCheckColWidthDict = {
     'WALL': [125, 125, 160, 150, 150, 150, 80, 150, 80, 80, 155],
     'CEILING': [125, 125, 160, 150, 150, 150, 80, 150, 80, 80, 155],
     }
 CellingEnableThickDict = {
-    "TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'50',
+    "TNF-C46":'70',"TNF-C55":'50',"TNF-C64":'40',"TNF-C65":'50',"TNF-C68":'30',
     "TNF-C70":'50',"TNF-C71":'50',"TNF-C72":'50',"TNF-C73":'50',
     }
 CellingEnableSurfaceDict = {

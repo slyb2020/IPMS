@@ -2125,7 +2125,11 @@ def UpdateOrderSquareByID(log,whichDB,id,square):
 
 
 def UpdateDraftCheckInfoByID(log, whichDB, id, dicList):
-    print(dicList)
+    temp = []
+    for record in dicList:
+        if record['数量']!='':
+            temp.append(record)
+    dicList=temp
     id = int(id)
     try:
         db = MySQLdb.connect(host="%s" % dbHostName[whichDB], user='%s' % dbUserName[whichDB],

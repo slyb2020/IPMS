@@ -1370,6 +1370,7 @@ class WallPanelTechCheckGrid(gridlib.Grid):
         if self.type=="WALL":
             if col == 0:
                 lastChar = self.GetCellValue(row, col)[-1]
+                self.table.SetTypeName(1,WallSurfaceDict[self.GetCellValue(row, 0)])
                 self.SetCellValue(row, 4, thickDic[lastChar])
                 self.SetCellValue(row,5,"m2")
         elif self.type=="CEILING":
@@ -1612,7 +1613,7 @@ class TechCheckDialog(wx.Dialog):
         self.interiorDoorCheckPanel = wx.Panel(self.notebook)
         self.notebook.AddPage(self.interiorDoorCheckPanel, "TNF Interior Door")
         self.fireDoorCheckPanel = wx.Panel(self.notebook)
-        self.notebook.AddPage(self.fireDoorCheckPanel, "TNF Fire Door")
+        self.notebook.AddPage(self.fireDoorCheckPanel, "TNF Hatch")
         self.wetUnitCheckPanel = wx.Panel(self.notebook)
         self.notebook.AddPage(self.wetUnitCheckPanel, "TNF Wet Unit")
         self.panel.Thaw()
@@ -1676,7 +1677,7 @@ class TechCheckDialog(wx.Dialog):
                     if dics[section] == '':  # 这说明有字段输入值为空
                         if section == '单位':
                             dics[col]=='m2'
-                        elif section != "产品描述":  # 如果为空的字段不是产品描述的话
+                        elif section != "产品描述" and section != '数量':  # 如果为空的字段不是产品描述的话
                             self.notebook.SetSelection(0)  # 调到墙板页面，因为这是检查的是墙板数据
                             self.wallPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
                             self.wallPanelCheckGrid.Refresh()
@@ -1702,7 +1703,7 @@ class TechCheckDialog(wx.Dialog):
             if dics["数量"]!=0:
                 for col, section in enumerate(CeilingCheckEnableSectionList):
                     if dics[section] == '':
-                        if section != "产品描述":
+                        if section != "产品描述" and section != '数量':
                             self.notebook.SetSelection(1)
                             self.ceilingPanelCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
                             self.ceilingPanelCheckGrid.Refresh()
@@ -1730,7 +1731,7 @@ class TechCheckDialog(wx.Dialog):
                     if dics[section] == '':
                         if section == '单位':
                             dics[col]='PCS'
-                        elif section != "产品描述":
+                        elif section != "产品描述" and section != '数量':
                             self.notebook.SetSelection(2)
                             self.interiorDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
                             self.interiorDoorCheckGrid.Refresh()
@@ -1756,7 +1757,7 @@ class TechCheckDialog(wx.Dialog):
             if dics['数量']!=0:
                 for col, section in enumerate(FireDoorCheckEnableSectionList):
                     if dics[section] == '':
-                        if section != "产品描述" and section!="产品厚度":
+                        if section != "产品描述" and section!="产品厚度" and section != '数量':
                             self.notebook.SetSelection(3)
                             self.fireDoorCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
                             self.fireDoorCheckGrid.Refresh()
@@ -1782,7 +1783,7 @@ class TechCheckDialog(wx.Dialog):
             if dics["数量"]!=0:
                 for col, section in enumerate(WetUnitCheckEnableSectionList):
                     if dics[section] == '':
-                        if section != "产品描述" and section!="产品表面材料" and section!="产品长度" and section!="产品宽度" and section!="产品厚度":
+                        if section != "产品描述" and section!="产品表面材料" and section!="产品长度" and section!="产品宽度" and section!="产品厚度" and section != '数量':
                             self.notebook.SetSelection(4)
                             self.wetUnitCheckGrid.SetCellBackgroundColour(row, col, wx.Colour(255, 200, 200))
                             self.wetUnitCheckGrid.Refresh()
